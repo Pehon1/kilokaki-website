@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>KiloKaki — Snap your meal. Get calories + macros.</title>
+  <title>KiloKaki - Snap your meal. Get calories + macros.</title>
   <meta name="description" content="KiloKaki is a Telegram food logging bot built for Singapore and Asian food. Snap your meal and get calories + macros instantly.">
   <style>
     :root {
@@ -58,12 +58,26 @@
     .section p.lead { color:var(--muted); max-width:700px; margin:0 0 26px; }
     .steps { display:grid; grid-template-columns: repeat(3, 1fr); gap:18px; }
     .step-num { width:40px; height:40px; border-radius:999px; background:var(--green); display:flex; align-items:center; justify-content:center; font-weight:800; margin-bottom:14px; }
+    .log-methods { display:grid; grid-template-columns: repeat(3, 1fr); gap:24px; margin-bottom:32px; }
+    .method-card { background:rgba(255,255,255,.8); backdrop-filter: blur(6px); border:1px solid var(--line); border-radius:24px; padding:24px; text-align:center; }
+    .method-icon { font-size:48px; margin-bottom:16px; line-height:1; }
+    .method-card h3 { margin:0 0 8px; font-size:20px; }
+    .method-short { color:var(--green-dark); font-weight:700; margin:0 0 12px; font-size:16px; }
+    .method-card p { color:var(--muted); margin:0 0 10px; font-size:14px; }
+    .method-note { font-size:13px; color:var(--muted); font-style:italic; }
+    .proof-point { background:#ecfccb; border:1px solid #d9f99d; border-radius:18px; padding:20px 24px; text-align:center; }
+    .proof-point p { margin:0; }
+    .proof-point p:first-child { font-size:18px; font-weight:700; color:var(--green-dark); margin-bottom:6px; }
+    .proof-point p:last-child { color:var(--muted); font-size:14px; }
     .faq { display:grid; gap:14px; }
     .faq .item { background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px 20px; }
     footer { padding:36px 0 48px; color:var(--muted); font-size:14px; }
     @media (max-width: 900px) {
-      .hero, .grid, .steps { grid-template-columns: 1fr; }
+      .hero, .grid, .steps, .log-methods { grid-template-columns: 1fr; }
       .hero { padding-top:34px; }
+      .log-methods { gap:16px; }
+      .method-card { padding:20px; }
+      .method-icon { font-size:36px; }
     }
   </style>
 </head>
@@ -81,7 +95,7 @@
       <div>
         <div class="eyebrow">Built for Singapore & Asian food</div>
         <h1>Snap your meal.<br>Get calories + macros.</h1>
-        <p class="sub">KiloKaki is a Telegram food logging bot that helps you track calories, protein, carbs, fat and sodium from food photos or simple text — without the pain of manual logging.</p>
+        <p class="sub">KiloKaki is a Telegram food logging bot that helps you track calories, protein, carbs, fat and sodium from food photos or simple text - without the pain of manual logging.</p>
         <div class="actions">
           <a class="cta" href="https://t.me/KiloKakiBot" target="_blank" rel="noopener">Start on Telegram</a>
           <a class="cta-secondary" href="#how">How it works</a>
@@ -111,30 +125,40 @@
         </div>
         <div class="card">
           <h3>Tracks the metrics that matter</h3>
-          <p>Calories, protein, carbs, fat, and sodium — plus daily totals to help you stay on target.</p>
+          <p>Calories, protein, carbs, fat, and sodium - plus daily totals to help you stay on target.</p>
         </div>
       </div>
     </section>
 
     <section class="section" id="how">
-      <h2>How it works</h2>
-      <p class="lead">Simple enough to use every day. Open the bot, send food, get your macros instantly.</p>
-      <div class="steps">
-        <div class="card">
-          <div class="step-num">1</div>
-          <h3>Send a meal photo</h3>
-          <p>Snap your food and send it straight into Telegram.</p>
+      <h2>Log food 3 ways. Takes 10 seconds.</h2>
+      <p class="lead">All 3 methods give you calories + macros in seconds. Use whichever fits your moment.</p>
+      <div class="log-methods">
+        <div class="method-card">
+          <div class="method-icon">📸</div>
+          <h3>Photo</h3>
+          <p class="method-short">Snap it</p>
+          <p>Send a photo of your meal. KiloKaki reads it instantly.</p>
+          <p class="method-note">Works for hawker food, home cooking, packaged items.</p>
         </div>
-        <div class="card">
-          <div class="step-num">2</div>
-          <h3>Or just type it</h3>
-          <p>Things like <strong>“chicken rice + egg”</strong> also work if you don’t want to send a photo.</p>
+        <div class="method-card">
+          <div class="method-icon">⌨️</div>
+          <h3>Text</h3>
+          <p class="method-short">Type it</p>
+          <p>Just type what you ate. "Chicken rice, less rice" → logged.</p>
+          <p class="method-note">No searching giant food databases.</p>
         </div>
-        <div class="card">
-          <div class="step-num">3</div>
-          <h3>Get your macros</h3>
-          <p>KiloKaki estimates calories and macros, then keeps a running total for the day.</p>
+        <div class="method-card">
+          <div class="method-icon">🎤</div>
+          <h3>Voice</h3>
+          <p class="method-short">Say it</p>
+          <p>Send a voice note while you eat. "Having nasi lemak with extra sambal" → done.</p>
+          <p class="method-note">Fastest way when your hands are full.</p>
         </div>
+      </div>
+      <div class="proof-point">
+        <p><strong>⚡ Average log time: 10 seconds</strong></p>
+        <p>No app install. No manual macro entry. No friction.</p>
       </div>
     </section>
 
@@ -143,7 +167,7 @@
       <p class="lead">Most calorie trackers feel built for salads, wraps, and generic Western food databases. KiloKaki is built for the way people in Singapore and Asia actually eat.</p>
       <div class="grid">
         <div class="card"><h3>No more guessing hawker calories</h3><p>Stop trying to force local meals into apps that were never designed for them.</p></div>
-        <div class="card"><h3>Uses Telegram, not another app</h3><p>If you already use Telegram, there’s nothing new to install or learn.</p></div>
+        <div class="card"><h3>Uses Telegram, not another app</h3><p>If you already use Telegram, there's nothing new to install or learn.</p></div>
         <div class="card"><h3>Great for cutting or tracking protein</h3><p>Perfect for people trying to lose weight, eat better, or hit protein consistently.</p></div>
       </div>
     </section>
@@ -151,10 +175,10 @@
     <section class="section">
       <h2>FAQ</h2>
       <div class="faq">
-        <div class="item"><strong>Is it free?</strong><br>Yes — KiloKaki is currently in beta.</div>
+        <div class="item"><strong>Is it free?</strong><br>Yes - KiloKaki is currently in beta.</div>
         <div class="item"><strong>Do I need to install an app?</strong><br>Nope. Just use it through Telegram.</div>
-        <div class="item"><strong>Does it work for hawker food?</strong><br>That’s one of the main reasons it exists.</div>
-        <div class="item"><strong>Can it read nutrition labels?</strong><br>Yes — for packaged foods with readable labels, it can use nutrition facts directly.</div>
+        <div class="item"><strong>Does it work for hawker food?</strong><br>That's one of the main reasons it exists.</div>
+        <div class="item"><strong>Can it read nutrition labels?</strong><br>Yes - for packaged foods with readable labels, it can use nutrition facts directly.</div>
       </div>
     </section>
 
@@ -162,12 +186,12 @@
       <div class="card" style="text-align:center; padding:36px;">
         <h2 style="margin-bottom:12px;">Start logging with KiloKaki</h2>
         <p class="lead" style="margin:0 auto 22px;">Snap your next meal and get calories + macros in seconds.</p>
-        <a class="cta" href="https://t.me/KiloKakiBot" target="_blank" rel="noopener">Open @KiloKakiBot</a>
+        <a class="cta" href="https://t.me/KiloKakiBot" target="_blank" rel="noopener">Start Tracking Free →</a>
       </div>
     </section>
 
     <footer>
-      KiloKaki — Telegram food logging for Singapore & Asian meals.
+      KiloKaki - Telegram food logging for Singapore & Asian meals.
     </footer>
   </div>
 </body>
