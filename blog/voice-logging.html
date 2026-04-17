@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How to Log Food by Voice (And Why It's Up to 10x Faster Than Typing) — KiloKaki Blog</title>
+  <meta name="description" content="Voice logging is up to 10x faster than typing food entries. Here's how it works and why consistency matters more than precision.">
+  <style>
+    :root {
+      --green: #84cc16;
+      --green-dark: #4d7c0f;
+      --orange: #f97316;
+      --cream: #fffaf2;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --card: #ffffff;
+      --line: #e5e7eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #f7fee7 0%, #fffaf2 40%, #ffffff 100%);
+      line-height: 1.6;
+    }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; }
+    .nav { display:flex; align-items:center; justify-content:space-between; gap:20px; padding: 20px 0; }
+    .brand { display:flex; align-items:center; gap:12px; font-weight:800; font-size:20px; text-decoration:none; color: var(--text); }
+    .brand img { width:44px; height:44px; border-radius:50%; }
+    .cta, .cta-secondary {
+      display:inline-flex; align-items:center; justify-content:center; text-decoration:none;
+      border-radius:999px; padding:12px 20px; font-weight:700; transition:.2s ease; font-size:14px;
+    }
+    .cta { background: var(--green); color:#111827; box-shadow: 0 8px 20px rgba(132,204,22,.2); }
+    .cta:hover { transform: translateY(-1px); background:#93d623; }
+    .article { max-width: 700px; margin: 0 auto; padding: 40px 24px 80px; }
+    .article-meta { font-size:13px; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:.06em; }
+    .article-title { font-size: clamp(28px, 4vw, 40px); line-height:1.15; letter-spacing:-.02em; margin:0 0 10px; font-weight:800; }
+    .article-lead { font-size:18px; color:var(--muted); margin:0 0 32px; line-height:1.6; }
+    .article-body { font-size:17px; }
+    .article-body p { margin:0 0 20px; }
+    .article-body h2 { font-size:24px; font-weight:700; margin:36px 0 12px; letter-spacing:-.01em; }
+    .article-body h3 { font-size:19px; font-weight:700; margin:28px 0 10px; }
+    .article-body blockquote {
+      border-left: 4px solid var(--green); padding: 4px 20px; margin: 24px 0;
+      background: rgba(132,204,22,.06); border-radius: 0 8px 8px 0;
+      font-style: italic; color: var(--muted);
+    }
+    .article-body ul, .article-body ol { margin: 0 0 20px; padding-left: 24px; }
+    .article-body li { margin-bottom: 8px; }
+    .article-body strong { font-weight:700; }
+    .article-body em { font-style:italic; }
+    .article-cta {
+      background: linear-gradient(180deg,#f7fee7 0%, #ecfccb 100%);
+      border: 1px solid #d9f99d; border-radius: 20px; padding: 28px 32px;
+      text-align: center; margin: 40px 0 0;
+    }
+    .article-cta p { margin: 0 0 16px; font-size:17px; font-weight:600; }
+    footer { padding: 28px 0 36px; color: var(--muted); font-size:13px; text-align:center; border-top: 1px solid var(--line); margin-top: 40px; }
+    @media (max-width: 700px) {
+      .article { padding: 24px 16px 60px; }
+      .article-title { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="nav">
+      <a class="brand" href="/">
+        <img src="/logo.png" alt="KiloKaki logo">
+        <span>KiloKaki</span>
+      </a>
+      <a class="cta" href="https://t.me/KiloKakiBot" target="_blank" rel="noopener">Try It Free →</a>
+    </nav>
+
+    <article class="article">
+      <p class="article-meta">Voice Logging · April 2026</p>
+      <h1 class="article-title">How to Log Food by Voice (And Why It's Up to 10x Faster Than Typing)</h1>
+      <p class="article-lead">The entry friction is the killer. Not the diet. Not the goals. The admin.</p>
+      <div class="article-body">
+<p>Most people quit food tracking within three weeks. It's not motivation. It's friction.</p>
+<p>Every time you open an app, search for "grilled chicken breast no skin," realise the database has twelve variations, pick one, enter the portion size, and close the app — you've spent two minutes. Do that three times a day and you've burned forty minutes on admin alone.</p>
+<p>Voice logging fixes that.</p>
+<p>Open Telegram. Message KiloKaki. Hold the mic. Say what you ate. That's it.</p>
+<p>"Chicken rice, no skin, extra curry leaves, one spoon of curry" — KiloKaki parses your words, maps them to macro estimates, and logs the entry. No database search. No scrolling. No portion math.</p>
+<p>The key: you're not logging ingredients. You're describing a meal. That difference sounds small. It isn't.</p>
+<blockquote>What gets results is logging reliably, not logging perfectly. A rough entry every day beats a perfect entry twice a week.</blockquote>
+<p>Singapore food is a nightmare to log by typing. Try entering "nasi lemak with sambal telur and a teh-o" into a food database. Good luck. But that's exactly what you ate. And saying it takes four seconds. KiloKaki knows hawker portions, zi char dishes, and the way "a bit of curry" actually tastes — because the model was trained on real eating patterns, not just USDA database entries.</p>
+<p>KiloKaki estimates macros for Singapore/SEA dishes better than any Western food database. For standard international foods it matches mainstream databases closely. It's not a lab. It's not a nutritionist. It's a Telegram bot that makes food logging fast enough that you'll actually do it.</p>
+      </div>
+      <div class="article-cta">
+        <p>Start logging in seconds — no app to download.</p>
+        <a class="cta" href="https://t.me/KiloKakiBot" target="_blank" rel="noopener">Open KiloKaki →</a>
+      </div>
+    </article>
+
+    <footer>
+      KiloKaki — Telegram food logging for Singapore & Asian meals.
+    </footer>
+  </div>
+</body>
+</html>
