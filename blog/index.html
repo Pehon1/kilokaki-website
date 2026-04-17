@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KiloKaki Blog</title>
+  <style>
+    :root {
+      --green: #84cc16;
+      --text: #1f2937;
+      --muted: #6b7280;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #fffaf2; color: var(--text); margin: 0; padding: 0; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+    .nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid #e5e7eb; }
+    .brand { font-size: 20px; font-weight: 700; color: var(--green); }
+    .hero { padding: 60px 0 40px; }
+    h1 { font-size: 36px; margin-bottom: 8px; }
+    .lead { color: var(--muted); font-size: 18px; margin-bottom: 48px; }
+    .articles { display: flex; flex-direction: column; gap: 24px; }
+    .article { background: white; border-radius: 12px; padding: 28px; border: 1px solid #e5e7eb; }
+    .article h2 { margin: 0 0 8px; font-size: 22px; }
+    .article h2 a { color: var(--text); text-decoration: none; }
+    .article h2 a:hover { color: var(--green); }
+    .article .meta { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
+    .article p { margin: 0; color: var(--muted); line-height: 1.6; }
+    .cta { background: var(--green); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; display: inline-block; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav">
+      <div class="brand">🥥 KiloKaki</div>
+      <a href="https://t.me/KiloKakiBot" target="_blank" rel="noopener" class="cta">Try It Free →</a>
+    </div>
+    <section class="hero">
+      <h1>KiloKaki Blog</h1>
+      <p class="lead">Food logging insights, nutrition research, and product updates.</p>
+      <div class="articles">
+        <div class="article">
+          <h2><a href="/blog/voice-logging.html">How to Log Food by Voice (And Why It's Up to 10x Faster Than Typing)</a></h2>
+          <p class="meta">Voice Logging · April 2026</p>
+          <p>The entry friction is the killer. Not the diet. Not the goals. The admin.</p>
+        </div>
+        <div class="article">
+          <h2><a href="/blog/calorie-counts-wrong.html">Why Calorie Counts Are Wrong (And What Actually Matters for Your Goals)</a></h2>
+          <p class="meta">Nutrition · April 2026</p>
+          <p>The calorie on the label is already 20% wrong. Here's why obsessing over exact numbers is a waste of time.</p>
+        </div>
+        <div class="article">
+          <h2><a href="/blog/kilokaki-vs-myfitnesspal.html">KiloKaki vs MyFitnessPal: An Honest Comparison</a></h2>
+          <p class="meta">Comparison · April 2026</p>
+          <p>MyFitnessPal has 200M users. KiloKaki is a Telegram bot. Here's why a Telegram bot might actually be the better choice.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
