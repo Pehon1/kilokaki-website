@@ -1,102 +1,123 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>What Six Months of Food Logging Actually Looks Like — KiloKaki Blog</title>
   <meta name="description" content="Not a before-and-after photo. What six months of consistent food logging actually delivers — patterns, leverage, and the moments that make it worth it.">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.7; max-width: 720px; margin: 0 auto; padding: 20px; color: #1a1a1a; }
-    .article-header { text-align: center; padding: 40px 0 32px; }
-    .article-title { font-size: clamp(28px, 5vw, 40px); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 16px; }
-    .article-lead { font-size: 18px; color: #666; margin: 0 0 24px; line-height: 1.6; }
-    .article-meta { font-size: 13px; color: #999; margin-bottom: 32px; }
-    h2 { font-size: 22px; font-weight: 700; margin-top: 40px; color: #111; }
-    p { margin: 0 0 20px; }
-    blockquote { border-left: 3px solid #e0e0e0; padding: 4px 20px; margin: 24px 0; color: #555; font-size: 17px; }
-    .cta { background: #f5f0e8; border-radius: 12px; padding: 24px; text-align: center; margin: 40px 0; }
-    .cta p { font-size: 16px; margin: 0 0 12px; }
-    .cta a { display: inline-block; background: #1a1a1a; color: #fff; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; }
-    .cta a:hover { background: #333; }
-    .back-link { display: inline-block; margin-bottom: 24px; color: #666; text-decoration: none; font-size: 14px; }
-    .back-link:hover { color: #1a1a1a; }
+    :root { --green: #84cc16; --green-dark: #4d7c0f; --orange: #f97316; --cream: #fffaf2; --text: #1f2937; --muted: #6b7280; --card: #ffffff; --line: #e5e7eb; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); background: linear-gradient(180deg, #f7fee7 0%, #fffaf2 40%, #ffffff 100%); line-height: 1.6; }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; }
+    .nav { display:flex; align-items:center; justify-content:space-between; gap:20px; padding: 20px 0; }
+    .brand { display:flex; align-items:center; gap:12px; font-weight:800; font-size:20px; text-decoration:none; color:var(--text); }
+    .brand img { width:44px; height:44px; border-radius:50%; }
+    .cta, .cta-secondary { display:inline-flex; align-items:center; justify-content:center; text-decoration:none; border-radius:999px; padding:12px 20px; font-weight:700; transition:.2s ease; font-size:14px; }
+    .cta { background:var(--green); color:#111827; box-shadow:0 8px 20px rgba(132,204,22,.2); }
+    .cta:hover { transform:translateY(-1px); background:#93d623; }
+    .article { max-width: 700px; margin: 0 auto; padding: 40px 24px 80px; }
+    .article-meta { font-size:13px; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:.06em; }
+    .article-title { font-size: clamp(28px,4vw,40px); line-height:1.15; letter-spacing:-.02em; margin:0 0 10px; font-weight:800; }
+    .article-lead { font-size:18px; color:var(--muted); margin:0 0 32px; line-height:1.6; }
+    .article-body { font-size:17px; }
+    .article-body p { margin:0 0 20px; }
+    .article-body h2 { font-size:24px; font-weight:700; margin:36px 0 12px; letter-spacing:-.01em; }
+    .article-body h3 { font-size:19px; font-weight:700; margin:28px 0 10px; }
+    .article-body blockquote { border-left:4px solid var(--green); padding:4px 20px; margin:24px 0; background:rgba(132,204,22,.06); border-radius:0 8px 8px 0; font-style:italic; color:var(--muted); }
+    .article-body ul, .article-body ol { margin:0 0 20px; padding-left:24px; }
+    .article-body li { margin-bottom:8px; }
+    .article-body strong { font-weight:700; }
+    .article-body em { font-style:italic; }
+    .article-cta { background:linear-gradient(180deg,#f7fee7 0%,#ecfccb 100%); border:1px solid #d9f99d; border-radius:20px; padding:28px 32px; text-align:center; margin:40px 0 0; }
+    .article-cta p { margin:0 0 16px; font-size:17px; font-weight:600; }
+    footer { padding:28px 0 36px; color:var(--muted); font-size:13px; text-align:center; border-top:1px solid var(--line); margin-top:40px; }
+    footer a { color:var(--muted); text-decoration:none; }
   </style>
 </head>
 <body>
+<div class="wrap">
+  <nav class="nav">
+    <a href="/" class="brand"><img src="/logo.png" alt="KiloKaki"> KiloKaki</a>
+    <a href="https://t.me/KiloKakiBot" class="cta">Open Bot →</a>
+  </nav>
 
-<a href="/blog/" class="back-link">← Back to Blog</a>
-
-<article>
-  <header class="article-header">
+  <article class="article">
+    <p class="article-meta">Habits · 6 min read</p>
     <h1 class="article-title">What Six Months of Food Logging Actually Looks Like</h1>
     <p class="article-lead">Not a before-and-after photo. Not a six-pack reveal. Here's what consistent food logging actually delivers — and why most people get there faster than they expect.</p>
-    <p class="article-meta">April 2026 · KiloKaki Blog</p>
-  </header>
 
-  <p>You open Telegram. You type: "nasi lemak with egg, less coconut rice than usual, one teh-o."</p>
+    <div class="article-body">
 
-  <p>That's it. 10 seconds. And now you know.</p>
+      <p>You open Telegram. You type: "nasi lemak with egg, less coconut rice than usual, one teh-o."</p>
 
-  <p>Six months of that — logging most of what you eat, without perfection, without a barcode scanner, without a single "I can't find this in the database" frustration — changes what you know about yourself. Not dramatically. Not all at once. But enough.</p>
+      <p>That's it. 10 seconds. And now you know.</p>
 
-  <h2>The first month is the hardest part</h2>
+      <p>Six months of that — logging most of what you eat, without perfection, without a barcode scanner, without a single "I can't find this in the database" frustration — changes what you know about yourself. Not dramatically. Not all at once. But enough.</p>
 
-  <p>Most people quit food logging in the first two weeks because they expected it to be complicated. It doesn't have to be. KiloKaki handles hawker food, mixed dishes, approximations — the things that break every other app.</p>
+      <h2>The first month is the hardest part</h2>
 
-  <p>The first month is about building the habit, not optimising the data. Log what you ate. Don't worry about whether it's perfect. It's not supposed to be perfect yet.</p>
+      <p>Most people quit food logging in the first two weeks because they expected it to be complicated. It doesn't have to be. KiloKaki handles hawker food, mixed dishes, approximations — the things that break every other app.</p>
 
-  <blockquote>The goal in month one is simple: most meals logged, most days of the week.</blockquote>
+      <p>The first month is about building the habit, not optimising the data. Log what you ate. Don't worry about whether it's perfect. It's not supposed to be perfect yet.</p>
 
-  <h2>Month two: the patterns start showing</h2>
+      <blockquote>The goal in month one is simple: most meals logged, most days of the week.</blockquote>
 
-  <p>By week six or eight, something shifts. You start noticing: "Oh — I eat way more on weekends than I thought." Or: "My protein is consistently low on days I skip breakfast."</p>
+      <h2>Month two: the patterns start showing</h2>
 
-  <p>You're not looking at your data yet. Your data is looking at you.</p>
+      <p>By week six or eight, something shifts. You start noticing: "Oh — I eat way more on weekends than I thought." Or: "My protein is consistently low on days I skip breakfast."</p>
 
-  <p>The patterns emerge because you have enough data to see them. Three weeks of logging is enough to find one or two genuine insights. Six weeks is enough to start acting on them.</p>
+      <p>You're not looking at your data yet. Your data is looking at you.</p>
 
-  <h2>Month three: you make one change that sticks</h2>
+      <p>The patterns emerge because you have enough data to see them. Three weeks of logging is enough to find one or two genuine insights. Six weeks is enough to start acting on them.</p>
 
-  <p>Because you can see the pattern, you make one targeted change. Not a diet. Not a overhaul. One thing.</p>
+      <h2>Month three: you make one change that sticks</h2>
 
-  <p>Maybe it's: "I need protein at breakfast — I'll add an egg."</p>
+      <p>Because you can see the pattern, you make one targeted change. Not a diet. Not a overhaul. One thing.</p>
 
-  <p>Maybe it's: "Saturday lunch is where the week goes off the rails — I'll log it before I eat, not after."</p>
+      <p>Maybe it's: "I need protein at breakfast — I'll add an egg."</p>
 
-  <p>One change. Evidence-based. Because you have the data to know exactly where the leverage is.</p>
+      <p>Maybe it's: "Saturday lunch is where the week goes off the rails — I'll log it before I eat, not after."</p>
 
-  <h2>Month four and five: the data compounds</h2>
+      <p>One change. Evidence-based. Because you have the data to know exactly where the leverage is.</p>
 
-  <p>By month four, logging is not the hard part. It's just what you do. And because it's not hard, you have mental bandwidth for the actual question: "What do I want to change?"</p>
+      <h2>Month four and five: the data compounds</h2>
 
-  <p>Not "what should I cut" — that's usually the wrong question. The right question is "where is the leverage?" And you can answer that now, because you have three months of actual eating data.</p>
+      <p>By month four, logging is not the hard part. It's just what you do. And because it's not hard, you have mental bandwidth for the actual question: "What do I want to change?"</p>
 
-  <p>People who have logged for four or five months consistently say the same thing: they finally understand their own eating patterns. Not in an abstract "I know I eat too much" way. In a specific, actionable "Tuesday dinners are my problem and here's why" way.</p>
+      <p>Not "what should I cut" — that's usually the wrong question. The right question is "where is the leverage?" And you can answer that now, because you have three months of actual eating data.</p>
 
-  <h2>Month six: you know yourself differently</h2>
+      <p>People who have logged for four or five months consistently say the same thing: they finally understand their own eating patterns. Not in an abstract "I know I eat too much" way. In a specific, actionable "Tuesday dinners are my problem and here's why" way.</p>
 
-  <p>Six months in, you have a picture of your actual eating life. Weekdays vs weekends. Work lunches vs home dinners. The week you travelled. The week you were sick. The patterns that repeat and the one-offs that don't.</p>
+      <h2>Month six: you know yourself differently</h2>
 
-  <p>You didn't get here by being perfect. You got here by being consistent. Logging most of what you ate, most of the time, without treating it like a second job.</p>
+      <p>Six months in, you have a picture of your actual eating life. Weekdays vs weekends. Work lunches vs home dinners. The week you travelled. The week you were sick. The patterns that repeat and the one-offs that don't.</p>
 
-  <p>And the thing nobody tells you: it gets easier. Not because logging gets more automatic — though it does. Because knowing yourself gets more valuable. The data becomes something you actually use, not something you feel guilty about not tracking precisely enough.</p>
+      <p>You didn't get here by being perfect. You got here by being consistent. Logging most of what you ate, most of the time, without treating it like a second job.</p>
 
-  <blockquote>Six months from now, you'll either have six months of data or you'll have six months of wondering. The logging takes 10 seconds. The wondering takes longer.</blockquote>
+      <p>And the thing nobody tells you: it gets easier. Not because logging gets more automatic — though it does. Because knowing yourself gets more valuable. The data becomes something you actually use, not something you feel guilty about not tracking precisely enough.</p>
 
-  <h2>What KiloKaki does differently</h2>
+      <blockquote>Six months from now, you'll either have six months of data or you'll have six months of wondering. The logging takes 10 seconds. The wondering takes longer.</blockquote>
 
-  <p>Most food logging tools assume you're eating packaged food, weighing ingredients, and have 90 seconds to search a database. KiloKaki assumes you're eating real meals, living a real life, and want to log in under 10 seconds.</p>
+      <h2>What KiloKaki does differently</h2>
 
-  <p>Voice, photo, or text — log the way you eat. Singapore hawker food included.</p>
+      <p>Most food logging tools assume you're eating packaged food, weighing ingredients, and have 90 seconds to search a database. KiloKaki assumes you're eating real meals, living a real life, and want to log in under 10 seconds.</p>
 
-  <p>Six months from today, you'll either know how you eat, or you won't. There's only one way to find out what it looks like for you.</p>
+      <p>Voice, photo, or text — log the way you eat. Singapore hawker food included.</p>
 
-  <div class="cta">
-    <p>Start logging. Takes 10 seconds.</p>
-    <a href="https://t.me/KiloKakiBot">Open KiloKaki →</a>
-  </div>
+      <p>Six months from today, you'll either know how you eat, or you won't. There's only one way to find out what it looks like for you.</p>
 
-</article>
+    </div>
 
+    <div class="article-cta">
+      <p>Start logging. Takes 10 seconds.</p>
+      <a href="https://t.me/KiloKakiBot" class="cta">Open KiloKaki →</a>
+    </div>
+  </article>
+
+  <footer>
+    <a href="/blog/">← Back to Blog</a>
+  </footer>
+</div>
 </body>
 </html>
