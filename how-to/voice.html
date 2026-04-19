@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How to Log Food by Voice — KiloKaki How-To</title>
+  <meta name="description" content="Speak your meal and KiloKaki logs your macros instantly. Here's how voice logging works.">
+  <style>
+    :root {
+      --green: #84cc16; --green-dark: #4d7c0f; --orange: #f97316;
+      --cream: #fffaf2; --text: #1f2937; --muted: #6b7280;
+      --card: #ffffff; --line: #e5e7eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      color: var(--text); background: linear-gradient(180deg, #f7fee7 0%, #fffaf2 40%, #ffffff 100%);
+      line-height: 1.6;
+    }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; }
+    .nav { display:flex; align-items:center; justify-content:space-between; gap:20px; padding: 20px 0; }
+    .brand { display:flex; align-items:center; gap:12px; font-weight:800; font-size:20px; text-decoration:none; color:var(--text); }
+    .brand img { width:44px; height:44px; border-radius:50%; }
+    .cta { display:inline-flex; align-items:center; justify-content:center; text-decoration:none; border-radius:999px; padding:12px 20px; font-weight:700; font-size:14px; background:var(--green); color:#111827; box-shadow:0 8px 20px rgba(132,204,22,.2); }
+    .article { max-width: 700px; margin: 0 auto; padding: 40px 24px 80px; }
+    .breadcrumb { font-size:13px; color:var(--muted); margin-bottom:16px; }
+    .breadcrumb a { color:var(--green-dark); text-decoration:none; }
+    .article-title { font-size: clamp(28px,4vw,36px); line-height:1.15; letter-spacing:-.02em; margin:0 0 12px; font-weight:800; }
+    .article-lead { font-size:18px; color:var(--muted); margin:0 0 32px; }
+    .article-body { font-size:17px; }
+    .article-body p { margin:0 0 18px; }
+    .article-body h2 { font-size:22px; font-weight:700; margin:32px 0 10px; letter-spacing:-.01em; }
+    .step { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px 24px; margin:16px 0; }
+    .step-num { display:inline-block; background:var(--green); color:#111827; font-size:12px; font-weight:800; width:26px; height:26px; border-radius:50%; text-align:center; line-height:26px; margin-bottom:10px; }
+    .step h3 { font-size:17px; font-weight:700; margin:0 0 8px; }
+    .msg-example { background:#1f2937; color:#e5e7eb; border-radius:12px; padding:14px 18px; font-family:ui-monospace,Monaco,'Courier New',monospace; font-size:14px; margin:16px 0; line-height:1.7; }
+    .msg-example .label { color:#84cc16; font-size:11px; text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; display:block; }
+    .tip { background:rgba(132,204,22,.08); border-left:4px solid var(--green); padding:12px 16px; border-radius:0 8px 8px 0; margin:20px 0; font-size:15px; }
+    .article-cta { background:linear-gradient(180deg,#f7fee7 0%,#ecfccb 100%); border:1px solid #d9f99d; border-radius:20px; padding:28px 32px; text-align:center; margin:40px 0 0; }
+    .article-cta p { margin:0 0 16px; font-size:17px; font-weight:600; }
+    footer { padding:28px 0 36px; color:var(--muted); font-size:13px; text-align:center; border-top:1px solid var(--line); margin-top:40px; }
+    footer a { color:var(--muted); text-decoration:none; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav">
+    <a href="/" class="brand"><img src="/logo.png" alt="KiloKaki"> KiloKaki</a>
+    <a href="https://t.me/KiloKakiBot" class="cta">Open Bot →</a>
+  </nav>
+
+  <article class="article">
+    <p class="breadcrumb"><a href="/">Home</a> / <a href="/how-to/">How-To</a> / Log by Voice</p>
+    <h1 class="article-title">How to Log Food by Voice</h1>
+    <p class="article-lead">Speak your meal. KiloKaki calculates the macros. No typing, no scrolling, no friction.</p>
+
+    <div class="article-body">
+
+      <h2>What You Need</h2>
+      <p>The KiloKaki Telegram bot. That's it. If you haven't started, tap <a href="https://t.me/KiloKakiBot">Open Bot →</a> and send your first voice message.</p>
+
+      <h2>Step by Step</h2>
+
+      <div class="step">
+        <span class="step-num">1</span>
+        <h3>Hold the microphone button</h3>
+        <p>In Telegram, hold the mic button next to the text field. The bot is listening for a voice message — not a text command.</p>
+      </div>
+
+      <div class="step">
+        <span class="step-num">2</span>
+        <h3>Say what you ate</h3>
+        <p>Speak naturally. Include quantity and food description. Be as specific as you can — the more detail, the more accurate the macro estimate.</p>
+        <div class="msg-example">
+          <span class="label">Voice message (transcribed)</span>
+          "1 bowl of char kway teow with bean sprouts"
+        </div>
+      </div>
+
+      <div class="step">
+        <span class="step-num">3</span>
+        <h3>Wait 2–3 seconds</h3>
+        <p>KiloKaki processes the audio, maps it to macro data, and replies with a nutrition breakdown. You'll see calories, protein, carbs, fat, and sodium — auto-calculated from your daily target.</p>
+      </div>
+
+      <div class="tip">💡 KiloKaki uses USDA food database references to estimate macros. Speak the specific dish name if you know it — "char kway teow" gets a better estimate than "fried noodles."</div>
+
+      <h2>What Good Voice Logs Sound Like</h2>
+      <div class="msg-example">
+        <span class="label">Voice message (transcribed)</span>
+        "2 eggs over easy 1 slice whole wheat toast with butter"
+      </div>
+      <div class="msg-example">
+        <span class="label">Voice message (transcribed)</span>
+        "300 grams of grilled salmon 1 cup brown rice half a cucumber"
+      </div>
+
+      <h2>When Voice Doesn't Work</h2>
+      <p>If KiloKaki misidentifies a dish, you can edit the log afterward. Voice gets you close fast — precision comes from correction.</p>
+
+      <p>That's the whole interaction. One voice note → instant macro data. No app switching, no manual search, no typing mistakes.</p>
+
+    </div>
+
+    <div class="article-cta">
+      <p>Ready to log?</p>
+      <a href="https://t.me/KiloKakiBot" class="cta">Start Voice Logging →</a>
+    </div>
+  </article>
+
+  <footer>
+    <a href="/how-to/">← Back to How-To</a>
+  </footer>
+</div>
+</body>
+</html>

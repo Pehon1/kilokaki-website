@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How to Log Food by Text — KiloKaki How-To</title>
+  <meta name="description" content="Type what you ate. KiloKaki calculates the macros from your words.">
+  <style>
+    :root { --green: #84cc16; --green-dark: #4d7c0f; --orange: #f97316; --cream: #fffaf2; --text: #1f2937; --muted: #6b7280; --card: #ffffff; --line: #e5e7eb; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: var(--text); background: linear-gradient(180deg, #f7fee7 0%, #fffaf2 40%, #ffffff 100%); line-height: 1.6; }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; }
+    .nav { display:flex; align-items:center; justify-content:space-between; gap:20px; padding: 20px 0; }
+    .brand { display:flex; align-items:center; gap:12px; font-weight:800; font-size:20px; text-decoration:none; color:var(--text); }
+    .brand img { width:44px; height:44px; border-radius:50%; }
+    .cta { display:inline-flex; align-items:center; justify-content:center; text-decoration:none; border-radius:999px; padding:12px 20px; font-weight:700; font-size:14px; background:var(--green); color:#111827; box-shadow:0 8px 20px rgba(132,204,22,.2); }
+    .article { max-width: 700px; margin: 0 auto; padding: 40px 24px 80px; }
+    .breadcrumb { font-size:13px; color:var(--muted); margin-bottom:16px; }
+    .breadcrumb a { color:var(--green-dark); text-decoration:none; }
+    .article-title { font-size: clamp(28px,4vw,36px); line-height:1.15; letter-spacing:-.02em; margin:0 0 12px; font-weight:800; }
+    .article-lead { font-size:18px; color:var(--muted); margin:0 0 32px; }
+    .article-body { font-size:17px; }
+    .article-body p { margin:0 0 18px; }
+    .article-body h2 { font-size:22px; font-weight:700; margin:32px 0 10px; letter-spacing:-.01em; }
+    .step { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px 24px; margin:16px 0; }
+    .step-num { display:inline-block; background:var(--green); color:#111827; font-size:12px; font-weight:800; width:26px; height:26px; border-radius:50%; text-align:center; line-height:26px; margin-bottom:10px; }
+    .step h3 { font-size:17px; font-weight:700; margin:0 0 8px; }
+    .msg-example { background:#1f2937; color:#e5e7eb; border-radius:12px; padding:14px 18px; font-family:ui-monospace,Monaco,'Courier New',monospace; font-size:14px; margin:16px 0; line-height:1.7; }
+    .msg-example .label { color:#84cc16; font-size:11px; text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; display:block; }
+    .tip { background:rgba(132,204,22,.08); border-left:4px solid var(--green); padding:12px 16px; border-radius:0 8px 8px 0; margin:20px 0; font-size:15px; }
+    .article-cta { background:linear-gradient(180deg,#f7fee7 0%,#ecfccb 100%); border:1px solid #d9f99d; border-radius:20px; padding:28px 32px; text-align:center; margin:40px 0 0; }
+    .article-cta p { margin:0 0 16px; font-size:17px; font-weight:600; }
+    footer { padding:28px 0 36px; color:var(--muted); font-size:13px; text-align:center; border-top:1px solid var(--line); margin-top:40px; }
+    footer a { color:var(--muted); text-decoration:none; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav">
+    <a href="/" class="brand"><img src="/logo.png" alt="KiloKaki"> KiloKaki</a>
+    <a href="https://t.me/KiloKakiBot" class="cta">Open Bot →</a>
+  </nav>
+
+  <article class="article">
+    <p class="breadcrumb"><a href="/">Home</a> / <a href="/how-to/">How-To</a> / Log by Text</p>
+    <h1 class="article-title">How to Log Food by Text</h1>
+    <p class="article-lead">Type what you ate. KiloKaki parses it and calculates macros instantly.</p>
+
+    <div class="article-body">
+
+      <p>Text logging is the most flexible input. If you can type it, KiloKaki can parse it. Single ingredients, full meals, multiple items at once — it's all fair game.</p>
+
+      <h2>Step by Step</h2>
+
+      <div class="step">
+        <span class="step-num">1</span>
+        <h3>Open KiloKaki in Telegram</h3>
+        <p>Start a message in the KiloKaki chat. You don't need a slash command or special format — just type naturally.</p>
+      </div>
+
+      <div class="step">
+        <span class="step-num">2</span>
+        <h3>Type what you ate</h3>
+        <p>Write it the way you'd describe it to someone. Include quantities where you know them.</p>
+        <div class="msg-example">
+          <span class="label">Text message</span>
+          "2 eggs 1 slice whole wheat toast with butter"
+        </div>
+        <div class="msg-example">
+          <span class="label">Text message</span>
+          "300g grilled salmon 1 cup brown rice cucumber"
+        </div>
+        <div class="msg-example">
+          <span class="label">Text message</span>
+          "1 bowl wanton noodle soup no prawn"
+        </div>
+      </div>
+
+      <div class="step">
+        <span class="step-num">3</span>
+        <h3>Send</h3>
+        <p>KiloKaki parses your text and replies with a macro breakdown. If you mentioned multiple items, they'll be itemised.</p>
+      </div>
+
+      <div class="tip">💡 Text works great for meals you eat regularly. If you have a go-to lunch, you can type it in seconds — or save it as a template for one-tap logging. See: <a href="/how-to/templates.html">How to Use Meal Templates</a></div>
+
+      <h2>Text Format Tips</h2>
+      <ul>
+        <li><strong>Use commas or line breaks</strong> between separate items — "rice, chicken, veg" is clearer than "rice chicken veg"</li>
+        <li><strong>Include units</strong> when you know them — "200g chicken breast", "1 cup rice", "30g cheese"</li>
+        <li><strong>Specific dish names work</strong> — "beef rendang with rice" is fine, doesn't need to be broken into ingredients</li>
+      </ul>
+
+    </div>
+
+    <div class="article-cta">
+      <p>Log a meal in 10 seconds.</p>
+      <a href="https://t.me/KiloKakiBot" class="cta">Open KiloKaki Bot →</a>
+    </div>
+  </article>
+
+  <footer>
+    <a href="/how-to/">← Back to How-To</a>
+  </footer>
+</div>
+</body>
+</html>
