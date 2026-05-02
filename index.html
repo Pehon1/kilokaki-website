@@ -22,7 +22,7 @@
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--text);
       background: linear-gradient(180deg, #f7fee7 0%, #fffaf2 40%, #ffffff 100%);
-      line-height: 1.5;
+      line-height: 1.6;
     }
     .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; }
     .nav { display:flex; align-items:center; justify-content:space-between; gap:20px; }
@@ -35,6 +35,7 @@
     .cta { background: var(--green); color:#111827; box-shadow: 0 12px 24px rgba(132,204,22,.25); }
     .cta:hover { transform: translateY(-1px); background:#93d623; }
     .cta-secondary { background:#fff; color:var(--text); border:1px solid var(--line); }
+    .cta-secondary:hover { background:#f9fafb; }
     .hero { display:grid; grid-template-columns: 1.2fr 1fr; gap:40px; align-items:center; padding:56px 0 40px; }
     .eyebrow { display:inline-block; background:#ecfccb; color:var(--green-dark); border:1px solid #d9f99d; padding:8px 14px; border-radius:999px; font-size:14px; font-weight:700; }
     .eyebrow-sg { display:inline-block; background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; padding:8px 14px; border-radius:999px; font-size:14px; font-weight:700; }
@@ -72,7 +73,9 @@
     .proof-point p:last-child { color:var(--muted); font-size:14px; }
     .faq { display:grid; gap:14px; }
     .faq .item { background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px 20px; }
+    .faq .item code { background:#f3f4f6; padding:2px 6px; border-radius:4px; font-size:14px; }
     footer { padding:36px 0 48px; color:var(--muted); font-size:14px; }
+    ul { margin:0 0 18px; padding-left:20px; line-height:2; }
     @media (max-width: 900px) {
       .hero, .grid, .steps, .log-methods { grid-template-columns: 1fr; }
       .hero { padding-top:34px; }
@@ -94,6 +97,10 @@
         <span>KiloKaki</span>
       </div>
       <div style="display:flex;gap:16px;align-items:center;">
+        <a href="#features" style="color:var(--text);text-decoration:none;font-size:15px;">Features</a>
+        <a href="#pricing" style="color:var(--text);text-decoration:none;font-size:15px;">Pricing</a>
+        <a href="#faq" style="color:var(--text);text-decoration:none;font-size:15px;">FAQ</a>
+        <a href="#about" style="color:var(--text);text-decoration:none;font-size:15px;">About</a>
         <a href="/blog" style="color:var(--text);text-decoration:none;font-size:15px;">Blog</a>
         <a href="/how-to/" style="color:var(--text);text-decoration:none;font-size:15px;">How-To</a>
         <a class="cta" href="https://t.me/KiloKakiBot" target="_blank" rel="noopener">Open Telegram Bot</a>
@@ -107,7 +114,7 @@
         <p class="sub">Stop guessing your cai fan calories. KiloKaki understands chicken rice, nasi lemak, bak chor mee — and logs your macros in 10 seconds. No weighing. No searching. Just snap, done.</p>
         <div class="actions">
           <a class="cta" href="https://t.me/KiloKakiBot" target="_blank" rel="noopener">Try It Free →</a>
-          <a class="cta-secondary" href="#how">How it works</a>
+          <a class="cta-secondary" href="#features">See features</a>
         </div>
         <div class="trust">Built for hawker meals · AI-powered · No app install · Free forever</div>
         <div style="margin-top:20px; padding:16px 18px; background:rgba(255,255,255,.6); border-radius:14px; border:1px solid var(--line);">
@@ -117,7 +124,7 @@
       <div class="hero-card">
         <div class="phone">
           <div class="screen">
-            <div class="bubble user">📸 <strong>[chicken rice with jasmin rice]</strong></div>
+            <div class="bubble user">📸 <strong>[chicken rice with jasmine rice]</strong></div>
             <div class="bubble bot">✅ Logged: Hainanese chicken rice<br><br>Calories: 590 kcal<br>Protein: 38g<br>Carbs: 72g<br>Fat: 18g<br>Sodium: 1,240mg</div>
             <div class="bubble bot">📊 Today so far:<br>Calories: 1,340 / 2,000 kcal<br>Protein: 88 / 140g<br>Carbs: 134 / 250g<br>Fat: 52 / 65g</div>
           </div>
@@ -150,20 +157,57 @@
       </div>
     </section>
 
+    <section class="section" id="features">
+      <h2>Three ways to log. Zero friction.</h2>
+      <p class="lead">Pick whichever fits the moment. All three save to your daily log.</p>
+      <div class="log-methods">
+        <div class="method-card">
+          <div class="method-icon">📸</div>
+          <div class="method-short">Snap a photo</div>
+          <h3>Your plate is the input. That's it.</h3>
+          <p>Send a photo of anything on your plate — chicken rice, cai fan, nasi lemak, whatever you actually eat. KiloKaki identifies the food, estimates portions, and logs your macros. No searching databases. No weighing. No app to download.</p>
+          <p>Accuracy sits at 85–90% on common Singapore meals. When it's wrong, edit it in one tap.</p>
+          <p class="method-note"><strong>Works especially well for:</strong> Hawker centre plates · Restaurant meals · Meal prep containers · Anything you're eating right now</p>
+        </div>
+        <div class="method-card">
+          <div class="method-icon">🗣️</div>
+          <div class="method-short">Just say it</div>
+          <h3>Speak it. Log it. Move on.</h3>
+          <p>Hold the mic. Say what you ate — "grilled chicken breast with brown rice and some greens" or "economy rice with two dishes." KiloKaki transcribes it, detects the food, and logs your macros. No typing. No searching. No app switching.</p>
+          <p>You speak 3x faster than you type. Voice logging exists for the moments when your hands are full, you're in a rush, or you're walking out the door.</p>
+          <p class="method-note"><strong>Works especially well for:</strong> Hawker queues · Lunch at your desk · Meals eaten with others · Anything you can't photograph cleanly</p>
+        </div>
+        <div class="method-card">
+          <div class="method-icon">⌨️</div>
+          <div class="method-short">Type it in</div>
+          <h3>Type it. We'll figure it out.</h3>
+          <p>Describe your meal in plain English. "Chicken rice lunch" or "protein shake with banana" or "2 slices pepperoni pizza, large." The parser handles it.</p>
+          <p>Text logging covers the meals that don't get photographed — leftovers, desk snacks, late-night eats. It also works when you need to be quiet or when voice recognition struggles with background noise.</p>
+          <p class="method-note"><strong>Works especially well for:</strong> Simple, single-dish entries · Specific ingredient tracking · Quiet environments · Quick corrections after photo/voice</p>
+        </div>
+      </div>
+      <div style="text-align:center; margin: 0 0 28px;">
+        <a class="cta" href="https://t.me/KiloKakiBot" target="_blank" rel="noopener">Start logging free →</a>
+        <a class="cta-secondary" href="#faq" style="margin-left: 14px;">Questions? See the FAQ ↓</a>
+      </div>
+    </section>
+
     <section class="section">
+      <h2>See the whole picture, every day.</h2>
+      <p class="lead">Every log updates your daily totals. Calories, protein, carbs, fat, sodium — against whatever targets you've set.</p>
       <div class="grid">
-        <div class="card">
-          <h3>Built for real Asian food</h3>
-          <p>Chicken rice, cai fan, nasi lemak, sushi, protein drinks, and all the random in-between stuff people actually eat.</p>
-        </div>
-        <div class="card">
-          <h3>Fast enough to use daily</h3>
-          <p>Open Telegram, send a photo or type your meal, and move on. No giant food database search. No app friction.</p>
-        </div>
-        <div class="card">
-          <h3>Tracks the metrics that matter</h3>
-          <p>Calories, protein, carbs, fat, and sodium - plus daily totals to help you stay on target.</p>
-        </div>
+        <div class="card"><h3>Daily macro tracking</h3><p>Calories, protein, carbs, fat, and sodium — all five, every log, every day. No manual calculation. No spreadsheet. When you're close to your goals, you'll get a nudge. When you're way off, you'll see that too.</p></div>
+        <div class="card"><h3>Edit & Delete</h3><p>Logged the wrong thing? Forgot something? Changed your mind about portion size? Edit anything, any time. Send <code>/edit</code> or tap the edit button — most adjustments take under 10 seconds. If you logged something by mistake, delete it. Full stop.</p></div>
+        <div class="card"><h3>History & Analytics</h3><p>Look back at any day. See what you logged, what your totals were, and how you tracked against your goals. Spot patterns — which meals push you over, which days you consistently under-eat protein, when your sodium spikes. Data that's invisible can't help you.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Logging without being annoying about it.</h2>
+      <p class="lead">Set a daily reminder — whatever time works for you. KiloKaki sends a nudge, not a lecture.</p>
+      <div class="proof-point">
+        <p>Users who set reminders log more consistently.</p>
+        <p>Users who log consistently hit their goals more often. The connection is direct.</p>
       </div>
     </section>
 
@@ -173,38 +217,27 @@
       <div class="log-methods">
         <div class="method-card">
           <div class="method-icon">📸</div>
-          <div class="method-short">Snap a photo</div>
+          <div class="method-short">Step 1: Snap</div>
           <h3>Hold up your plate.</h3>
           <p>The AI reads what's there — nasi lemak, mee siam, Yong Tau Foo — and logs it with approximate macros. No selecting from a database, no guessing which item matches.</p>
           <p class="method-note">Works best for: hawker meals, restaurant plates, meal prep containers. One photo, done.</p>
         </div>
         <div class="method-card">
           <div class="method-icon">🗣️</div>
-          <div class="method-short">Just say it</div>
+          <div class="method-short">Step 2: Speak</div>
           <h3>"Two eggs, one slice of toast, medium coffee"</h3>
           <p>In natural language. Works in the hawker centre, works at your desk, works when your hands are full.</p>
           <p class="method-note">Works best for: mixed dishes the camera can't read, eating with others, situations where typing or photos aren't convenient.</p>
         </div>
         <div class="method-card">
           <div class="method-icon">⌨️</div>
-          <div class="method-short">Type it in</div>
+          <div class="method-short">Step 3: Type</div>
           <h3>Plain text.</h3>
           <p>"Chicken rice lunch" or "protein shake with banana." The parser handles it.</p>
           <p class="method-note">Works best for: simple entries, specific ingredients, environments where you need to be quiet.</p>
         </div>
       </div>
-      <p style="color:var(--muted); max-width:700px; margin:0 auto 24px; text-align:center; line-height:1.7;">Each entry saves to your log. You can review any day, edit anything, and see how the pieces fit together over time.</p>
-      <div style="text-align:center;">
-        <a class="cta" href="https://t.me/KiloKakiBot" target="_blank" rel="noopener">Try KiloKaki free →</a>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>Edit & Delete</h2>
-      <p class="lead">Your log. Your rules.</p>
-      <p style="color:var(--muted); max-width:700px; margin:0 0 12px; line-height:1.7;">One tap to fix it — swap meals, adjust portions, change macros, or delete. No re-logging, no asking the bot to correct itself.</p>
-      <p style="color:var(--muted); max-width:700px; margin:0 0 28px; line-height:1.7;">Logged "chicken rice" but meant "char kway teow"? Two seconds to swap it. Accidentally logged 200g of chicken instead of 120g? Fix it directly. Whatever you log isn't permanent until you decide it is.</p>
-      <div class="grid" style="margin-bottom:28px;">
+      <div class="grid" style="margin-top:28px;">
         <div class="card">
           <h3>Edit anything.</h3>
           <p>Edit works by text — tap what needs changing, type the correction. Swap a meal name, adjust a portion, or update a single macro. Long-press to delete. Nothing is locked in until you decide it is.</p>
@@ -218,40 +251,69 @@
           <p>Nothing is locked in. KiloKaki keeps up with what you actually ate, not what you meant to log.</p>
         </div>
       </div>
-      <div style="text-align:center;">
-        <a class="cta" href="https://t.me/KiloKakiBot" target="_blank" rel="noopener">Try it free — no signup, no commitment →</a>
+      <p style="color:var(--muted); max-width:700px; margin:28px auto 0; text-align:center; line-height:1.7;">Each entry saves to your log. You can review any day, edit anything, and see how the pieces fit together over time.</p>
+      <div style="text-align:center; margin-top: 28px;">
+        <a class="cta" href="https://t.me/KiloKakiBot" target="_blank" rel="noopener">Try KiloKaki free →</a>
       </div>
     </section>
 
-    <section class="section">
-      <h2>Why KiloKaki?</h2>
-      <p class="lead">Most food trackers make you weigh, search, and guess. KiloKaki does the work for you. Built for the way people in Singapore and Asia actually eat.</p>
+    <section class="section" id="pricing">
+      <h2>Honest about pricing.</h2>
+      <p class="lead">No trial. No catch. Just free.</p>
       <div class="grid">
-        <div class="card"><h3>No more guessing hawker calories</h3><p>Stop trying to force chicken rice and cai fan into apps built for salads and wraps. KiloKaki understands local food.</p></div>
-        <div class="card"><h3>Uses Telegram, not another app</h3><p>You already have Telegram. Nothing new to install, no new account, no forgotten password. Just open a chat and start logging.</p></div>
-        <div class="card"><h3>Great for cutting or tracking protein</h3><p>Whether you're losing weight, building muscle, or just eating better — daily totals keep you on target without the spreadsheet.</p></div>
+        <div class="card" style="text-align:left;">
+          <h3>Free (forever)</h3>
+          <p style="font-size:32px; font-weight:800; color:var(--green-dark); margin:12px 0;">$0</p>
+          <p><strong>What's included:</strong></p>
+          <ul style="margin:0 0 18px; padding-left:20px; line-height:2;">
+            <li>Unlimited photo logging</li>
+            <li>Unlimited voice logging</li>
+            <li>Unlimited text logging</li>
+            <li>Daily macro tracking (calories, protein, carbs, fat, sodium)</li>
+            <li>Edit and delete any log</li>
+            <li>History and analytics</li>
+            <li>Habit reminders</li>
+            <li>Singapore + Asian food recognition</li>
+            <li>Global cuisine support</li>
+          </ul>
+          <a class="cta" href="https://t.me/KiloKakiBot" target="_blank" rel="noopener">Start using KiloKaki →</a>
+        </div>
+        <div class="card" style="text-align:left; background:rgba(255,255,255,.5);">
+          <h3>Paid (future, not yet launched)</h3>
+          <p style="color:var(--muted);">More features coming for people who want them.</p>
+          <p style="color:var(--muted); font-size:15px; margin-top:18px;">We don't have paid plans yet. When we do, they'll be clearly priced, honestly described, and add real value — not gate features behind a paywall to make free users feel incomplete.</p>
+        </div>
       </div>
     </section>
 
-    <section class="section">
-      <h2>See your nutrition patterns</h2>
-      <p class="lead">Your food log is a record of what actually happened, not what you meant to eat.</p>
-      <div class="grid">
-        <div class="card"><h3>Every entry, every day</h3><p>Scroll back through any day — yesterday's lunch, last week's breakfast, that nasi lemak on a Tuesday. Every entry shows what you ate, when, and how it fit your macros for the day. No guessing, no photo album archaeology.</p></div>
-        <div class="card"><h3>Weekly patterns at a glance</h3><p>Did you nail protein four days out of five? Was Thursday always your lowest-calorie day? Are you consistently under-shooting sodium on weekends? KiloKaki keeps the data so you can see the trend, not just the moment.</p></div>
-        <div class="card"><h3>It's not about judgment</h3><p>It's about knowing whether what you're doing is actually working — and having the data to adjust. Your log is yours. Use it however helps you.</p></div>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>FAQ</h2>
+    <section class="section" id="faq">
+      <h2>Questions, answered.</h2>
       <div class="faq">
-        <div class="item"><strong>Is it free?</strong><br>Yes. No subscription, no ads. Currently in beta.</div>
-        <div class="item"><strong>Do I need to install an app?</strong><br>Nope. Just use it through Telegram. If you already have Telegram, you're ready.</div>
-        <div class="item"><strong>Does it work for hawker food?</strong><br>That's one of the main reasons it exists. Chicken rice, cai fan, nasi lemak — it's built for these.</div>
-        <div class="item"><strong>Can it read nutrition labels?</strong><br>Yes — for packaged foods with readable labels, it can use nutrition facts directly.</div>
-        <div class="item"><strong>Can I edit a log?</strong><br>Yes — send /edit or tap the edit button. Most edits are portion adjustments, done in seconds.</div>
-        <div class="item"><strong>Is my data private?</strong><br>Your logs stay in our system. We don't share them.</div>
+        <div class="item"><strong>Is KiloKaki really free?</strong><br>Yes. No subscription. No ads. No "pro" tier hiding important features. It's in beta, which means it's functional and we're still improving it — but you don't pay for access.</div>
+        <div class="item"><strong>Do I need to download an app?</strong><br>No. KiloKaki runs inside Telegram. If you have Telegram, you have KiloKaki. Open the bot, start logging. That's the whole onboarding.</div>
+        <div class="item"><strong>Does it work for hawker food?</strong><br>Yes — and that's the whole point. Chicken rice, cai fan, nasi lemak, bak chor mee, mee siam, Yong Tau Foo, economy rice — KiloKaki is built for the meals people in Singapore actually eat, not for salads and smoothie bowls.</div>
+        <div class="item"><strong>How accurate is it?</strong><br>85–90% on common Singapore meals. Accuracy is highest for recognizable dishes with standard preparations — hawker plates, restaurant mains, common packaged foods. The more unusual the dish, the more the estimate may vary. When it's off, a one-tap edit sets it right.</div>
+        <div class="item"><strong>Can I edit a log after I've saved it?</strong><br>Yes. Send <code>/edit</code> or tap the edit button. Most edits are portion adjustments — done in seconds, no friction.</div>
+        <div class="item"><strong>What if I logged the wrong thing?</strong><br>Delete it. Full stop. No judgment, no confirmation loops. Your log is yours to manage.</div>
+        <div class="item"><strong>Does it track sodium?</strong><br>Yes. Calories, protein, carbs, fat, and sodium — all five, every log, every day.</div>
+        <div class="item"><strong>Can I use nutrition labels from packaged food?</strong><br>Yes. For packaged foods with readable nutrition labels, KiloKaki can read and use the facts directly.</div>
+        <div class="item"><strong>Is my data private?</strong><br>Your logs are stored in our system so you can access them across sessions and devices. We don't sell them, share them with third parties, or use them for anything other than running the service.</div>
+        <div class="item"><strong>What's the difference between KiloKaki and MyFitnessPal?</strong><br>MyFitnessPal is a database search app — you find the entry, you log it, you move on. KiloKaki removes the search step entirely. Photo a plate, speak a meal, or type a description. The AI handles identification and portion estimation. No searching. No guessing which entry matches. It's also built for Singapore food first, not as an afterthought.</div>
+        <div class="item"><strong>Can I use KiloKaki outside Singapore?</strong><br>Yes. KiloKaki works anywhere. It was built for Singapore and Asian food, but it handles global cuisines too — pasta, burgers, stir-fries, curries. If you can describe it or photograph it, it can log it.</div>
+        <div class="item"><strong>How do I get started?</strong><br>Open <a href="https://t.me/KiloKakiBot" target="_blank" rel="noopener">t.me/KiloKakiBot</a> in Telegram. Send a photo, a voice note, or a text description of something you ate. That's the entire onboarding.</div>
+      </div>
+    </section>
+
+    <section class="section" id="about">
+      <h2>What we're building and why.</h2>
+      <p class="lead">KiloKaki is for people who want to track what they eat without the overhead of a traditional food diary.</p>
+      <p style="color:var(--muted); max-width:700px; margin:0 0 18px; line-height:1.7;">You know you should log your meals. You know it would help. But the friction of searching databases, weighing food, and filling out forms kills the habit before it starts. We're building the tool you'd actually use.</p>
+      <p style="color:var(--muted); max-width:700px; margin:0 0 18px; line-height:1.7;">Most calorie apps are built for people eating salads, grilled chicken breast, and protein shakes. They assume you're preparing food in a kitchen with a food scale. They break when you eat at a hawker centre, split a dish with someone, or grab something random from a coffee shop. KiloKaki was built by people who eat chicken rice and cai fan. It understands the food we actually eat. That sounds obvious. It wasn't.</p>
+      <p style="color:var(--muted); max-width:700px; margin:0 0 18px; line-height:1.7;">You send a photo, voice note, or text description of your meal through Telegram. KiloKaki identifies the food, estimates portions, and logs your macros. Your daily totals update automatically. You can edit anything, any time. Your history is stored so you can see your patterns over time.</p>
+      <p style="color:var(--muted); max-width:700px; margin:0 0 28px; line-height:1.7;">KiloKaki is a small team based in Singapore. We build in Telegram because that's where people already are. We keep it free because tracking food should not require a subscription.</p>
+      <p style="color:var(--muted); font-size:15px;">Questions? Reach us through the bot or at <a href="mailto:hello@kilokaki.com">hello@kilokaki.com</a>.</p>
+      <div style="margin-top:28px;">
+        <a class="cta" href="https://t.me/KiloKakiBot" target="_blank" rel="noopener">Try KiloKaki →</a>
       </div>
     </section>
 
