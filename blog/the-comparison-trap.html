@@ -10,129 +10,133 @@
   <meta property="og:url" content="https://kilokaki.com/blog/the-comparison-trap.html">
   <meta property="og:type" content="article">
   <meta property="og:image" content="https://kilokaki.com/og-blog-default.png">
+  <meta property="og:site_name" content="KiloKaki">
+  <meta property="og:locale" content="en_SG">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="The Comparison Trap: Why Someone Else's Food Log Makes You Hate Yours">
+  <meta name="twitter:description" content="Comparing your food log to someone else's perfect meal prep doesn't motivate you — it makes you stop logging.">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": "The Comparison Trap: Why Someone Else's Food Log Makes You Hate Yours",
     "description": "Comparing your food log to someone else's perfect meal prep doesn't motivate you — it makes you stop logging.",
-    "url": "https://kilokaki.com/blog/the-comparison-trap.html",
     "datePublished": "2026-07-18",
     "dateModified": "2026-07-18",
-    "author": {
-      "@type": "Organization",
-      "name": "KiloKaki"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "KiloKaki"
-    }
+    "url": "https://kilokaki.com/blog/the-comparison-trap.html",
+    "author": {"@type": "Organization", "name": "KiloKaki", "url": "https://kilokaki.com"},
+    "publisher": {"@type": "Organization", "name": "KiloKaki", "url": "https://kilokaki.com", "logo": {"@type": "ImageObject", "url": "https://kilokaki.com/logo.png"}}
   }
   </script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #faf8f5; color: #1a1a2e; line-height: 1.7; }
-    a { color: #e85d04; }
-    .nav { background: #1a1a2e; padding: 1rem 2rem; }
-    .nav a { color: #f0f0f0; text-decoration: none; }
-    .blog-container { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
-    .blog-header { margin-bottom: 2rem; }
-    .blog-header h1 { font-size: 1.8rem; line-height: 1.3; margin-bottom: 0.5rem; }
-    .meta { color: #888; font-size: 0.9rem; }
-    .blog-content p { margin-bottom: 1.2rem; }
-    .blog-content h2 { font-size: 1.4rem; margin: 2rem 0 1rem; }
-    .blog-content ul, .blog-content ol { margin: 1rem 0 1.5rem 1.5rem; }
-    .blog-content li { margin-bottom: 0.5rem; }
-    .blog-content strong { color: #1a1a2e; }
-    .blog-content blockquote { border-left: 4px solid #e85d04; padding: 1rem 1.5rem; margin: 1.5rem 0; background: #fff8f0; border-radius: 0 8px 8px 0; }
-    .cta { background: #2d6a4f; color: white; padding: 1.5rem; border-radius: 12px; margin: 2rem 0; }
-    .cta a { color: #95d5b2; font-weight: bold; }
-    .cta p { margin-bottom: 0.5rem; }
-    .disclaimer-box { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 1rem; margin: 1.5rem 0; font-size: 0.9rem; }
-    .related { background: #f0f0f0; padding: 1.5rem; border-radius: 12px; margin: 2rem 0; }
-    .related h3 { margin-bottom: 0.5rem; }
-    .related ul { list-style: none; padding: 0; }
-    .related li { margin-bottom: 0.3rem; }
-    .related a { text-decoration: none; }
-    .footer { background: #1a1a2e; color: #ccc; text-align: center; padding: 2rem; margin-top: 3rem; }
-    .footer a { color: #e85d04; text-decoration: none; }
+    :root { --green: #84cc16; --green-dark: #4d7c0f; --orange: #f97316; --cream: #fffaf2; --text: #1f2937; --muted: #6b7280; --card: #ffffff; --line: #e5e7eb; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); background: linear-gradient(180deg, #f7fee7 0%, #fffaf2 40%, #ffffff 100%); line-height: 1.6; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+    .nav { display:flex; align-items:center; justify-content:space-between; gap:20px; padding: 20px 0; }
+    .brand { font-size: 18px; font-weight: 700; color: var(--green-dark); text-decoration: none; display:flex; align-items:center; gap:8px; }
+    .cta { display:inline-flex; align-items:center; justify-content:center; text-decoration:none; border-radius:999px; padding:12px 20px; font-weight:700; font-size:14px; background:var(--green); color:#111827; box-shadow:0 8px 20px rgba(132,204,22,.2); }
+    .article-header { padding: 48px 0 32px; }
+    .category { font-size: 12px; font-weight: 700; color: var(--green-dark); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+    .article-title { font-size: clamp(26px, 5vw, 38px); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 16px; color: var(--text); }
+    .article-lead { font-size: 18px; color: var(--muted); margin: 0 0 20px; line-height: 1.6; }
+    .read-time { font-size: 13px; color: var(--muted); }
+    .article-body h2 { font-size: 20px; font-weight: 700; margin-top: 40px; margin-bottom: 16px; color: var(--text); }
+    .article-body p { margin: 0 0 20px; font-size: 17px; color: var(--text); }
+    .article-body blockquote { border-left:4px solid var(--green); padding:4px 20px; margin:24px 0; background:rgba(132,204,22,.06); border-radius:0 8px 8px 0; font-style:italic; color:var(--muted); font-size:17px; }
+    .article-body strong { color: var(--text); }
+    .article-body ul { margin: 0 0 20px; padding-left: 20px; }
+    .article-body li { margin: 0 0 8px; font-size: 17px; }
+    .article-body a { color: var(--green-dark); font-weight: 600; }
+    .article-cta { background:linear-gradient(180deg,#f7fee7 0%,#ecfccb 100%); border:1px solid #d9f99d; border-radius:20px; padding:28px 32px; text-align:center; margin:40px 0 0; }
+    .article-cta p { margin:0 0 16px; font-size:17px; font-weight:600; }
+    .article-cta a { display:inline-block; background:var(--green); color:#111827; padding:14px 28px; border-radius:999px; text-decoration:none; font-weight:700; font-size:15px; box-shadow:0 8px 20px rgba(132,204,22,.25); }
+    .related-reads { margin: 40px 0 0; padding: 20px 0; border-top: 1px solid var(--line); }
+    .related-reads h3 { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 12px; }
+    .related-reads ul { list-style: none; padding: 0; margin: 0; }
+    .related-reads li { margin: 0 0 8px; }
+    .related-reads a { color: var(--green-dark); text-decoration: none; font-size: 15px; }
+    .related-reads a:hover { text-decoration: underline; }
+    .footer-note { font-size:14px; color:var(--muted); margin-top:32px; padding-top:20px; border-top:1px solid var(--line); }
+    footer { text-align:center; padding:40px 0; color:var(--muted); font-size:13px; }
   </style>
 </head>
 <body>
-  <nav class="nav"><a href="/">&larr; KiloKaki Home</a> &middot; <a href="/blog/">Blog Index</a></nav>
+<div class="wrap">
+  <nav class="nav">
+    <a href="/" class="brand"><img src="/logo.png" alt="KiloKaki" style="height:24px;"> KiloKaki</a>
+    <a href="https://t.me/KiloKakiBot" class="cta">Open Bot →</a>
+  </nav>
 
-  <article class="blog-container">
-    <header class="blog-header">
-      <h1>The Comparison Trap: Why Someone Else's Food Log Makes You Hate Yours</h1>
-      <p class="meta">Food Psychology · July 2026</p>
-    </header>
+  <header class="article-header">
+    <p class="category">Food Psychology</p>
+    <h1 class="article-title">The Comparison Trap: Why Someone Else's Food Log Makes You Hate Yours</h1>
+    <p class="article-lead">You've been logging for two weeks. It's not perfect, but you're consistent. Then you scroll past someone's Instagram post: perfectly portioned meal prep containers, each one labelled, colour-coded. The caption: "Week 12 of hitting my macros every day!" Suddenly your hawker centre chicken rice log feels pathetic. Here's why comparison — not the data — is what makes people quit.</p>
+    <p class="read-time">6 min read</p>
+  </header>
 
-    <div class="blog-content">
-      <p>You've been logging for two weeks. It's not perfect, but you're consistent. Then you scroll past someone's Instagram post: perfectly portioned meal prep containers, each one labelled, each one colour-coded. The caption reads: "Week 12 of hitting my macros every day! 💪"</p>
+  <div class="article-body">
+    <p>You've been logging for two weeks. It's not perfect, but you're consistent. Then you scroll past someone's Instagram post: perfectly portioned meal prep containers, each one labelled, each one colour-coded. The caption reads: "Week 12 of hitting my macros every day! 💪"</p>
 
-      <p>Suddenly your hawker centre chicken rice log feels pathetic. You look at your own numbers — higher calories, less protein, more "oops I forgot to log breakfast" gaps — and you feel bad. Not motivated. Not inspired. <em>Bad.</em></p>
+    <p>Suddenly your hawker centre chicken rice log feels pathetic. You look at your own numbers — higher calories, less protein, more "oops I forgot to log breakfast" gaps — and you feel bad. Not motivated. Not inspired. <em>Bad.</em></p>
 
-      <p>And then, quietly, you stop logging. Not because the tool doesn't work. Because the comparison makes the data hurt.</p>
+    <p>And then, quietly, you stop logging. Not because the tool doesn't work. Because the comparison makes the data hurt.</p>
 
-      <h2>Why comparison is the silent killer</h2>
+    <h2>Why comparison is the silent killer</h2>
 
-      <p>Comparison doesn't look like quitting. It looks like frustration. It sounds like: "My log is so messy compared to theirs." Or: "They eat so much better than me." Or the worst one: "What's the point if I'm already behind?"</p>
+    <p>Comparison doesn't look like quitting. It looks like frustration. It sounds like: "My log is so messy compared to theirs." Or: "They eat so much better than me." Or the worst one: "What's the point if I'm already behind?"</p>
 
-      <p>The comparison habit transforms food logging from a private tool into a public scoreboard. And when you feel like you're losing the scoreboard, the easiest thing to do is walk away from it entirely.</p>
+    <p>The comparison habit transforms food logging from a private tool into a public scoreboard. And when you feel like you're losing the scoreboard, the easiest thing to do is walk away from it entirely.</p>
 
-      <p>Here's the thing about those perfect meal prep photos: they're the highlight reel. You don't see the Thursday night when they ordered pizza. You don't see the Tuesday lunch they forgot to log. You don't see the 47th attempt at getting the lighting right before posting. You see the one perfect container. And you compare your whole messy week to it.</p>
+    <p>Here's the thing about those perfect meal prep photos: they're the highlight reel. You don't see the Thursday night when they ordered pizza. You don't see the Tuesday lunch they forgot to log. You don't see the 47th attempt at getting the lighting right before posting. You see the one perfect container. And you compare your whole messy week to it.</p>
 
-      <h2>The social feed problem</h2>
+    <h2>The social feed problem</h2>
 
-      <p>Most food logging apps show you other people's food. Community feeds. Leaderboards. "See what everyone else ate today!" It's supposed to be motivating. For some people, it is. But for a lot of people — probably most — it does the opposite.</p>
+    <p>Most food logging apps show you other people's food. Community feeds. Leaderboards. "See what everyone else ate today!" It's supposed to be motivating. For some people, it is. But for a lot of people — probably most — it does the opposite.</p>
 
-      <p>Seeing someone else's "perfect" log makes your own log feel worse. Not because your log is bad. Because you're comparing your reality to someone else's curation. And that's not a fair comparison. It's not even the same game.</p>
+    <p>Seeing someone else's "perfect" log makes your own log feel worse. Not because your log is bad. Because you're comparing your reality to someone else's curation. And that's not a fair comparison. It's not even the same game.</p>
 
-      <div class="disclaimer-box">⚕️ <strong>Medical disclaimer:</strong> This article is for informational purposes only and does not constitute medical or nutritional advice. Talk to your healthcare provider about your personal nutrition plan.</div>
+    <h2>Why KiloKaki doesn't show you anyone else's food</h2>
 
-      <h2>Why KiloKaki doesn't show you anyone else's food</h2>
+    <p>This is intentional. KiloKaki has no community feed. No leaderboard. No "what other people ate" section. Your logs are yours. The data you see is about you — not a comparison point, not a ranking, not a performance review.</p>
 
-      <p>This is intentional. KiloKaki has no community feed. No leaderboard. No "what other people ate" section. Your logs are yours. The data you see is about you — not a comparison point, not a ranking, not a performance review.</p>
+    <p>It's not that community is bad. It's that comparison is a quit-trigger for a lot of people. And we'd rather you keep logging imperfectly than stop logging because someone else's highlight reel made you feel like you're failing.</p>
 
-      <p>It's not that community is bad. It's that comparison is a quit-trigger for a lot of people. And we'd rather you keep logging imperfectly than stop logging because someone else's highlight reel made you feel like you're failing.</p>
+    <p>The villain here isn't the person who posts their meal prep. They're not doing anything wrong. The villain is the <em>habit</em> of comparison — the reflex that turns a private tool into a public competition you didn't sign up for.</p>
 
-      <p>The villain here isn't the person who posts their meal prep. They're not doing anything wrong. The villain is the <em>habit</em> of comparison — the reflex that turns a private tool into a public competition you didn't sign up for.</p>
+    <blockquote>Your food log is not a performance review. It's a mirror. The point isn't to look better than someone else's reflection. The point is to see your own clearly.</blockquote>
 
-      <blockquote>Your food log is not a performance review. It's a mirror. The point isn't to look better than someone else's reflection. The point is to see your own clearly.</blockquote>
+    <h2>How to break the comparison habit</h2>
 
-      <h2>How to break the comparison habit</h2>
+    <p><strong>1. Recognize the trigger.</strong> The moment you look at someone else's log or meal photo and feel worse about your own — that's the comparison trigger. Catch it. Name it. "I'm comparing." Just naming it reduces its power.</p>
 
-      <p><strong>1. Recognize the trigger.</strong> The moment you look at someone else's log or meal photo and feel worse about your own — that's the comparison trigger. Catch it. Name it. "I'm comparing." Just naming it reduces its power.</p>
+    <p><strong>2. Remember: you're seeing the highlight reel.</strong> Every perfect meal prep photo is one moment. Not the whole week. Not the month. Not the struggle. The gap between their post and your reality is not a gap in discipline — it's a gap in visibility. You see everything about your own log. You see nothing about theirs except the best moment.</p>
 
-      <p><strong>2. Remember: you're seeing the highlight reel.</strong> Every perfect meal prep photo is one moment. Not the whole week. Not the month. Not the struggle. The gap between their post and your reality is not a gap in discipline — it's a gap in visibility. You see everything about your own log. You see nothing about theirs except the best moment.</p>
+    <p><strong>3. Your log is a tool, not a trophy.</strong> A hammer doesn't need to look pretty. It needs to work. Your food log is the same. Messy data is still data. Incomplete is better than absent. Close enough is better than nothing. The log that actually exists beats the perfect one you abandoned.</p>
 
-      <p><strong>3. Your log is a tool, not a trophy.</strong> A hammer doesn't need to look pretty. It needs to work. Your food log is the same. Messy data is still data. Incomplete is better than absent. Close enough is better than nothing. The log that actually exists beats the perfect one you abandoned.</p>
+    <p><strong>4. Log for yourself, not for an audience.</strong> The moment you start thinking about how your log looks to someone else, you've already lost. Log for the information. Log for the awareness. Log because it helps you make better decisions tomorrow. Not because it would make a good Instagram post.</p>
 
-      <p><strong>4. Log for yourself, not for an audience.</strong> The moment you start thinking about how your log looks to someone else, you've already lost. Log for the information. Log for the awareness. Log because it helps you make better decisions tomorrow. Not because it would make a good Instagram post.</p>
+    <p>The goal isn't to have the best food log. The goal is to have a food log at all — and to keep it long enough that it actually teaches you something.</p>
 
-      <p>The goal isn't to have the best food log. The goal is to have a food log at all — and to keep it long enough that it actually teaches you something.</p>
-
-      <div class="cta">
-        <p><strong>Your data. Just yours. No comparison, no leaderboard, no noise.</strong></p>
-        <p>KiloKaki keeps your food log private and honest. That's the point.</p>
-        <p><a href="https://t.me/KiloKakiBot" target="_blank">Start logging with KiloKaki →</a></p>
-      </div>
-
-      <div class="related">
-        <h3>Related Reading</h3>
-        <ul>
-          <li><a href="/blog/the-solo-eater-problem.html">The Solo Eater Problem: Why You Stop Logging When Nobody's Watching</a></li>
-          <li><a href="/blog/why-you-stop-logging-after-3-weeks.html">Why You Stop Logging After 3 Weeks</a></li>
-          <li><a href="/blog/the-social-anxiety-of-food-logging.html">The Social Anxiety of Food Logging</a></li>
-        </ul>
-      </div>
+    <div class="article-cta">
+      <p><strong>Your data. Just yours. No comparison, no leaderboard, no noise.</strong></p>
+      <p style="margin:0 0 16px;">KiloKaki keeps your food log private and honest. That's the point.</p>
+      <a href="https://t.me/KiloKakiBot" target="_blank" rel="noopener">Start logging with KiloKaki →</a>
     </div>
-  </article>
 
-  <footer class="footer">
-    <p>Built by <a href="https://kilokaki.com">KiloKaki</a> — the food logging bot that works how you actually eat.</p>
-    <p><a href="https://t.me/KiloKakiBot" target="_blank">Try KiloKaki on Telegram →</a></p>
+    <div class="related-reads">
+      <h3>Related Reading</h3>
+      <ul>
+        <li><a href="/blog/the-solo-eater-problem.html">The Solo Eater Problem: Why You Stop Logging When Nobody's Watching</a></li>
+        <li><a href="/blog/why-you-stop-logging-after-3-weeks.html">Why You Stop Logging After 3 Weeks (And How to Actually Keep Going)</a></li>
+        <li><a href="/blog/the-social-anxiety-of-food-logging.html">The Social Anxiety of Food Logging</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 KiloKaki — <a href="/" style="color:var(--green-dark)">Back to home</a></p>
   </footer>
+</div>
 </body>
 </html>
