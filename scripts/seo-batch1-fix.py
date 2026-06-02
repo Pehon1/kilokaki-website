@@ -181,6 +181,10 @@ def process_file(filepath, apply=False):
     original = html
     changes = []
 
+    # Skip meta-refresh redirect stubs — they shouldn't carry article schema
+    if 'http-equiv="refresh"' in html or "http-equiv='refresh'" in html:
+        return filename, [], False
+
     # Skip index.html for JSON-LD changes (it's a listing page with WebPage type)
     if filename == 'index.html':
         html, did_change = fix_canonical(html, filename)
