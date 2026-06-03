@@ -16,7 +16,7 @@
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": "The Comeback: How to Restart Food Logging After Falling Off",
-    "description": "You logged perfectly for 6 weeks, life happened, and now the app feels like guilt. Here's how to come back to food logging after falling off.",
+    "description": "You logged perfectly for 6 weeks, life happened, and now the app feels like guilt.",
     "url": "https://kilokaki.com/blog/the-comeback-after-falling-off.html",
     "datePublished": "2026-09-26",
     "dateModified": "2026-09-26",
@@ -31,114 +31,127 @@
   }
   </script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #faf8f5; color: #1a1a2e; line-height: 1.7; }
-    a { color: #e85d04; }
-    .nav { background: #1a1a2e; padding: 1rem 2rem; }
-    .nav a { color: #f0f0f0; text-decoration: none; }
-    .blog-container { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
-    .blog-header { margin-bottom: 2rem; }
-    .blog-header h1 { font-size: 1.8rem; line-height: 1.3; margin-bottom: 0.5rem; }
-    .meta { color: #888; font-size: 0.9rem; }
-    .blog-content p { margin-bottom: 1.2rem; }
-    .blog-content h2 { font-size: 1.4rem; margin: 2rem 0 1rem; }
-    .blog-content ul, .blog-content ol { margin: 1rem 0 1.5rem 1.5rem; }
-    .blog-content li { margin-bottom: 0.5rem; }
-    .blog-content strong { color: #1a1a2e; }
-    .blog-content blockquote { border-left: 4px solid #e85d04; padding: 1rem 1.5rem; margin: 1.5rem 0; background: #fff8f0; border-radius: 0 8px 8px 0; }
-    .cta { background: #2d6a4f; color: white; padding: 1.5rem; border-radius: 12px; margin: 2rem 0; }
-    .cta a { color: #95d5b2; font-weight: bold; }
-    .cta p { margin-bottom: 0.5rem; }
-    .disclaimer-box { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 1rem; margin: 1.5rem 0; font-size: 0.9rem; }
-    .related { background: #f0f0f0; padding: 1.5rem; border-radius: 12px; margin: 2rem 0; }
-    .related h3 { margin-bottom: 0.5rem; }
-    .related ul { list-style: none; padding: 0; }
-    .related li { margin-bottom: 0.3rem; }
-    .related a { text-decoration: none; }
-    .footer { background: #1a1a2e; color: #ccc; text-align: center; padding: 2rem; margin-top: 3rem; }
-    .footer a { color: #e85d04; text-decoration: none; }
+    :root { --green: #84cc16; --green-dark: #4d7c0f; --orange: #f97316; --cream: #fffaf2; --text: #1f2937; --muted: #6b7280; --card: #ffffff; --line: #e5e7eb; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); background: linear-gradient(180deg, #f7fee7 0%, #fffaf2 40%, #ffffff 100%); line-height: 1.6; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+    .nav { display:flex; align-items:center; justify-content:space-between; gap:20px; padding: 20px 0; }
+    .brand { font-size: 18px; font-weight: 700; color: var(--green-dark); text-decoration: none; display:flex; align-items:center; gap:8px; }
+    .cta { display:inline-flex; align-items:center; justify-content:center; text-decoration:none; border-radius:999px; padding:12px 20px; font-weight:700; font-size:14px; background:var(--green); color:#111827; box-shadow:0 8px 20px rgba(132,204,22,.2); }
+    .article-header { padding: 48px 0 32px; }
+    .category { font-size: 12px; font-weight: 700; color: var(--green-dark); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+    .article-title { font-size: clamp(26px, 5vw, 38px); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 16px; color: var(--text); }
+    .article-lead { font-size: 18px; color: var(--muted); margin: 0 0 20px; line-height: 1.6; }
+    .read-time { font-size: 13px; color: var(--muted); }
+    .article-body h2 { font-size: 20px; font-weight: 700; margin-top: 40px; margin-bottom: 16px; color: var(--text); }
+    .article-body p { margin: 0 0 20px; font-size: 17px; color: var(--text); }
+    .article-body blockquote { border-left:4px solid var(--green); padding:4px 20px; margin:24px 0; background:rgba(132,204,22,.06); border-radius:0 8px 8px 0; font-style:italic; color:var(--muted); font-size:17px; }
+    .article-body strong { color: var(--text); }
+    .article-body ul { margin: 0 0 20px; padding-left: 20px; }
+    .article-body li { margin: 0 0 8px; font-size: 17px; }
+    .article-body ol { margin: 0 0 20px; padding-left: 20px; }
+    .article-body a { color: var(--green-dark); font-weight: 600; }
+    .article-body h3 { font-size: 18px; font-weight: 700; margin-top: 28px; margin-bottom: 12px; color: var(--text); }
+    .article-cta { background:linear-gradient(180deg,#f7fee7 0%,#ecfccb 100%); border:1px solid #d9f99d; border-radius:20px; padding:28px 32px; text-align:center; margin:40px 0 0; }
+    .article-cta p { margin:0 0 16px; font-size:17px; font-weight:600; }
+    .article-cta a { display:inline-block; background:var(--green); color:#111827; padding:14px 28px; border-radius:999px; text-decoration:none; font-weight:700; font-size:15px; box-shadow:0 8px 20px rgba(132,204,22,.25); }
+    .related-reads { margin: 40px 0 0; padding: 20px 0; border-top: 1px solid var(--line); }
+    .related-reads h3 { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 12px; }
+    .related-reads ul { list-style: none; padding: 0; margin: 0; }
+    .related-reads li { margin: 0 0 8px; }
+    .related-reads a { color: var(--green-dark); text-decoration: none; font-size: 15px; }
+    .callout-box { background: rgba(132,204,22,.06); border: 1px solid #d9f99d; border-radius: 12px; padding: 20px 24px; margin: 28px 0; font-size: 17px; }
+    .disclaimer-box { background: #fef3c7; border: 1px solid #fde68a; border-radius: 12px; padding: 16px 20px; margin: 28px 0; font-size: 15px; color: #92400e; }
   </style>
 </head>
 <body>
-  <nav class="nav"><a href="/">&larr; KiloKaki Home</a> &middot; <a href="/blog/">Blog Index</a></nav>
+<div class="wrap">
+  <nav class="nav">
+    <a href="/" class="brand"><img src="/logo.png" alt="KiloKaki" style="height:24px;"> KiloKaki</a>
+    <a href="https://t.me/KiloKakiBot" class="cta">Open Bot →</a>
+  </nav>
 
-  <article class="blog-container">
-    <header class="blog-header">
-      <h1>The Comeback: How to Restart Food Logging After Falling Off</h1>
-      <p class="meta">Retention · September 2026</p>
-    </header>
+  <header class="article-header">
+    <p class="category">Retention</p>
+    <h1 class="article-title">The Comeback: How to Restart Food Logging After Falling Off</h1>
+    <p class="article-lead">You logged perfectly for 6 weeks, life happened, and now the app feels like guilt. Here's how to come back to food logging after falling off — without the shame spiral.</p>
+    <p class="read-time">7 min read</p>
+  </header>
 
-    <div class="blog-content">
-      <p>You logged every meal for six weeks. You had a streak. You were proud of it. Then life happened — a busy week, a trip, a bad day — and you stopped. Now it's been three weeks since you opened the app, and the thought of logging again feels like walking back into a gym after months off. You feel behind. You feel guilty. You feel like you've lost whatever progress you made.</p>
+  <div class="article-body">
 
-      <p>Here's the thing: you haven't lost anything. You just stopped measuring. And the gap between "stopped measuring" and "lost progress" is where the guilt lives. Not in the reality.</p>
+    <p>You logged every meal for six weeks. You had a streak. You were proud of it. Then life happened — a busy week, a trip, a bad day — and you stopped. Now it's been three weeks since you opened the app, and the thought of logging again feels like walking back into a gym after months off. You feel behind. You feel guilty. You feel like you've lost whatever progress you made.</p>
 
-      <h2>Why coming back feels harder than starting</h2>
+    <p>Here's the thing: you haven't lost anything. You just stopped measuring. And the gap between "stopped measuring" and "lost progress" is where the guilt lives. Not in the reality.</p>
 
-      <p>When you first started food logging, you had no expectations. You were just trying something new. But now you have memories of what it felt like when you were consistent — and those memories make the gap between "then" and "now" feel like failure.</p>
+    <h2>Why coming back feels harder than starting</h2>
 
-      <p>The app hasn't changed. Your ability to log hasn't changed. What's changed is the emotional weight you've attached to the gap. You're not restarting food logging — you're restarting a relationship with something that now reminds you of a time you "failed."</p>
+    <p>When you first started food logging, you had no expectations. You were just trying something new. But now you have memories of what it felt like when you were consistent — and those memories make the gap between "then" and "now" feel like failure.</p>
 
-      <p>But you didn't fail. You just stopped. And stopping is not failing. Stopping is what humans do. The only people who never stop are the ones who never started.</p>
+    <p>The app hasn't changed. Your ability to log hasn't changed. What's changed is the emotional weight you've attached to the gap. You're not restarting food logging — you're restarting a relationship with something that now reminds you of a time you "failed."</p>
 
-      <h2>The "clean slate" trap</h2>
+    <p>But you didn't fail. You just stopped. And stopping is not failing. Stopping is what humans do. The only people who never stop are the ones who never started.</p>
 
-      <p>Most people who want to come back to food logging wait for a "clean slate." Monday. The first of the month. After a weekend. After a holiday. After they've "gotten back on track."</p>
+    <h2>The "clean slate" trap</h2>
 
-      <p>This is the clean slate trap — and it's the reason most comebacks never happen. Because there's always another Monday coming. Always another reason to wait. Always another excuse to keep the app buried on your phone.</p>
+    <p>Most people who want to come back to food logging wait for a "clean slate." Monday. The first of the month. After a weekend. After a holiday. After they've "gotten back on track."</p>
 
-      <p>Here's what actually works: log today. Not tomorrow. Not Monday. Today. The meal you just ate. Right now. Even if it was three hours ago. Even if it was "bad." Even if you don't remember exactly what was in it.</p>
+    <p>This is the clean slate trap — and it's the reason most comebacks never happen. Because there's always another Monday coming. Always another reason to wait. Always another excuse to keep the app buried on your phone.</p>
 
-      <p>The clean slate doesn't exist. The gap doesn't matter. The only thing that matters is the next log. Not the perfect one. Not the one that makes up for lost time. Just the next one.</p>
+    <p>Here's what actually works: log today. Not tomorrow. Not Monday. Today. The meal you just ate. Right now. Even if it was three hours ago. Even if it was "bad." Even if you don't remember exactly what was in it.</p>
 
-      <div class="disclaimer-box">⚕️ <strong>Medical disclaimer:</strong> This article is for informational purposes only and does not constitute medical or nutritional advice. Talk to your healthcare provider about your personal nutrition plan.</div>
+    <p>The clean slate doesn't exist. The gap doesn't matter. The only thing that matters is the next log. Not the perfect one. Not the one that makes up for lost time. Just the next one.</p>
 
-      <h2>The 3-step comeback</h2>
-
-      <p><strong>1. Log the last thing you ate.</strong> Not your whole day. Not your whole week. Just the last thing. A voice note: "Had lunch at 1 PM, chicken rice, probably 600 calories." That's it. You just came back. It took 10 seconds.</p>
-
-      <p><strong>2. Lower the bar for the first week.</strong> Your goal for the first week back is not "log every meal." Your goal is "log something every day." One meal. That's it. One meal keeps the door open. Two meals feels like momentum. Three meals feels like you're back. But it starts at one.</p>
-
-      <p><strong>3. Ignore the gap.</strong> Don't look at your old logs. Don't compare where you were to where you are. The gap is irrelevant data. What matters is what you log from now forward. Not what you logged before you stopped. Not what you didn't log while you were away. From now forward.</p>
-
-      <blockquote>The comeback isn't about getting back to where you were. It's about starting again from where you are. And where you are is fine.</blockquote>
-
-      <h2>What most people get wrong about "falling off"</h2>
-
-      <p>People talk about "falling off" like it's a cliff — like one missed day leads to a slide that's impossible to reverse. But that's not what actually happens. What actually happens is: you miss a day, you feel bad, and the bad feeling makes you avoid the app. The avoidance becomes the gap. The gap becomes the guilt. The guilt becomes the reason you don't come back.</p>
-
-      <p>The gap is not a problem. It's just time. And time passes whether you log or not. The question isn't "how do I avoid the gap?" — it's "how do I come back from it?"</p>
-
-      <p>And the answer is: you log the next meal. Not the perfect meal. Not the meal that makes up for the gap. Just the next one. The one in front of you. The one that exists right now.</p>
-
-      <h2>Why KiloKaki makes the comeback easier</h2>
-
-      <p>Most food logging apps make you feel guilty about the gap. They show you your streak. They remind you how many days you've missed. They send you notifications that feel like disappointment.</p>
-
-      <p>KiloKaki doesn't do that. There's no streak counter. No "you've been away for X days" message. No guilt-trip notification. Just an open door. Send a photo. Send a voice note. Type a word. The app doesn't care how long you've been away. It just cares about what you send now.</p>
-
-      <p>That's by design. Because the hardest part of coming back isn't the logging — it's the feeling that you've let something down. And KiloKaki isn't designed to make you feel let down. It's designed to make you feel like you can just pick up where you left off. Because you can.</p>
-
-      <div class="cta">
-        <p><strong>Log the last thing you ate. Just one entry. That's the comeback.</strong></p>
-        <p>Photo, voice, or text — however you want. KiloKaki doesn't judge the gap.</p>
-        <p><a href="https://t.me/KiloKakiBot" target="_blank">Open KiloKaki →</a></p>
-      </div>
-
-      <div class="related">
-        <h3>Related Reading</h3>
-        <ul>
-          <li><a href="/blog/the-all-or-nothing-mindset.html">The All-or-Nothing Mindset: Why Going Perfect Made You Quit</a></li>
-          <li><a href="/blog/the-guilt-spiral.html">The Guilt Spiral: Why Missing One Meal Made You Quit Logging</a></li>
-          <li><a href="/blog/why-you-stop-logging-after-3-weeks.html">Why You Stop Logging After 3 Weeks</a></li>
-        </ul>
-      </div>
+    <div class="callout-box">
+      <strong>The clean slate trap in one line:</strong> waiting for Monday is how Wednesday becomes next month becomes never. The best time to come back is the moment you think about it.
     </div>
-  </article>
 
-  <footer class="footer">
-    <p>Built by <a href="https://kilokaki.com">KiloKaki</a> — the food logging bot that works how you actually eat.</p>
-    <p><a href="https://t.me/KiloKakiBot" target="_blank">Try KiloKaki on Telegram →</a></p>
-  </footer>
+    <h2>The 3-step comeback</h2>
+
+    <p><strong>1. Log the last thing you ate.</strong> Not your whole day. Not your whole week. Just the last thing. A voice note: "Had lunch at 1 PM, chicken rice, probably 600 calories." That's it. You just came back. It took 10 seconds.</p>
+
+    <p><strong>2. Lower the bar for the first week.</strong> Your goal for the first week back is not "log every meal." Your goal is "log something every day." One meal. That's it. One meal keeps the door open. Two meals feels like momentum. Three meals feels like you're back. But it starts at one.</p>
+
+    <p><strong>3. Ignore the gap.</strong> Don't look at your old logs. Don't compare where you were to where you are. The gap is irrelevant data. What matters is what you log from now forward. Not what you logged before you stopped. Not what you didn't log while you were away. From now forward.</p>
+
+    <blockquote>The comeback isn't about getting back to where you were. It's about starting again from where you are. And where you are is fine.</blockquote>
+
+    <h2>What most people get wrong about "falling off"</h2>
+
+    <p>People talk about "falling off" like it's a cliff — like one missed day leads to a slide that's impossible to reverse. But that's not what actually happens. What actually happens is: you miss a day, you feel bad, and the bad feeling makes you avoid the app. The avoidance becomes the gap. The gap becomes the guilt. The guilt becomes the reason you don't come back.</p>
+
+    <p>The gap is not a problem. It's just time. And time passes whether you log or not. The question isn't "how do I avoid the gap?" — it's "how do I come back from it?"</p>
+
+    <p>And the answer is: you log the next meal. Not the perfect meal. Not the meal that makes up for the gap. Just the next one. The one in front of you. The one that exists right now.</p>
+
+    <h2>Why KiloKaki makes the comeback easier</h2>
+
+    <p>Most food logging apps make you feel guilty about the gap. They show you your streak. They remind you how many days you've missed. They send you notifications that feel like disappointment.</p>
+
+    <p>KiloKaki doesn't do that. There's no streak counter. No "you've been away for X days" message. No guilt-trip notification. Just an open door. Send a photo. Send a voice note. Type a word. The app doesn't care how long you've been away. It just cares about what you send now.</p>
+
+    <p>That's by design. Because the hardest part of coming back isn't the logging — it's the feeling that you've let something down. And KiloKaki isn't designed to make you feel let down. It's designed to make you feel like you can just pick up where you left off. Because you can.</p>
+
+    <div class="article-cta">
+      <p><strong>Log the last thing you ate. Just one entry. That's the comeback.</strong></p>
+      <p>Photo, voice, or text — however you want. KiloKaki doesn't judge the gap.</p>
+      <a href="https://t.me/KiloKakiBot" target="_blank">Open KiloKaki →</a>
+    </div>
+
+    <div class="related-reads">
+      <h3>Related Reading</h3>
+      <ul>
+        <li><a href="/blog/the-all-or-nothing-mindset.html">The All-or-Nothing Mindset: Why Going Perfect Made You Quit</a></li>
+        <li><a href="/blog/the-guilt-spiral.html">The Guilt Spiral: Why Missing One Meal Made You Quit Logging</a></li>
+        <li><a href="/blog/why-you-stop-logging-after-3-weeks.html">Why You Stop Logging After 3 Weeks (And How to Actually Keep Going)</a></li>
+      </ul>
+    </div>
+
+    <div class="disclaimer-box">
+      <strong>Medical disclaimer:</strong> This article is about food logging habits, not medical or nutritional advice. Talk to your healthcare provider about your personal nutrition plan.
+    </div>
+
+  </div>
+</div>
 </body>
 </html>
