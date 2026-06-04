@@ -46,11 +46,25 @@
     .footer-note { font-size:14px; color:var(--muted); margin-top:32px; padding-top:20px; border-top:1px solid var(--line); }
     .footer-note a { color:var(--green-dark); }
     footer { text-align:center; padding:40px 0; color:var(--muted); font-size:13px; }
-  </style>
+      .related { background: var(--cream); padding: 1.5rem; border-radius: 12px; margin: 2rem 0; border: 1px solid var(--line); }
+    .related h3 { margin: 0 0 0.75rem 0; font-size: 1rem; color: var(--green-dark); }
+    .related ul { list-style: none; padding: 0; margin: 0; }
+    .related li { margin-bottom: 0.4rem; font-size: 0.95rem; }
+    .related a { color: var(--green-dark); text-decoration: none; font-weight: 500; }
+    .related a:hover { text-decoration: underline; }
+</style>
 </head>
 <body>
 <div class="wrap">
-  <nav class="nav">
+  
+      <div class="related">
+        <h3>Related Reading</h3>
+        <ul>
+          <li><a href="/blog/food-logging-for-beginners.html">Food Logging for Beginners: The Complete Guide</a></li>
+          <li><a href="/blog/voice-logging.html">Voice Food Logging: 10x Faster Than Typing</a></li>
+        </ul>
+      </div>
+    <nav class="nav">
     <a href="/" class="brand"><img src="/logo.png" alt="KiloKaki" style="height:24px;"> KiloKaki</a>
     <a href="https://t.me/KiloKakiBot" class="cta">Open Bot →</a>
   </nav>
@@ -156,14 +170,7 @@
       <a href="https://t.me/KiloKakiBot">Open KiloKaki →</a>
     </div>
 
-    <div class="related-articles" style="margin:40px 0 0; padding:20px 0; border-top:1px solid var(--line);">
-        <h3 style="font-size:16px; margin:0 0 14px; color:var(--muted);">Related articles</h3>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px;">
-            <a href="/blog/one-tiny-change-method-food-logging.html" style="display:block; padding:14px 16px; background:rgba(132,204,22,.06); border:1px solid rgba(132,204,22,.15); border-radius:12px; text-decoration:none; color:var(--text); font-weight:600; font-size:14px; transition:.15s;">→ The One-Tiny-Change Method</a>
-            <a href="/blog/why-you-stop-logging-after-3-weeks.html" style="display:block; padding:14px 16px; background:rgba(132,204,22,.06); border:1px solid rgba(132,204,22,.15); border-radius:12px; text-decoration:none; color:var(--text); font-weight:600; font-size:14px; transition:.15s;">→ Why You Stop Logging After 3 Weeks</a>
-            <a href="/blog/the-weekend-trap.html" style="display:block; padding:14px 16px; background:rgba(132,204,22,.06); border:1px solid rgba(132,204,22,.15); border-radius:12px; text-decoration:none; color:var(--text); font-weight:600; font-size:14px; transition:.15s;">→ The Weekend Trap</a>
-        </div>
-    </div>
+    
 
   <nav class="nav" style="margin-top:40px; border-top:1px solid var(--line);">
     <a href="/blog/" style="font-size:14px; color:var(--muted); text-decoration:none;">← Back to Blog</a>

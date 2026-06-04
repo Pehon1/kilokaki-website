@@ -46,7 +46,13 @@
     .footer-note { font-size:14px; color:var(--muted); margin-top:32px; padding-top:20px; border-top:1px solid var(--line); }
     .footer-note a { color:var(--green-dark); }
     footer { text-align:center; padding:40px 0; color:var(--muted); font-size:13px; }
-  </style>
+      .related { background: var(--cream); padding: 1.5rem; border-radius: 12px; margin: 2rem 0; border: 1px solid var(--line); }
+    .related h3 { margin: 0 0 0.75rem 0; font-size: 1rem; color: var(--green-dark); }
+    .related ul { list-style: none; padding: 0; margin: 0; }
+    .related li { margin-bottom: 0.4rem; font-size: 0.95rem; }
+    .related a { color: var(--green-dark); text-decoration: none; font-weight: 500; }
+    .related a:hover { text-decoration: underline; }
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -184,7 +190,16 @@
 
   </div>
 
-  <footer>
+  
+      <div class="related">
+        <h3>Related Reading</h3>
+        <ul>
+          <li><a href="/blog/food-noise-what-it-is-why-logging-helps.html">What Is Food Noise — And Why Logging Helps</a></li>
+          <li><a href="/blog/what-the-hell-effect-one-bad-meal.html">The "What the Hell" Effect: One Bad Meal</a></li>
+          <li><a href="/blog/the-guilt-spiral.html">The Guilt Spiral: Why Missing One Meal Makes You Quit</a></li>
+        </ul>
+      </div>
+    <footer>
     <p>Built by <a href="https://kilokaki.com">KiloKaki</a> — the food logging bot that works how you actually eat.</p>
     <p><a href="https://t.me/KiloKakiBot" target="_blank">Try KiloKaki on Telegram →</a></p>
   </footer>
