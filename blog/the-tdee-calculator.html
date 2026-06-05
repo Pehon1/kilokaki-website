@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The TDEE Calculator Everyone Skips (And Why It's the Only Number That Matters) — KiloKaki Blog</title>
+  <meta name="description" content="Most people pick a calorie target out of thin air. Here's why knowing your TDEE is the single most useful thing you can do before starting any diet — and how to calculate it in 30 seconds.">
+  <meta property="og:title" content="The TDEE Calculator Everyone Skips (And Why It's the Only Number That Matters)">
+  <meta property="og:description" content="Most people pick a calorie target out of thin air. Here's why knowing your TDEE is the first step that actually works.">
+  <meta property="og:url" content="https://kilokaki.com/blog/the-tdee-calculator.html">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="https://kilokaki.com/og-blog-default.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "The TDEE Calculator Everyone Skips (And Why It's the Only Number That Matters)",
+    "description": "Most people pick a calorie target out of thin air. Here's why knowing your TDEE is the single most useful thing you can do before starting any diet.",
+    "url": "https://kilokaki.com/blog/the-tdee-calculator.html",
+    "datePublished": "2026-06-05",
+    "dateModified": "2026-06-05",
+    "author": {
+      "@type": "Organization",
+      "name": "KiloKaki"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "KiloKaki"
+    }
+  }
+  </script>
+  <style>
+    :root { --green: #84cc16; --green-dark: #4d7c0f; --orange: #f97316; --cream: #fffaf2; --text: #1f2937; --muted: #6b7280; --card: #ffffff; --line: #e5e7eb; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); background: linear-gradient(180deg, #f7fee7 0%, #fffaf2 40%, #ffffff 100%); line-height: 1.6; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+    .nav { display:flex; align-items:center; justify-content:space-between; gap:20px; padding: 20px 0; }
+    .brand { font-size: 18px; font-weight: 700; color: var(--green-dark); text-decoration: none; display:flex; align-items:center; gap:8px; }
+    .cta { display:inline-flex; align-items:center; justify-content:center; text-decoration:none; border-radius:999px; padding:12px 20px; font-weight:700; font-size:14px; background:var(--green); color:#111827; box-shadow:0 8px 20px rgba(132,204,22,.2); }
+    .article-header { padding: 48px 0 32px; }
+    .category { font-size: 12px; font-weight: 700; color: var(--green-dark); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+    .article-title { font-size: clamp(26px, 5vw, 38px); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 16px; color: var(--text); }
+    .article-lead { font-size: 18px; color: var(--muted); margin: 0 0 20px; line-height: 1.6; }
+    .read-time { font-size: 13px; color: var(--muted); }
+    .article-body h2 { font-size: 20px; font-weight: 700; margin-top: 40px; margin-bottom: 16px; color: var(--text); }
+    .article-body p { margin: 0 0 20px; font-size: 17px; color: var(--text); }
+    .article-body blockquote { border-left:4px solid var(--green); padding:4px 20px; margin:24px 0; background:rgba(132,204,22,.06); border-radius:0 8px 8px 0; font-style:italic; color:var(--muted); font-size:17px; }
+    .article-body strong { color: var(--text); }
+    .article-body ul { margin: 0 0 20px; padding-left: 20px; }
+    .article-body li { margin: 0 0 8px; font-size: 17px; }
+    .article-body ol { margin: 0 0 20px; padding-left: 20px; }
+    .article-body a { color: var(--green-dark); font-weight: 600; }
+    .article-body h3 { font-size: 18px; font-weight: 700; margin-top: 28px; margin-bottom: 12px; color: var(--text); }
+    .article-cta { background:linear-gradient(180deg,#f7fee7 0%,#ecfccb 100%); border:1px solid #d9f99d; border-radius:20px; padding:28px 32px; text-align:center; margin:40px 0 0; }
+    .article-cta p { margin:0 0 16px; font-size:17px; font-weight:600; }
+    .article-cta a { display:inline-block; background:var(--green); color:#111827; padding:14px 28px; border-radius:999px; text-decoration:none; font-weight:700; font-size:15px; box-shadow:0 8px 20px rgba(132,204,22,.25); }
+    .related-reads { margin: 40px 0 0; padding: 20px 0; border-top: 1px solid var(--line); }
+    .related-reads h3 { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 12px; }
+    .related-reads ul { list-style: none; padding: 0; margin: 0; }
+    .related-reads li { margin: 0 0 8px; }
+    .related-reads a { color: var(--green-dark); text-decoration: none; font-size: 15px; }
+    .callout-box { background: rgba(132,204,22,.06); border: 1px solid #d9f99d; border-radius: 12px; padding: 20px 24px; margin: 28px 0; font-size: 17px; }
+    .disclaimer-box { background: #fef3c7; border: 1px solid #fde68a; border-radius: 12px; padding: 16px 20px; margin: 28px 0; font-size: 15px; color: #92400e; }
+    .number-box { background: var(--card); border: 2px solid var(--green); border-radius: 16px; padding: 24px; text-align: center; margin: 32px 0; }
+    .number-box .big { font-size: 48px; font-weight: 800; color: var(--green-dark); }
+    .number-box .label { font-size: 14px; color: var(--muted); margin-top: 4px; }
+    .formula-box { background: #1f2937; color: #f7fee7; border-radius: 12px; padding: 20px 24px; margin: 28px 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 15px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav">
+    <a href="/" class="brand"><img src="/logo.png" alt="KiloKaki" style="height:24px;"> KiloKaki</a>
+    <a href="https://t.me/KiloKakiBot" class="cta">Open Bot →</a>
+  </nav>
+
+  <header class="article-header">
+    <p class="category">Nutrition Science</p>
+    <h1 class="article-title">The TDEE Calculator Everyone Skips (And Why It's the Only Number That Matters)</h1>
+    <p class="article-lead">You picked a calorie target out of thin air. "I'll eat 1,500 a day." Why 1,500? You don't know. Neither does anyone else. Here's why that guess is costing you results.</p>
+    <p class="read-time">6 min read</p>
+  </header>
+
+  <div class="article-body">
+
+    <p>Sarah is 85 kg, works a desk job, walks the dog for 20 minutes, and decided to "eat clean." She's eating salads and chicken breast and drinking her water and still not losing weight.</p>
+
+    <p>She asked a friend, who said "try 1,200 calories." She saw that number on a blog somewhere.</p>
+
+    <p>Here's what Sarah doesn't know — and what almost nobody checks before picking a calorie target:</p>
+
+    <p><strong>Her body burns about 2,100 calories per day just existing.</strong></p>
+
+    <p>She has no idea. She's guessing in the dark. And when you guess wrong, you either eat way too little (and crash within two weeks) or eat way too much (and wonder why nothing's changing).</p>
+
+    <p>The number she needs to know is called <strong>TDEE</strong>. Total Daily Energy Expenditure. It's the amount of energy your body uses every single day — breathing, walking, digesting, thinking, fidgeting, everything.</p>
+
+    <p>It's the <em>only</em> number that matters before you set a calorie target. And almost nobody calculates it.</p>
+
+    <h2>What TDEE Actually Is</h2>
+
+    <p>TDEE is the sum of four things:</p>
+
+    <ul>
+      <li><strong>BMR (Basal Metabolic Rate)</strong> — calories your body burns at rest. This is the energy needed to keep your heart beating, your lungs breathing, your brain running. It's about 60-70% of your total burn.</li>
+      <li><strong>NEAT (Non-Exercise Activity Thermogenesis)</strong> — everything that isn't exercise: walking to your car, typing, standing, fidgeting, cooking. For most people, this is 15-30% of daily burn. It varies wildly between people.</li>
+      <li><strong>TEF (Thermic Effect of Food)</strong> — energy your body uses to digest and process food. Protein costs more to digest than fat. This is roughly 10% of your intake.</li>
+      <li><strong>EAT (Exercise Activity Thermogenesis)</strong> — intentional exercise. Gym sessions, runs, sports. For most non-athletes, this is surprisingly small — maybe 5-10%.</li>
+    </ul>
+
+    <div class="callout-box">
+      <strong>The surprising part:</strong> Your BMR (just existing) is 6-7x bigger than your gym session. You can't out-exercise a TDEE you don't understand.
+    </div>
+
+    <h2>Why Guessing Your Calories Fails</h2>
+
+    <p>Here's the problem with picking "1,500 calories" without knowing your TDEE:</p>
+
+    <p>If your TDEE is <strong>2,500</strong> (a moderately active 90 kg person), eating 1,500 gives you a 1,000-calorie deficit. That's aggressive. You'll lose weight fast — for about two weeks. Then hunger, fatigue, and resentment set in. You crash.</p>
+
+    <p>If your TDEE is <strong>1,800</strong> (a sedentary 65 kg person), eating 1,500 gives you a 300-calorie deficit. That's about 0.3 kg per week. You'll barely notice the change. After three weeks of "eating 1,500 and nothing happening," you quit.</p>
+
+    <p>Both people are eating the same number. Both fail. For opposite reasons.</p>
+
+    <p><strong>The target only makes sense in relation to your TDEE.</strong> Without it, you're flying blind.</p>
+
+    <h2>How to Calculate Your TDEE (Two Methods)</h2>
+
+    <h3>Method 1: The Quick Formula (30 seconds)</h3>
+
+    <p>The Mifflin-St Jeor equation is the most widely validated formula for estimating BMR:</p>
+
+    <div class="formula-box">
+      <strong>Men:</strong> BMR = (10 × weight in kg) + (6.25 × height in cm) − (5 × age) + 5<br><br>
+      <strong>Women:</strong> BMR = (10 × weight in kg) + (6.25 × height in cm) − (5 × age) − 161<br><br>
+      Then multiply by activity level:<br>
+      Sedentary (office job, little exercise): <strong>× 1.2</strong><br>
+      Lightly active (light exercise 1-3 days/week): <strong>× 1.375</strong><br>
+      Moderately active (moderate exercise 3-5 days/week): <strong>× 1.55</strong><br>
+      Very active (hard exercise 6-7 days/week): <strong>× 1.725</strong>
+    </div>
+
+    <p>Example: 85 kg, 170 cm, 35 years old, office job with occasional walks:</p>
+
+    <div class="number-box">
+      <div class="big">2,120</div>
+      <div class="label">calories/day (TDEE estimate)</div>
+    </div>
+
+    <p>That means this person maintains their weight eating roughly 2,120 calories per day. To lose weight, they'd eat <strong>1,620-1,820</strong> (a 300-500 calorie deficit). To gain, they'd eat <strong>2,370-2,620</strong>.</p>
+
+    <div class="callout-box">
+      <strong>The shortcut:</strong> For most people, bodyweight × 30 gives a rough TDEE estimate. An 80 kg person burns roughly 2,400 calories/day. It's not precise, but it's a starting point that's better than guessing.
+    </div>
+
+    <h3>Method 2: The Real-World Test (More Accurate)</h3>
+
+    <p>Formulas are estimates. Your actual TDEE might be 200 calories higher or lower than the math predicts. The most accurate method is observational:</p>
+
+    <ol>
+      <li><strong>Log everything you eat for 2 weeks.</strong> Be honest. Every bite. This is where a bot like KiloKaki helps — a photo is faster than opening an app and searching for "chicken rice."</li>
+      <li><strong>Weigh yourself daily</strong> and take the weekly average. Daily weight is noise. Weekly averages are signal.</li>
+      <li><strong>If your weight is stable,</strong> your average daily intake ≈ your TDEE. If you're eating 2,200 calories/day and your weight isn't changing, your TDEE is about 2,200. Period.</li>
+      <li><strong>If you're gaining or losing,</strong> adjust: add or subtract roughly 100 calories per 0.2 kg of weekly change to back-calculate your true TDEE.</li>
+    </ol>
+
+    <p>This method is harder than a formula. But it's <em>your</em> number, not an estimate based on averages from a 1990 study.</p>
+
+    <h2>The Deficit That Actually Works</h2>
+
+    <p>Once you know your TDEE, the rest is simple math:</p>
+
+    <ul>
+      <li><strong>TDEE − 300 calories</strong> = slow, sustainable loss (~0.3 kg/week). You barely notice you're dieting. This is the "I forgot I was on a diet" approach.</li>
+      <li><strong>TDEE − 500 calories</strong> = moderate loss (~0.5 kg/week). Noticeably less food, but manageable for most people. This is the sweet spot.</li>
+      <li><strong>TDEE − 750+ calories</strong> = aggressive loss. Works short-term. Hunger, fatigue, and social friction catch up fast.</li>
+    </ul>
+
+    <p>The mistake most people make? They skip TDEE entirely and pick a deficit based on what they <em>wish</em> they could eat, not what their body actually needs.</p>
+
+    <blockquote>
+      A 500-calorie deficit from your TDEE is sustainable. A 500-calorie deficit from a number you saw on Reddit is a coin flip.
+    </blockquote>
+
+    <h2>Why Your TDEE Changes (And Why It Matters)</h2>
+
+    <p>Your TDEE isn't fixed. It changes as you:</p>
+
+    <ul>
+      <li><strong>Lose weight</strong> — less body mass = fewer calories needed to maintain. A 90 kg person might have a TDEE of 2,400. At 80 kg, it drops to roughly 2,150. If you keep eating 2,400 thinking it's still a deficit, you've accidentally hit maintenance. This is the classic plateau.</li>
+      <li><strong>Build muscle</strong> — muscle tissue burns more calories at rest than fat. The effect is real but modest (maybe 50-100 extra calories per day for significant muscle gain).</li>
+      <li><strong>Change your daily activity</strong> — switching from a desk job to a standing job, or starting a walking routine, can shift your TDEE by 200-400 calories without any "exercise" at all.</li>
+      <li><strong>Age</strong> — BMR slowly declines with age, roughly 1-2% per decade after 30. Not dramatic, but it's why the same diet that worked at 25 doesn't work at 40.</li>
+    </ul>
+
+    <p>This is why recalculating (or re-observing) your TDEE every few months matters. It's not a one-time calculation. It's a moving target.</p>
+
+    <h2>Where KiloKaki Fits In</h2>
+
+    <p>KiloKaki doesn't replace a TDEE calculator. It makes the <em>observational method</em> actually practical.</p>
+
+    <p>Because the formula gives you an estimate. But logging your real intake and tracking your real weight gives you <strong>your actual number</strong> — the one that accounts for your specific metabolism, your specific daily activity, your specific body.</p>
+
+    <p>Most calorie-tracking apps ask you to enter your TDEE manually and then forget about it. KiloKaki just needs you to log your food — by voice, photo, or text — and the data accumulates. After two weeks, you can look at your average intake and your average weight and see: <em>this is what my body actually does.</em></p>
+
+    <p>That's more useful than any formula.</p>
+
+    <div class="callout-box">
+      <strong>Bottom line:</strong> Pick a calorie target based on your TDEE, not a round number you saw somewhere. A 500-calorie deficit from <em>your</em> TDEE works. A 500-calorie deficit from a guess is gambling.
+    </div>
+
+  </div>
+
+  <div class="article-cta">
+    <p>Know your number. Log without the friction.</p>
+    <a href="https://t.me/KiloKakiBot">Try KiloKaki Free →</a>
+  </div>
+
+  <div class="related-reads">
+    <h3>Related Reads</h3>
+    <ul>
+      <li><a href="/blog/why-you-plateau-at-week-3.html">Why You Plateau at Week 3 (And the One Tweak That Fixes It)</a></li>
+      <li><a href="/blog/the-calorie-budget-method.html">The Calorie Budget Method</a></li>
+      <li><a href="/blog/why-the-scale-went-up-after-a-good-week.html">Why the Scale Went Up After a Good Week</a></li>
+      <li><a href="/blog/the-scale-is-lying-to-you.html">The Scale Is Lying to You</a></li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>
