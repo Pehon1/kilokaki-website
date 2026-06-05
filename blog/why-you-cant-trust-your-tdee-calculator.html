@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Why You Can't Trust Your TDEE Calculator — KiloKaki Blog</title>
+  <meta name="description" content="TDEE calculators give you a number. That number is probably wrong by 20-30%. Here's why, and how to find your real TDEE using your food logs.">
+  <meta property="og:title" content="Why You Can't Trust Your TDEE Calculator">
+  <meta property="og:description" content="TDEE calculators give you a number. That number is probably wrong by 20-30%. Here's why.">
+  <meta property="og:url" content="https://kilokaki.com/blog/why-you-cant-trust-your-tdee-calculator.html">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="https://kilokaki.com/og-blog-default.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Why You Can't Trust Your TDEE Calculator",
+    "description": "TDEE calculators give you a number. That number is probably wrong by 20-30%. Here's why, and how to find your real TDEE using your food logs.",
+    "url": "https://kilokaki.com/blog/why-you-cant-trust-your-tdee-calculator.html",
+    "datePublished": "2026-06-07",
+    "dateModified": "2026-06-07",
+    "author": {
+      "@type": "Organization",
+      "name": "KiloKaki"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "KiloKaki"
+    }
+  }
+  </script>
+  <style>
+    :root { --green: #84cc16; --green-dark: #4d7c0f; --text: #1f2937; --muted: #6b7280; --line: #e5e7eb; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); background: linear-gradient(180deg, #f7fee7 0%, #fffaf2 40%, #ffffff 100%); line-height: 1.6; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+    .nav { display:flex; align-items:center; justify-content:space-between; gap:20px; padding: 20px 0; }
+    .brand { font-size: 18px; font-weight: 700; color: var(--green-dark); text-decoration: none; display:flex; align-items:center; gap:8px; }
+    .cta { display:inline-flex; align-items:center; justify-content:center; text-decoration:none; border-radius:999px; padding:12px 20px; font-weight:700; font-size:14px; background:var(--green); color:#111827; box-shadow:0 8px 20px rgba(132,204,22,.2); }
+    .article-header { padding: 48px 0 32px; }
+    .category { font-size: 12px; font-weight: 700; color: var(--green-dark); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+    .article-title { font-size: clamp(26px, 5vw, 38px); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 16px; color: var(--text); }
+    .article-lead { font-size: 18px; color: var(--muted); margin: 0 0 20px; line-height: 1.6; }
+    .read-time { font-size: 13px; color: var(--muted); }
+    .article-body h2 { font-size: 20px; font-weight: 700; margin-top: 40px; margin-bottom: 16px; color: var(--text); }
+    .article-body p { margin: 0 0 20px; font-size: 17px; color: var(--text); }
+    .article-body blockquote { border-left:4px solid var(--green); padding:4px 20px; margin:24px 0; background:rgba(132,204,22,.06); border-radius:0 8px 8px 0; font-style:italic; color:var(--muted); font-size:17px; }
+    .article-body strong { color: var(--text); }
+    .article-body ul { margin: 0 0 20px; padding-left: 20px; }
+    .article-body li { margin: 0 0 8px; font-size: 17px; }
+    .article-body ol { margin: 0 0 20px; padding-left: 20px; }
+    .article-body a { color: var(--green-dark); font-weight: 600; }
+    .article-body h3 { font-size: 18px; font-weight: 700; margin-top: 28px; margin-bottom: 12px; color: var(--text); }
+    .article-cta { background:linear-gradient(180deg,#f7fee7 0%,#ecfccb 100%); border:1px solid #d9f99d; border-radius:20px; padding:28px 32px; text-align:center; margin:40px 0 0; }
+    .article-cta p { margin:0 0 16px; font-size:17px; font-weight:600; }
+    .article-cta a { display:inline-block; background:var(--green); color:#111827; padding:14px 28px; border-radius:999px; text-decoration:none; font-weight:700; font-size:15px; box-shadow:0 8px 20px rgba(132,204,22,.25); }
+    .related-reads { margin: 40px 0 0; padding: 20px 0; border-top: 1px solid var(--line); }
+    .related-reads h3 { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 12px; }
+    .related-reads ul { list-style: none; padding: 0; margin: 0; }
+    .related-reads li { margin: 0 0 8px; }
+    .related-reads a { color: var(--green-dark); text-decoration: none; font-size: 15px; }
+    .callout-box { background: rgba(132,204,22,.06); border: 1px solid #d9f99d; border-radius: 12px; padding: 20px 24px; margin: 28px 0; font-size: 17px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav">
+    <a href="/" class="brand"><img src="/logo.png" alt="KiloKaki" style="height:24px;"> KiloKaki</a>
+    <a href="https://t.me/KiloKakiBot" class="cta">Open Bot →</a>
+  </nav>
+
+  <header class="article-header">
+    <p class="category">Nutrition Science</p>
+    <h1 class="article-title">Why You Can't Trust Your TDEE Calculator</h1>
+    <p class="article-lead">TDEE calculators give you a number. That number is probably wrong by 20-30%. Here's why, and how to find your real TDEE using your food logs.</p>
+    <p class="read-time">7 min read</p>
+  </header>
+
+  <div class="article-body">
+
+    <p>You plugged your stats into a TDEE calculator. Age, weight, height, activity level. It spat out a number: 2,200 calories. You've been eating 1,800 for three weeks. The scale hasn't moved. Actually, it went up slightly.</p>
+
+    <p>The calculator lied.</p>
+
+    <p>Not intentionally. TDEE calculators aren't scams — they're estimates. Rough ones. And the problem isn't that they're wrong. The problem is that you're making real decisions (how much to eat, how fast to lose weight) based on a number that could be off by 500 calories or more.</p>
+
+    <h2>What TDEE calculators actually do</h2>
+
+    <p>TDEE stands for Total Daily Energy Expenditure — how many calories your body burns in a day. Calculators use one of three formulas (Mifflin-St Jeor, Harris-Benedict, or Katch-McArdle) that take your age, weight, height, and gender, then multiply by an "activity multiplier."</p>
+
+    <p>That's it. No metabolism data. No sleep quality. No stress levels. No information about your daily movement beyond a dropdown menu where you guess whether you're "lightly active" or "moderately active."</p>
+
+    <p>The result is a population average. It might be right for someone your size. It might not be right for you.</p>
+
+    <h2>5 reasons your TDEE number is wrong</h2>
+
+    <p><strong>1. The activity multiplier is a guess.</strong> Most calculators offer four options: sedentary (1.2), lightly active (1.375), moderately active (1.55), very active (1.725). The difference between sedentary and lightly active is about 400 calories. That's not a rounding error — that's an entire meal. And most people pick the option that sounds right, not the one that matches their actual daily step count and exercise habits.</p>
+
+    <p><strong>2. NEAT varies wildly between people.</strong> Non-Exercise Activity Thermogenesis — the calories you burn from fidgeting, walking to the car, standing at your desk, playing with your kids — accounts for 15-30% of your total energy expenditure. Two people with the same height, weight, and exercise routine can burn 500+ different calories per day from NEAT alone. No calculator captures this. Your food log does.</p>
+
+    <p><strong>3. Metabolic adaptation is real.</strong> When you eat less, your body adapts. Your metabolism slows slightly, your NEAT decreases (you move less without realizing it), and your body becomes more efficient. A calculator that estimated your TDEE at 2,200 when you started dieting might be 2,000 by Week 4 — and 1,900 by Week 8. The number moves. The calculator doesn't update.</p>
+
+    <p><strong>4. Body composition matters more than body weight.</strong> Muscle tissue burns about 6-7 calories per kg per day at rest. Fat tissue burns about 2. Two people who both weigh 80kg but have different body compositions can have TDEEs that differ by 200-300 calories. A calculator using only weight and height can't distinguish between them.</p>
+
+    <p><strong>5. Individual variation is massive.</strong> Even accounting for all of the above, identical twins with identical lifestyles show 5-8% variation in metabolic rate. Genetics, hormones, thyroid function, gut microbiome, sleep architecture — these all influence how many calories you burn, and none of them appear in a TDEE formula.</p>
+
+    <div class="callout-box">
+      <strong>The bottom line:</strong> TDEE calculators give you a starting point, not a destination. Treat the number as an educated guess — then adjust based on what your food log and the scale actually tell you over 2-3 weeks.
+    </div>
+
+    <h2>Your food log IS your TDEE calculator</h2>
+
+    <p>Here's the method that actually works: forget the calculator. Track your actual intake for 2+ weeks using a food log. Weigh yourself daily under consistent conditions. Calculate the 7-day rolling average of your weight.</p>
+
+    <p>Then do the math:</p>
+
+    <ul>
+      <li><strong>If your weight is stable:</strong> your average daily intake equals your TDEE. If you ate an average of 2,100 calories per day and your weight didn't change, your TDEE is approximately 2,100.</li>
+      <li><strong>If your weight is dropping:</strong> your TDEE is higher than your intake. A 7-day average drop of 0.5 kg per week means you're in a deficit of about 500 calories per day. If you ate 1,800, your TDEE is approximately 2,300.</li>
+      <li><strong>If your weight is rising:</strong> your TDEE is lower than your intake. Same math, opposite direction.</li>
+    </ul>
+
+    <p>This method uses YOUR data — your actual eating, your actual body response. No calculator can compete with that.</p>
+
+    <h2>The 3-week calibration method</h2>
+
+    <p>Here's the step-by-step:</p>
+
+    <p><strong>Week 1:</strong> Log everything you eat. Don't try to eat less. Don't change anything. Just log. Weigh yourself every morning. At the end of the week, calculate your average daily intake and your average weight.</p>
+
+    <p><strong>Week 2:</strong> Keep logging. Keep weighing. At the end of the week, calculate both averages again. Compare your weight average to Week 1.</p>
+
+    <p><strong>Week 3:</strong> Same thing. By now you have enough data to see the pattern. If your weight is trending in a direction, you know whether your intake is above or below your TDEE. The size of the trend tells you the gap.</p>
+
+    <p>Example: You average 2,000 calories per day across 3 weeks. Your 7-day weight average drops from 75.0 kg to 74.4 kg (0.6 kg over 21 days, or about 0.2 kg per week). A 0.2 kg/week loss means you're in a deficit of roughly 200 calories per day. Your TDEE is approximately 2,200.</p>
+
+    <p>That number came from your food log, not a calculator. And it's accurate to YOUR body, YOUR lifestyle, YOUR metabolism.</p>
+
+    <blockquote>A TDEE calculator gives you a number based on population averages. Your food log gives you a number based on your actual life. One is a guess. The other is data. Which one do you want to trust with your calorie target?</blockquote>
+
+    <h2>Why this matters for your diet</h2>
+
+    <p>If your TDEE estimate is wrong — and it probably is — then your calorie target is wrong too. Eating 300 calories below a TDEE that's 300 calories too low means you're eating 600 below your actual need. That's not a moderate deficit. That's starvation territory. You'll be tired, hungry, irritable, and eventually you'll quit.</p>
+
+    <p>Or the other direction: eating 300 below a TDEE that's 300 calories too high means you're barely in a deficit at all. You'll lose weight so slowly that you'll think it's not working and quit anyway.</p>
+
+    <p>Getting the TDEE right — or at least close — is the difference between a diet that feels manageable and one that feels impossible. And the only way to get it right is to use your own data.</p>
+
+    <h2>What KiloKaki gives you that no calculator can</h2>
+
+    <p>KiloKaki's food logs capture what you actually ate — not what you planned to eat, not what a database says a "typical serving" contains, but what went in your mouth. Photo, voice, or text. The log is the data. The scale is the output. Together, they tell you your real TDEE.</p>
+
+    <p>No calculator needed. No activity multiplier dropdown. No guessing whether you're "lightly" or "moderately" active. Just your food, your weight, and the math that connects them.</p>
+
+    <p>That's how you find a number you can actually trust.</p>
+
+    <div class="article-cta">
+      <p><strong>Stop guessing. Start knowing.</strong></p>
+      <p>Log with KiloKaki — discover your real TDEE from your actual data.</p>
+      <a href="https://t.me/KiloKakiBot" target="_blank">Start logging with KiloKaki →</a>
+    </div>
+
+    <div class="related-reads">
+      <h3>Related Reading</h3>
+      <ul>
+        <li><a href="/blog/the-calorie-budget-method.html">The Calorie Budget Method — Stop Dieting, Start Spending</a></li>
+        <li><a href="/blog/the-plateau-problem.html">The Plateau Problem: You've Been Logging for Months and the Scale Won't Move</a></li>
+        <li><a href="/blog/why-you-plateau-at-week-3.html">Why You Plateau at Week 3 — And How to Push Through</a></li>
+        <li><a href="/blog/the-scale-is-lying-to-you.html">The Scale Is Lying to You: Why Daily Weight Fluctuations Feel Like Failure</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
