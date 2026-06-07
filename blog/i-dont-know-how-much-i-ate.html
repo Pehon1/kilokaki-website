@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The "I Don't Know How Much I Ate" Problem: Why Estimation Beats Precision in Food Logging — KiloKaki Blog</title>
+  <meta name="description" content="You didn't weigh the chicken. You don't know how much oil the cook used. So you skip logging. Here's why close enough is infinitely better than nothing — and how to estimate without the guilt.">
+  <meta property="og:title" content='The "I Don\'t Know How Much I Ate" Problem: Why Estimation Beats Precision'>
+  <meta property="og:description" content="People skip logging because they can't be precise. But close enough beats nothing every single time. Here's why.">
+  <meta property="og:url" content="https://kilokaki.com/blog/i-dont-know-how-much-i-ate.html">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="https://kilokaki.com/og-blog-default.png">
+  <meta name="twitter:card" content="summary_largeimage">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "The \"I Don't Know How Much I Ate\" Problem: Why Estimation Beats Precision in Food Logging",
+    "description": "You didn't weigh the chicken. You don't know how much oil the cook used. So you skip logging. Here's why close enough is infinitely better than nothing.",
+    "url": "https://kilokaki.com/blog/i-dont-know-how-much-i-ate.html",
+    "datePublished": "2026-06-07",
+    "dateModified": "2026-06-07",
+    "author": {
+      "@type": "Organization",
+      "name": "KiloKaki"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "KiloKaki"
+    }
+  }
+  </script>
+  <style>
+    :root { --green: #84cc16; --green-dark: #4d7c0f; --orange: #f97316; --cream: #fffaf2; --text: #1f2937; --muted: #6b7280; --card: #ffffff; --line: #e5e7eb; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); background: linear-gradient(180deg, #f7fee7 0%, #fffaf2 40%, #ffffff 100%); line-height: 1.6; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+    .nav { display:flex; align-items:center; justify-content:space-between; gap:20px; padding: 20px 0; }
+    .brand { font-size: 18px; font-weight: 700; color: var(--green-dark); text-decoration: none; display:flex; align-items:center; gap:8px; }
+    .cta { display:inline-flex; align-items:center; justify-content:center; text-decoration:none; border-radius:999px; padding:12px 20px; font-weight:700; font-size:14px; background:var(--green); color:#111827; box-shadow:0 8px 20px rgba(132,204,22,.2); }
+    .article-header { padding: 48px 0 32px; }
+    .category { font-size: 12px; font-weight: 700; color: var(--green-dark); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+    .article-title { font-size: clamp(26px, 5vw, 38px); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 16px; color: var(--text); }
+    .article-lead { font-size: 18px; color: var(--muted); margin: 0 0 20px; line-height: 1.6; }
+    .read-time { font-size: 13px; color: var(--muted); }
+    .article-body h2 { font-size: 20px; font-weight: 700; margin-top: 40px; margin-bottom: 16px; color: var(--text); }
+    .article-body p { margin: 0 0 20px; font-size: 17px; color: var(--text); }
+    .article-body blockquote { border-left:4px solid var(--green); padding:4px 20px; margin:24px 0; background:rgba(132,204,22,.06); border-radius:0 8px 8px 0; font-style:italic; color:var(--muted); font-size:17px; }
+    .article-body strong { color: var(--text); }
+    .article-body ul { margin: 0 0 20px; padding-left: 20px; }
+    .article-body li { margin: 0 0 8px; font-size: 17px; }
+    .article-body ol { margin: 0 0 20px; padding-left: 20px; }
+    .article-body a { color: var(--green-dark); font-weight: 600; }
+    .article-body h3 { font-size: 18px; font-weight: 700; margin-top: 28px; margin-bottom: 12px; color: var(--text); }
+    .article-cta { background:linear-gradient(180deg,#f7fee7 0%,#ecfccb 100%); border:1px solid #d9f99d; border-radius:20px; padding:28px 32px; text-align:center; margin:40px 0 0; }
+    .article-cta p { margin:0 0 16px; font-size:17px; font-weight:600; }
+    .article-cta a { display:inline-block; background:var(--green); color:#111827; padding:14px 28px; border-radius:999px; text-decoration:none; font-weight:700; font-size:15px; box-shadow:0 8px 20px rgba(132,204,22,.25); }
+    .related-reads { margin: 40px 0 0; padding: 20px 0; border-top: 1px solid var(--line); }
+    .related-reads h3 { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 12px; }
+    .related-reads ul { list-style: none; padding: 0; margin: 0; }
+    .related-reads li { margin: 0 0 8px; }
+    .related-reads a { color: var(--green-dark); text-decoration: none; font-size: 15px; }
+    .related-reads a:hover { text-decoration: underline; }
+    footer { padding: 40px 0; text-align: center; color: var(--muted); font-size: 13px; }
+    footer a { color: var(--green-dark); text-decoration: none; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav">
+    <a href="/" class="brand">🍙 KiloKaki</a>
+    <a href="https://t.me/KiloKakiBot" class="cta">Start Logging</a>
+  </nav>
+
+  <header class="article-header">
+    <div class="category">Food Logging</div>
+    <h1 class="article-title">The "I Don't Know How Much I Ate" Problem</h1>
+    <p class="article-lead">You didn't weigh the chicken. You don't know how much oil the cook used. You have no idea how many grams of rice are on that plate. So you skip logging the entire meal — and that single unlogged meal is the reason your weekly average lies to you.</p>
+    <span class="read-time">~7 min read</span>
+  </header>
+
+  <div class="article-body">
+
+    <h2>The Precision Myth</h2>
+
+    <p>Most food logging apps train you to believe you need exact numbers. Exact grams. Exact calories. Exact macros. They give you barcode scanners, food databases with 47 entries for "chicken breast," and portion-size selectors that ask you to distinguish between a "medium" and "large" apple.</p>
+
+    <p>It sounds scientific. It feels responsible. <strong>It's also completely impractical for most of the meals you eat.</strong></p>
+
+    <p>Can you weigh the chicken your mum cooked? No. Do you know how much oil the hawker uncle used for your char kway teow? Absolutely not. When you share a plate of nasi lemak with a colleague, can you tell me how many grams of sambal ended up on your side? You can't.</p>
+
+    <p>And here's the cruel irony: <strong>the meals that matter most — eating out, social meals, home-cooked food — are the hardest to log precisely.</strong> The only meals you <em>can</em> log with accuracy are the boring ones: plain chicken breast, steamed rice from a rice cooker, protein shakes you made yourself.</p>
+
+    <p>So what happens? People log the measurable stuff and skip everything interesting. Their data becomes a record of their most boring meals — which is not the data they actually need.</p>
+
+    <h2>The "All or Nothing" Logging Pattern</h2>
+
+    <p>Here's a day you've probably lived:</p>
+
+    <p><strong>Breakfast:</strong> Two slices of bread with peanut butter. Easy — you log it. 380 calories. Done.</p>
+
+    <p><strong>Lunch:</strong> Chicken rice from the hawker centre. You look at it. You think, "I have no idea how much chicken that is. Was that a regular portion or a small one? How much oily rice?" So you... don't log it.</p>
+
+    <p><strong>Dinner:</strong> Mum made curry. You had "some rice" and "a bit of chicken." You genuinely cannot quantify it. So again — nothing.</p>
+
+    <p><strong>Result:</strong> One meal logged out of three. Your daily total says 380 calories. Your actual intake was probably 1,800–2,200. <strong>Your data is worse than useless — it's actively misleading.</strong></p>
+
+    <blockquote>If you think 380 calories is your daily total, you're going to eat another 1,500 calories of "I've been so good today" snacks. The logged meal created a false sense of deficit.</blockquote>
+
+    <p>This is the all-or-nothing trap. People think: <em>if I can't log it accurately, I shouldn't log it at all.</em> But that logic guarantees the worst possible outcome — zero data for two-thirds of your eating.</p>
+
+    <p><strong>It is always better to log all three meals at 70% accuracy than one meal at 100%.</strong></p>
+
+    <h2>How to Estimate (Without Losing Your Mind)</h2>
+
+    <p>You don't need a scale. You need a framework. Here's the simplest one that actually works:</p>
+
+    <h3>Hand Portions</h3>
+
+    <p>Your hands are built-in measuring tools — and they scale with your body size. Bigger person, bigger hands, bigger portions. It's not perfect, but it's consistent:</p>
+
+    <ul>
+      <li><strong>Palm</strong> = one serving of protein (chicken, fish, tofu)</li>
+      <li><strong>Fist</strong> = one serving of carbs (rice, noodles, potatoes)</li>
+      <li><strong>Cupped hand</strong> = one serving of vegetables</li>
+      <li><strong>Thumb</strong> = one serving of fats (oil, butter, nuts)</li>
+    </ul>
+
+    <p>Two palms of chicken rice? That's roughly 600–750 calories. Log it as "chicken rice, ~650 cal." Done. Thirty seconds.</p>
+
+    <h3>Restaurant and Hawker Estimates</h3>
+
+    <p>Most hawker centre and restaurant plates fall in predictable ranges:</p>
+
+    <ul>
+      <li>Chicken rice: 550–700 cal</li>
+      <li>Char kway teow: 650–850 cal</li>
+      <li>Nasi lemak with chicken: 600–800 cal</li>
+      <li>Subway 6-inch: 350–550 cal (depending on toppings)</li>
+      <li>McDonald's Big Mac meal: 1,000–1,200 cal</li>
+    </ul>
+
+    <p>Pick the midpoint. Log it. Move on. You're not submitting these numbers to a peer-reviewed journal — you're building awareness.</p>
+
+    <h3>Shared Plates</h3>
+
+    <p>Ordered two dishes for three people? Divide by the number of eaters and add a 20% buffer (because shared plates always skew toward whoever eats fastest — probably you).</p>
+
+    <p>The goal isn't precision. The goal is <strong>honest approximation</strong>.</p>
+
+    <h2>Why "Close Enough" Actually Wins</h2>
+
+    <p>Here's the counterintuitive truth: <strong>consistency beats precision, every single time.</strong></p>
+
+    <p>A week of estimated logs — breakfast, lunch, dinner, all three — gives you something that one perfect day never can: <em>a real picture of your eating patterns.</em></p>
+
+    <p>When you log everything roughly, you start to see things:</p>
+
+    <ul>
+      <li>"I eat way more at dinner than I thought."</li>
+      <li>"My lunches are consistently bigger than my breakfasts."</li>
+      <li>"Weekend eating is roughly double weekday eating."</li>
+    </ul>
+
+    <p><strong>None of those insights require exact numbers.</strong> They require coverage — logging enough meals to see the shape of your habits.</p>
+
+    <p>And here's something else that happens: <strong>your brain gets better at estimating over time.</strong> After a few weeks of logging "chicken rice, ~650 cal" and occasionally checking the actual nutritional info, your internal calibration improves. You start recognizing portion sizes. You develop intuition. It's a skill, not a talent — and like any skill, it builds with repetition.</p>
+
+    <blockquote>The data trend still works even with noise. A noisy signal is still a signal. Silence is not.</blockquote>
+
+    <h2>How KiloKaki Handles Ambiguity</h2>
+
+    <p>This is where KiloKaki's design actually solves the problem instead of pretending it doesn't exist.</p>
+
+    <p><strong>Photo logging:</strong> Snap a picture of your plate. The AI estimates what's there. No weighing, no measuring, no scrolling through a database looking for "chicken rice — hawker style — medium portion." Just a photo and a log.</p>
+
+    <p><strong>Voice logging:</strong> "Had chicken rice for lunch, maybe 650 calories." That's it. Five seconds. You're done. No barcode, no database, no guilt about being imprecise.</p>
+
+    <p><strong>Edit after the fact:</strong> If you later remember something — "oh, that portion was actually huge" — you can always adjust. But you logged <em>something</em> in the moment, which is the thing most people fail to do.</p>
+
+    <p>The design philosophy is simple: <strong>remove every barrier between you and the log.</strong> If precision is the barrier, don't demand precision. Demand honesty. Close counts. Close is enough.</p>
+
+    <h2>The 80/20 Rule for Food Logging</h2>
+
+    <p>Here's the math that should make you feel better:</p>
+
+    <p><strong>80% of your progress comes from logging 80% of your meals at roughly 70% accuracy.</strong></p>
+
+    <p>The last 20% of precision — weighing everything, tracking every gram of oil, logging your cooking spray — that's for competitive bodybuilders and people whose jobs depend on hitting exact macros. If that's you, fine. Go ahead. Weigh your food.</p>
+
+    <p><strong>For the other 99% of humans:</strong> close enough is close enough. A week of rough estimates will teach you more about your eating than one day of laboratory-grade precision. The goal is awareness, not a science experiment.</p>
+
+    <p>You don't need to know exactly how much you ate. You just need to log something. Anything. <strong>Close enough beats nothing every single time.</strong></p>
+
+  </div>
+
+  <div class="article-cta">
+    <p>Stop skipping meals you "can't log properly."</p>
+    <a href="https://t.me/KiloKakiBot">Try KiloKaki — Log with a photo or voice note</a>
+  </div>
+
+  <div class="related-reads">
+    <h3>Related</h3>
+    <ul>
+      <li><a href="/blog/the-perfectionism-trap.html">The Perfectionism Trap →</a></li>
+      <li><a href="/blog/the-scale-is-lying-to-you.html">The Scale Is Lying to You →</a></li>
+      <li><a href="/blog/the-all-or-nothing-mindset.html">The All-or-Nothing Mindset →</a></li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <p><a href="/">🍙 KiloKaki</a> — Food logging that doesn't suck.</p>
+</footer>
+</body>
+</html>
