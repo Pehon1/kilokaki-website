@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Snack Gap Problem — Why Your Food Log Doesn't Add Up | KiloKaki</title>
+  <meta name="description" content="You log breakfast, lunch, and dinner — and still gain weight. The calorie math never adds up. Here's the real problem: the snacks you're not logging.">
+  <link rel="canonical" href="https://kilokaki.com/blog/snack-gap-problem.html">
+  <style>
+    :root {
+      --bg: #f9f7f4;
+      --surface: #ffffff;
+      --text: #1a1a1a;
+      --text-secondary: #555;
+      --accent: #2d6a4f;
+      --accent-light: #d8f3dc;
+      --border: #e8e4df;
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 17px;
+    }
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    header {
+      background: var(--accent);
+      color: white;
+      padding: 40px 32px;
+ }
+    header .tag {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      color: var(--accent-light);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .subtitle {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      font-weight: 400;
+    }
+    article {
+      background: var(--surface);
+      padding: 48px 40px;
+      margin: 32px auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    h2 {
+      font-size: 1.5rem;
+      margin: 36px 0 16px;
+      color: var(--accent);
+    }
+    h3 {
+      font-size: 1.2rem;
+      margin: 24px 0 12px;
+    }
+    p {
+      margin-bottom: 20px;
+    }
+    .hook {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--accent);
+      border-left: 4px solid var(--accent);
+      padding-left: 20px;
+      margin: 32px 0;
+    }
+    ul, ol {
+      margin: 0 0 20px 24px;
+    }
+    li {
+      margin-bottom: 10px;
+    }
+    .highlight-box {
+      background: var(--accent-light);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin: 28px 0;
+    }
+    .highlight-box strong {
+      color: var(--accent);
+    }
+    .calorie-math {
+      background: #fff8f0;
+      border: 1px solid #f0e4d4;
+      border-radius: var(--radius);
+      padding: 24px;
+      margin: 28px 0;
+      text-align: center;
+    }
+    .calorie-math .big {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #e07020;
+    }
+    .calorie-math .label {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    .cta-box {
+      background: var(--accent);
+      color: white;
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      margin: 36px 0;
+      text-align: center;
+    }
+    .cta-box p {
+      font-size: 1.1rem;
+      margin-bottom: 0;
+    }
+    .cta-box .cta {
+      display: inline-block;
+      background: white;
+      color: var(--accent);
+      font-weight: 700;
+      padding: 12px 28px;
+      border-radius: 6px;
+      text-decoration: none;
+      margin-top: 16px;
+      font-size: 1rem;
+    }
+    .snack-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .snack-list li {
+      background: var(--bg);
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 0;
+      font-size: 0.95rem;
+    }
+    .snack-list li span {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    footer {
+      text-align: center;
+      padding: 32px 0;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    footer a { color: var(--accent); }
+    @media (max-width: 600px) {
+      article { padding: 32px 24px; }
+      h1 { font-size: 1.8rem; }
+      .snack-list { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <span class="tag">The Consistency Problem</span>
+      <h1>The Snack Gap Problem</h1>
+      <p class="subtitle">You log breakfast, lunch, and dinner — and still gain weight. The calorie math never adds up. Here's why.</p>
+    </div>
+  </header>
+
+  <div class="container">
+    <article>
+      <p class="hook">You tracked every meal perfectly all week. The numbers say you should be in a deficit. The scale went up. What the hell happened?</p>
+
+      <p>You're not broken. You're not lying to yourself. You just have a blind spot — and it's sitting right next to your desk at 3pm.</p>
+
+      <p>Welcome to the Snack Gap. The single biggest reason food logs don't match reality.</p>
+
+      <h2>What the Snack Gap Actually Is</h2>
+
+      <p>Most people think "food logging" means logging meals. Breakfast, lunch, dinner — done. The math looks clean. But here's the problem: the snacks aren't meals. Psychologically, they don't feel like they count.</p>
+
+      <p>A handful of almonds at 11am. A "taste" while cooking dinner. The piece of chocolate someone left on your desk. The sips of your kid's leftover milk. The handful of chips during the afternoon slump.</p>
+
+      <p>None of these feel like food log events. They feel like non-events. And that's exactly why they add up.</p>
+
+      <div class="calorie-math">
+        <div class="big">400–800</div>
+        <div class="label">extra calories from snacks that "don't count" — per day</div>
+      </div>
+
+      <p>That's the gap. Not a little gap. A 400-to-800-calorie-a-day gap. In a week, that's 2,800 to 5,600 extra calories that never touched your log. In a month, it could be a pound of fat — gained while you were faithfully logging your meals.</p>
+
+      <h2>Why Snacks Are Invisible to Your Brain</h2>
+
+      <p>The issue isn't willpower. It's how your brain categorizes food events.</p>
+
+      <p>When you sit down for a meal, there's a clear start and end. You know you ate. You log it. Fine.</p>
+
+      <p>Snacks don't have that structure. They're ambiguous. They're not meals, so they don't feel real. Your brain files them under "not food" even though they are absolutely food. They're calories. They absolutely count.</p>
+
+      <p>This is what researchers call "passive consumption" — eating without the conscious intent that makes you reach for your phone to log. And it's costing you every single day.</p>
+
+      <h2>The Five Snack Traps</h2>
+
+      <p>These are where the Snack Gap hides in plain sight:</p>
+
+      <div class="highlight-box">
+        <strong>1. The Kitchen Taste</strong>
+        <p style="margin-bottom:0">You're cooking dinner and you taste the sauce. A spoonful of pasta. A lick of the spoon. "It's not a meal," you think. But it's 100-200 calories, and it happens every single night.</p>
+      </div>
+
+      <div class="highlight-box">
+        <strong>2. The Afternoon Slump</strong>
+        <p style="margin-bottom:0">3pm hits and you're tired. You walk to the pantry. You eat something. You didn't plan it. You definitely didn't log it. This is the most common snack trap and the one most people don't even register as eating.</p>
+      </div>
+
+      <div class="highlight-box">
+        <strong>3. The Desk Drawer</strong>
+        <p style="margin-bottom:0">You have emergency chocolate. You have nuts. You have crackers. Every time you open that drawer, you're eating on autopilot — and logging is the last thing on your mind.</p>
+      </div>
+
+      <div class="highlight-box">
+        <strong>4. The Social Slide</strong>
+        <p style="margin-bottom:0">Someone brings donuts to the office. You have "just one." Or two. Or three over the course of the day. These social snacks don't feel like choices — they feel like background events. They are absolutely choices, and they absolutely count.</p>
+      </div>
+
+      <div class="highlight-box">
+        <strong>5. The Leftover Finish</strong>
+        <p style="margin-bottom:0">Someone didn't finish their meal. You finish it. "It's not like I'm going to make a whole other portion," you think. But finishing someone else's leftovers is still eating. Still calories. Still not logged.</p>
+      </div>
+
+      <h2>The Real Problem: Snacks Break Your Math</h2>
+
+      <p>Here's the thing about the Snack Gap: it makes your logs look accurate. That's what makes it so insidious.</p>
+
+      <p>You log three meals. Your calorie target is 1,800. You ate 1,750 in meals. The log says you're on track. But you also had 600 calories of snacks. Your actual intake was 2,350. You're over by 550 calories — and your log says you're fine.</p>
+
+      <p>The Snack Gap doesn't just add hidden calories. It makes you think you're doing better than you are. That's the part that really screws with your head.</p>
+
+      <h2>How to Close the Snack Gap</h2>
+
+      <p>You don't need to stop snacking. You need to start logging snacks. That's it. That's the whole fix.</p>
+
+      <p>But "just log snacks" is advice that fails because it doesn't account for how your brain works. You need a system that makes snack logging feel as automatic as snack eating.</p>
+
+      <h3>The Snack Audit</h3>
+
+      <p>For one week, log every single thing that goes in your mouth — even the tastes, even the sips, even the "just this much" moments. Everything. No judgment, no filter. Just log it.</p>
+
+      <p>After that week, look at your log. You'll see where the Snack Gap is biggest. You'll see which snacks are your biggest offenders. You'll start to understand your personal snack patterns.</p>
+
+      <p>The Snack Audit isn't about eating less. It's about seeing clearly.</p>
+
+      <h3>The Three-Bite Rule</h3>
+
+      <p>Here's a practical rule: if it's bigger than three bites, log it. If it's smaller than three bites — a single almond, a sip of coffee with milk — you can let it slide. The math on a single almond is negligible. The math on a handful of almonds is not.</p>
+
+      <p>This rule gives you a simple heuristic so you're not agonizing over every crumb. But it also means you're catching the things that actually move the needle.</p>
+
+      <h3>The Photo-First Habit</h3>
+
+      <p>With KiloKaki, the fastest way to log a snack is a photo. No weighing. No estimating. Just snap it and move on. The photo log is perfect for snacks because:</p>
+
+      <ul>
+        <li>You don't have to interrupt what you're doing</li>
+        <li>You can log in 10 seconds</li>
+        <li>You build a visual record of your snack patterns over time</li>
+      </ul>
+
+      <p>The fewer friction points between "I want a snack" and "I logged the snack," the more likely you are to actually do it.</p>
+
+      <h3>The "Even the Handful" Rule</h3>
+
+      <p>When in doubt, log it. Even the handful. Especially the handful. Because the handful is never just one. It's a handful, you have another because the first wasn't satisfying, and now you've eaten 200 calories of nuts that felt like nothing.</p>
+
+      <p>Log the handful. See the handful. This is how you close the gap.</p>
+
+      <h2>What the Snack Gap Costs You</h2>
+
+      <p>Here's the part nobody talks about: the Snack Gap doesn't just hurt your calorie math. It hurts your trust in food logging.</p>
+
+      <p>When you log accurately, eat well, and still don't see results — you start to distrust the whole system. You think logging doesn't work. You think tracking is pointless. You think you must be doing something wrong.</p>
+
+      <p>You're not broken. Logging works. You just have a gap. And gaps are fixable.</p>
+
+      <p>The moment you start logging snacks — even just for a week — everything clicks into place. The math starts to make sense. The scale starts to make sense. You stop feeling like you're fighting your own body and start working with it.</p>
+
+      <div class="cta-box">
+        <p>Log the snack. Even the handful. Especially the handful.</p>
+        <a href="https://t.me/KiloKakiBot?start=src_blog_60" class="cta">Start Logging →</a>
+      </div>
+
+      <h2>The Snack Gap Is Not a Willpower Problem</h2>
+
+      <p>Final thought: the Snack Gap is not about discipline. It's not about being "good" or "bad." It's about information.</p>
+
+      <p>You can't fix what you can't see. And right now, your snacks are invisible — to your log, to your math, and to your awareness.</p>
+
+      <p>Logging snacks isn't about eating less. It's about seeing clearly. Once you see clearly, you can make real choices. And that's how food logging actually works.</p>
+
+    </article>
+    <footer>
+      <p>KiloKaki — Food logging without the friction.<br>
+      <a href="https://kilokaki.com">Back to KiloKaki</a></p>
+    </footer>
+  </div>
+</body>
+</html>
