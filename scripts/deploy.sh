@@ -12,9 +12,28 @@
 # This script uses rsync for RECURSIVE directory upload — it handles subdirectories
 # like blog/ automatically. Do NOT use plain sftp put for individual top-level files.
 #
-# Usage: bash scripts/deploy.sh [--dry-run]
+# Usage: bash scripts/deploy.sh [--dry-run|--check]
 
 set -euo pipefail
+
+# --- Arguments ---
+# Parsed BEFORE secrets load or any network call, so a bad flag costs nothing.
+# Previously: [[ $1 == --dry-run ]] && DRY_RUN=true -- any OTHER argument was
+# silently ignored and fell through to a REAL DEPLOY. On 2026-07-17 `--check`
+# (a flag that did not exist) shipped to production exactly this way.
+DRY_RUN=false
+CHECK_ONLY=false
+case "${1:-}" in
+  "")        ;;
+  --dry-run) DRY_RUN=true ;;
+  --check)   CHECK_ONLY=true ;;
+  *)
+    echo "ERROR: unknown argument: $1" >&2
+    echo "Usage: bash scripts/deploy.sh [--dry-run|--check]" >&2
+    echo "Refusing to deploy on an argument I do not understand." >&2
+    exit 2
+    ;;
+esac
 
 # --- Secrets ---
 # This repo is PUBLIC. Credentials load from a file outside the tree; nothing
@@ -45,8 +64,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 REMOTE_PUBLIC_HTML="${REMOTE_BASE_DIR}/public_html"
 
-DRY_RUN=false
-[[ "${1:-}" == "--dry-run" ]] && DRY_RUN=true
 
 SSH_CMD="sshpass -e ssh -o StrictHostKeyChecking=no"
 
@@ -139,6 +156,14 @@ if $DRY_RUN; then
 fi
 
 drift_guard
+
+# --check stops here: the guard is the thing under test, and it must be
+# exercisable without deploying. --dry-run exits before the guard, so it
+# never tested it.
+if $CHECK_ONLY; then
+  echo "[--check] Guard passed. Nothing was deployed."
+  exit 0
+fi
 
 # --- Upload recursively via rsync + sshpass ---
 echo "→ Uploading files (recursive)..."
