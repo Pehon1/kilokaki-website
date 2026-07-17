@@ -50,15 +50,49 @@ website-phase2-copy-deck.md
 PUBLIC-MANIFEST.md         # this file
 ```
 
-**Currently live on prod and should not be** (verified 200 on 2026-07-17):
-`website-phase2-copy-deck.md` and all 9 `scripts/*.py`.
+**Were live on prod and should not have been** (verified 200 on 2026-07-17,
+removed the same day): `website-phase2-copy-deck.md` and all 9 `scripts/*.py`.
+Prod is clean; this list is the reason the allow-list exists, not an open item.
 
 No credentials in any of them — independently confirmed by Coco and by the
 parallel session's scan. This is **source/doc exposure, nothing to rotate.**
 It reveals how the site is built and an internal Phase 2 copy deck. Low
 severity, zero urgency, but it has no business being served.
 
-## ⚠️ For Mochi — `--exclude` will NOT clean this up
+## ⚠️ THE GUARD IS BLIND TO EVERYTHING ON THIS LIST — permanent, by design
+
+**Read this before touching any excluded path on prod, including `scripts/`.**
+
+The drift guard enumerates what `--delete` would remove. Excluded paths are not
+in that set, so the guard cannot see them. Excluding a path removes it from the
+deploy **and** from the deploy's only safety check, in one move. That is not a
+bug; it is what `--exclude` means. But it has a consequence nobody stated when we
+built it:
+
+**Every path on the DOES NOT SHIP list is a place where production can hold the
+only copy of something and nothing will ever warn you.** The guard's own header
+describes exactly this failure — content authored straight to prod, a routine
+deploy destroying the only copy — and the allow-list is what switches that
+warning off for these paths.
+
+So: **anyone removing or overwriting an excluded path on prod must enumerate it
+by hand first.** There is no automated net for these and there cannot be one.
+
+    rsync -azn --delete --itemize-changes -e "$SSH_CMD" \
+      <repo-path>/ user@host:<prod-path>/ | grep '^\*deleting'
+
+Anything listed is on prod and not in git. On 2026-07-17 this was run against
+`public_html/scripts/` before deleting it — clean, all 9 `.py` had copies in the
+repo, so the `rm` destroyed nothing unique. That check was manual because the
+guard could not do it, and it is the only reason the deletion was safe rather
+than lucky.
+
+`scripts/` no longer exists on prod. It can come back. So can any other path here.
+
+## ⚠️ Historical — `--exclude` did NOT clean this up
+
+*(Resolved 2026-07-17: Coco ran the `rm`. Ten paths deleted, caches purged, all
+verified 404. Kept because the reasoning is why the allow-list exists.)*
 
 `scripts/deploy.sh` already carries `--exclude='scripts/'`. **That does not
 remove the 9 live `.py` files, and it will look like it did.**
