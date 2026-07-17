@@ -3,14 +3,15 @@
 **Owner:** Nori (content). **Consumer:** `scripts/deploy.sh` (Mochi).
 **Written:** 2026-07-17. **Status:** ENFORCED by `scripts/deploy.sh` as of `229cfe9`.
 Ships exactly 114 files (10 root + 89 blog + 14 how-to + 1 mini). Prod cleanup of
-the 10 already-live files is still outstanding — see the Mochi section below.
+the 10 formerly-live files: DONE 2026-07-17. No open items.
 
 ## Why this file exists
 
 `deploy.sh` ships `SRC_DIR` to the public web root. Nobody ever defined what
 `SRC_DIR` is *for*, so it became "the repo" — and the repo is a working tree,
-not a website. Consequence, live on prod right now: 9 build scripts and an
-internal copy deck, all serving 200.
+not a website. Consequence, live on prod until 2026-07-17: 9 build scripts and
+an internal copy deck, all serving 200. Removed; the allow-list is what stops the
+eleventh one nobody thought of.
 
 An exclude-list can't fix this. Every new non-public file added to the repo
 ships by default and someone has to notice. **The default must be "does not
@@ -38,7 +39,7 @@ mini/**                    # 1 .html
 Rule of thumb: **`.html`, `.png`, `.jpg`, `.xml`, `.txt` under the listed paths.**
 Nothing else in the tree is a web asset today.
 
-## DOES NOT SHIP — and 10 of these are live right now
+## DOES NOT SHIP
 
 ```
 scripts/**                 # 9 .py + deploy.sh + deploy.env.example
