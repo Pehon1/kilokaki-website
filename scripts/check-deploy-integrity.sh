@@ -68,6 +68,17 @@ else
 fi
 
 # 4. No secret has crept back into the canonical. This repo is public.
+#
+# SCOPE, because a guard that quietly narrows is worse than none: this matches
+# OUR tokens by their prefixes (cfut_ = Cloudflare, cw.ut_ = Cloudways) and an
+# assigned SSHPASS. It is deliberately not a generic secret scanner — this repo
+# is public, so the checker cannot hold the literal values to grep for, and
+# entropy heuristics would fire on every base64 blob in the tree.
+#
+# The tradeoff: if either provider changes its token format, this check keeps
+# printing "canonical holds no secrets" while catching nothing. It fails OPEN.
+# Verified 2026-07-17: live CF_API_TOKEN is cfut_ (53 chars), CW_API_TOKEN is
+# cw.ut_ (41) — prefixes current. Recheck on any credential rotation.
 if grep -qE '(SSHPASS=["'"'"']..|Bearer (cfut_|cw\.ut_)[A-Za-z0-9]{16})' "$CANONICAL"; then
   bad "a credential is hardcoded in the canonical script — this repo is PUBLIC"
 else
