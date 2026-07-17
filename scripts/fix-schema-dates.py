@@ -20,14 +20,24 @@ What it will NOT do, deliberately:
 """
 import argparse
 import datetime
-import glob
+import importlib.util
 import json
 import os
 import re
 import subprocess
 
-STUB_BYTES = 2000
 LD = r'<script type="application/ld\+json">(.*?)</script>'
+
+# Import the population rule rather than restating it. Two copies of "what counts
+# as a post" is how the count floated in the first place (53/54, 67/85), and how
+# three deploy.sh copies drifted apart unnoticed. One definition, one number.
+_spec = importlib.util.spec_from_file_location(
+    "check_schema_dates",
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "check-schema-dates.py"),
+)
+_checker = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_checker)
+population = _checker.population
 
 
 def first_commit(path):
@@ -87,10 +97,8 @@ def main():
     os.chdir(root)
     fixed = added = lifted = skipped_tz = 0
 
-    for path in sorted(glob.glob("blog/*.html")):
+    for path in population()[0]:
         name = os.path.basename(path)
-        if os.path.getsize(path) < STUB_BYTES or name == "index.html":
-            continue
         html = open(path, encoding="utf-8").read()
         commit = first_commit(path)
         if commit is None:
