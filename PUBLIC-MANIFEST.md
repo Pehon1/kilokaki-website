@@ -31,10 +31,29 @@ logo.png
 og-blog-default.png        # og fallback image
 photo-log.png
 
-blog/**                    # 86 .html (77 articles + 8 redirect stubs + index) + 3 images
-how-to/**                  # 14 .html product docs
-mini/**                    # 1 .html
+blog/*.html  *.png  *.jpg  *.jpeg  *.webp  *.svg  *.css  *.js
+                           # FLAT, one level. 86 .html (77 articles + 8 redirect
+                           # stubs + index) + 3 images.
+                           # ⚠️ SUBDIRECTORIES UNDER blog/ DO NOT SHIP, AND THE
+                           # GUARD WILL NOT TELL YOU. Add blog/images/ and it is
+                           # silently dropped: the page still returns 200, it just
+                           # looks broken. See "THE GUARD IS BLIND" below.
+how-to/*.html  *.png  *.jpg  *.css  *.js
+                           # FLAT, one level. 14 product docs. Same warning.
+mini/*.html  *.png  *.css  *.js
+                           # FLAT, one level. Same warning.
 ```
+
+**Flat is deliberate, not an oversight.** `blog/**` would ship anything dropped
+into the directory — a stray `.md`, a `.py` — which is the deny-list failure this
+whole file replaces. The cost of that choice is the warning above: **new
+subdirectories are invisible to the deploy AND to the guard.** If you need one,
+add an explicit `--include` for it in `scripts/deploy.sh` and list it here. Do not
+"fix" it by reaching for `**`.
+
+Verified 2026-07-17: `find blog how-to mini -mindepth 1 -type d` → empty. All
+three trees are flat today, so flat-vs-recursive changes nothing that currently
+ships. This is a trap for tomorrow, not a bug today.
 
 Rule (Nori's, 2026-07-17): **ship `.html`, `.css`, `.js`, `.png/.jpg/.svg/.webp/.ico`,
 fonts, `robots.txt`, `sitemap.xml`, and the `blog/`, `how-to/`, `mini/` trees.
@@ -47,9 +66,6 @@ you** — excluded paths are invisible to the drift guard (see below). A stylesh
 added tomorrow would ship a broken site with a clean dry-run. Verified: with the
 narrow list, `style.css` was dropped; with this one it ships, while `notes.md`
 and a stray `blog/*.py` are still dropped.
-
-Note the trees use `*.ext`, never `**` — `blog/**` would ship anything dropped
-into that directory, which is the deny-list failure this file replaces.
 
 ## DOES NOT SHIP — documentation, NOT enforcement
 
