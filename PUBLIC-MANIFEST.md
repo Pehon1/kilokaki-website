@@ -107,6 +107,20 @@ describes exactly this failure — content authored straight to prod, a routine
 deploy destroying the only copy — and the allow-list is what switches that
 warning off for these paths.
 
+**Understand the failure mode precisely, because it is the worst kind (Nori,
+2026-07-17):** this is not a broken check. It is a *correct* check, running
+correctly, reporting truthfully on a set that no longer contains the thing you
+care about. It does not error. It does not time out. It prints
+`✓ production holds nothing the repo is missing` and exits 0 — **and it will do
+that forever, for every excluded path, no matter what is on prod.**
+
+A broken guard announces itself the first time you run it. This one never will.
+Compare the other false-passes of 2026-07-17 — a pipe's exit status, a missing
+`timeout` binary, a `grep -c` that matched a comment — every one of those was an
+instrument lying. This is the instrument telling the truth about the wrong
+question. **You cannot catch it by being careful with the tool; you can only
+catch it by knowing the tool's scope.** Which is why this section exists.
+
 So: **anyone removing or overwriting an excluded path on prod must enumerate it
 by hand first.** There is no automated net for these and there cannot be one.
 
