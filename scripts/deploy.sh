@@ -82,6 +82,7 @@ SSH_CMD="sshpass -e ssh -o StrictHostKeyChecking=no"
 # clean them, and every dry-run will report clean regardless. That is a false
 # PASS with a long fuse -- see PUBLIC-MANIFEST.md.
 RSYNC_FILTER=(
+  # Root: the pages and assets, explicitly.
   --include='/index.html'
   --include='/about.html'
   --include='/pricing.html'
@@ -92,14 +93,42 @@ RSYNC_FILTER=(
   --include='/logo.png'
   --include='/og-blog-default.png'
   --include='/photo-log.png'
+  # Root: web-asset types. None exist today (all styling is inline) -- these are
+  # here so that adding a stylesheet tomorrow does not silently ship a broken
+  # site. An allow-list that only permits what exists today drops the next thing
+  # someone adds, and the guard cannot warn: excluded paths are invisible to it.
+  --include='/*.css'
+  --include='/*.js'
+  --include='/*.svg'
+  --include='/*.ico'
+  --include='/*.webp'
+  --include='/*.jpg'
+  --include='/*.jpeg'
+  --include='/*.woff'
+  --include='/*.woff2'
+  --include='/*.ttf'
+  # Content trees, web assets only. Never '**' -- that would ship a stray .md
+  # or .py dropped into blog/, which is the deny-list failure this replaces.
   --include='/blog/'
+  --include='/how-to/'
+  --include='/mini/'
   --include='/blog/*.html'
   --include='/blog/*.png'
   --include='/blog/*.jpg'
-  --include='/how-to/'
+  --include='/blog/*.jpeg'
+  --include='/blog/*.webp'
+  --include='/blog/*.svg'
+  --include='/blog/*.css'
+  --include='/blog/*.js'
   --include='/how-to/*.html'
-  --include='/mini/'
+  --include='/how-to/*.png'
+  --include='/how-to/*.jpg'
+  --include='/how-to/*.css'
+  --include='/how-to/*.js'
   --include='/mini/*.html'
+  --include='/mini/*.png'
+  --include='/mini/*.css'
+  --include='/mini/*.js'
   --exclude='*'
 )
 

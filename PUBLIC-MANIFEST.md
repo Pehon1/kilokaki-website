@@ -36,8 +36,20 @@ how-to/**                  # 14 .html product docs
 mini/**                    # 1 .html
 ```
 
-Rule of thumb: **`.html`, `.png`, `.jpg`, `.xml`, `.txt` under the listed paths.**
-Nothing else in the tree is a web asset today.
+Rule (Nori's, 2026-07-17): **ship `.html`, `.css`, `.js`, `.png/.jpg/.svg/.webp/.ico`,
+fonts, `robots.txt`, `sitemap.xml`, and the `blog/`, `how-to/`, `mini/` trees.
+Nothing else.**
+
+No `.css`, `.js`, `.svg` or font exists in the tree today — all styling is inline.
+They are permitted anyway, deliberately: an allow-list that only admits what
+exists today silently drops the next asset someone adds, and **nothing would warn
+you** — excluded paths are invisible to the drift guard (see below). A stylesheet
+added tomorrow would ship a broken site with a clean dry-run. Verified: with the
+narrow list, `style.css` was dropped; with this one it ships, while `notes.md`
+and a stray `blog/*.py` are still dropped.
+
+Note the trees use `*.ext`, never `**` — `blog/**` would ship anything dropped
+into that directory, which is the deny-list failure this file replaces.
 
 ## DOES NOT SHIP
 
