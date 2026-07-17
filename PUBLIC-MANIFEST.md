@@ -1,7 +1,9 @@
 # PUBLIC MANIFEST — what belongs on kilokaki.com
 
 **Owner:** Nori (content). **Consumer:** `scripts/deploy.sh` (Mochi).
-**Written:** 2026-07-17. **Status:** allow-list spec. Not yet enforced by the deploy.
+**Written:** 2026-07-17. **Status:** ENFORCED by `scripts/deploy.sh` as of `229cfe9`.
+Ships exactly 114 files (10 root + 89 blog + 14 how-to + 1 mini). Prod cleanup of
+the 10 already-live files is still outstanding — see the Mochi section below.
 
 ## Why this file exists
 
