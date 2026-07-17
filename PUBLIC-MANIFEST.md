@@ -51,10 +51,25 @@ and a stray `blog/*.py` are still dropped.
 Note the trees use `*.ext`, never `**` — `blog/**` would ship anything dropped
 into that directory, which is the deny-list failure this file replaces.
 
-## DOES NOT SHIP
+## DOES NOT SHIP — documentation, NOT enforcement
+
+**This list does not protect you. Do not rely on it, and do not maintain it as
+if a gap were a hole.** `scripts/deploy.sh` ends its filter with `--exclude='*'`:
+anything not explicitly on the SHIPS list is dropped, full stop. **The deny side
+is never enumerated, so it cannot be enumerated wrongly.** This list exists to
+tell a reader what's in the tree and why it's private — nothing more.
+
+That distinction was earned. Both authors of this file miscounted this list on
+the day they wrote it (11, then 13; it is 14 — `scripts/` holds 12 tracked files,
+and `check-deploy-integrity.sh` was missed by both). **It cost nothing, because
+the design makes the count non-load-bearing.** Under the old deny-list, the same
+miss would have published a file. That is the whole argument for default-deny in
+one example: not that careful people stop miscounting, but that the miscount
+stops mattering.
 
 ```
-scripts/**                 # 9 .py + deploy.sh + deploy.env.example
+scripts/**                 # 12 tracked: 9 .py + deploy.sh + deploy.env.example
+                           #             + check-deploy-integrity.sh
 website-phase2-copy-deck.md
 .git/**
 .gitignore
@@ -62,6 +77,10 @@ website-phase2-copy-deck.md
 .DS_Store
 PUBLIC-MANIFEST.md         # this file
 ```
+
+Reconciles against `git ls-files` (129 = 114 ships + 14 non-ship + `.gitignore`),
+but the reconciliation is a sanity check, not the safety mechanism. **The safety
+mechanism is `--exclude='*'`.**
 
 **Were live on prod and should not have been** (verified 200 on 2026-07-17,
 removed the same day): `website-phase2-copy-deck.md` and all 9 `scripts/*.py`.
