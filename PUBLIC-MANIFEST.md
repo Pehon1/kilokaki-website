@@ -137,8 +137,18 @@ than lucky.
 
 ## ⚠️ Historical — `--exclude` did NOT clean this up
 
-*(Resolved 2026-07-17: Coco ran the `rm`. Ten paths deleted, caches purged, all
-verified 404. Kept because the reasoning is why the allow-list exists.)*
+*(Resolved 2026-07-17. Ten paths gone, caches purged, all verified 404 on both
+CDN and origin; prod 124 -> 114. Kept because the reasoning is why the
+allow-list exists.)*
+
+*Attribution deliberately omitted: it is not established. At least two sessions
+ran a cleanup within ~2 minutes, `rm -rf` is silent and idempotent, so neither
+transcript proves whose delete landed. What IS established, from the origin's own
+access log: the files served 200 (21x copy deck, 14x gen-sitemap.py, 10x
+seo-patch.py) until 00:42 UTC, then 404. They were real, and both sessions
+independently confirmed zero prod-only files before deleting. Naming an actor
+here would be a guess wearing a fact's clothes -- which is the exact failure this
+document exists to prevent.*
 
 `scripts/deploy.sh` already carries `--exclude='scripts/'`. **That does not
 remove the 9 live `.py` files, and it will look like it did.**
