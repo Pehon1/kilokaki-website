@@ -67,14 +67,40 @@ REMOTE_PUBLIC_HTML="${REMOTE_BASE_DIR}/public_html"
 
 SSH_CMD="sshpass -e ssh -o StrictHostKeyChecking=no"
 
+# --- What ships (allow-list) ---
+# Source of truth: PUBLIC-MANIFEST.md. This replaces a deny-list: under it every
+# new non-public file shipped by default and someone had to notice. Nobody
+# noticed website-phase2-copy-deck.md for three months. Default is now "does not
+# ship" -- if it is not listed here, it does not reach the public web root.
+#
 # The drift guard and the real upload MUST share this list. If they diverge, the
 # guard measures a different delete-set than the deploy performs, and it lies.
-# scripts/ is excluded because public_html is web-served: anything synced there
-# is world-readable, and this script must never be fetchable over HTTP.
-RSYNC_EXCLUDES=(
-  --exclude='.git/'
-  --exclude='.gitignore'
-  --exclude='scripts/'
+#
+# NOTE: --exclude PROTECTS a path from --delete; it does not remove what is
+# already live. The 9 scripts/*.py and the copy deck serving 200 today need a
+# one-time manual rm on prod. This list stops them coming back; it will not
+# clean them, and every dry-run will report clean regardless. That is a false
+# PASS with a long fuse -- see PUBLIC-MANIFEST.md.
+RSYNC_FILTER=(
+  --include='/index.html'
+  --include='/about.html'
+  --include='/pricing.html'
+  --include='/how-to-log-food.html'
+  --include='/how-to-track-meals.html'
+  --include='/robots.txt'
+  --include='/sitemap.xml'
+  --include='/logo.png'
+  --include='/og-blog-default.png'
+  --include='/photo-log.png'
+  --include='/blog/'
+  --include='/blog/*.html'
+  --include='/blog/*.png'
+  --include='/blog/*.jpg'
+  --include='/how-to/'
+  --include='/how-to/*.html'
+  --include='/mini/'
+  --include='/mini/*.html'
+  --exclude='*'
 )
 
 # --- Drift guard ---
@@ -89,7 +115,7 @@ drift_guard() {
   local out
   local rc=0
   out=$(rsync -azn --delete --itemize-changes \
-    "${RSYNC_EXCLUDES[@]}" \
+    "${RSYNC_FILTER[@]}" \
     -e "$SSH_CMD" \
     "$SRC_DIR/" \
     "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PUBLIC_HTML}/" 2>&1) || rc=$?
@@ -148,7 +174,7 @@ fi
 if $DRY_RUN; then
   echo "[DRY RUN] Would sync:"
   rsync -avzn --delete \
-    "${RSYNC_EXCLUDES[@]}" \
+    "${RSYNC_FILTER[@]}" \
     -e "$SSH_CMD" \
     "$SRC_DIR/" \
     "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PUBLIC_HTML}/"
@@ -168,7 +194,7 @@ fi
 # --- Upload recursively via rsync + sshpass ---
 echo "→ Uploading files (recursive)..."
 rsync -avz --delete \
-  "${RSYNC_EXCLUDES[@]}" \
+  "${RSYNC_FILTER[@]}" \
   -e "$SSH_CMD" \
   "$SRC_DIR/" \
   "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PUBLIC_HTML}/"
