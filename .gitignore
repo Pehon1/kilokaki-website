@@ -1,0 +1,7 @@
+# This repo is PUBLIC. Deploy credentials live outside the tree
+# (~/.config/kilokaki-site/deploy.env). These patterns are belt-and-braces
+# in case someone drops a filled-in copy here by mistake.
+deploy.env
+*.env
+!*.env.example
+.DS_Store
