@@ -249,6 +249,20 @@ fi
 
 drift_guard
 
+# --- Sitemap staleness gate: DELIBERATELY NOT HERE ---
+# This branch used to call `gen-sitemap.py --check` directly and abort on its
+# exit 1. Removed 2026-07-22 by Coco's ruling: the gate lives in
+# scripts/sitemap-gate.sh on branch sitemap-gate (b63dabf), which does NOT trust
+# the generator's exit 1 — it distinguishes stale (1) from "could not reach a
+# verdict" (2), because a generator that raises also exits 1 and my version read
+# that as a clean stale-detection.
+#
+# DO NOT RE-ADD A CALLER HERE. Two callers is the failure mode, not two files:
+# the merge of this branch and sitemap-gate is CLEAN (measured, exit 0, zero
+# conflict markers) and lands BOTH gates — the rejected design survives after
+# drift_guard with nothing to make a reviewer look. If you want the check, the
+# answer is sitemap-gate.sh, once it merges.
+
 # --check stops here: the guards are the thing under test, and they must be
 # exercisable without deploying. --dry-run exits before them, so it never
 # tested either one.
@@ -274,47 +288,64 @@ sshpass -e ssh -o StrictHostKeyChecking=no "${REMOTE_USER}@${REMOTE_HOST}" \
 
 echo "✓ Permissions fixed."
 
-# --- Purge Cloudflare cache ---
-echo "→ Purging Cloudflare cache..."
-curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cache" \
-  -H "Authorization: Bearer ${CF_API_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{"purge_everything":true}' > /dev/null
-echo "✓ Cloudflare cache purged."
+# --- Purge the caches, and read the answers ---
+# Replaces two curl calls that piped their results to /dev/null and printed a
+# checkmark unconditionally. Both were structurally incapable of failing; on
+# 2026-07-22 they printed green while the edge served a six-day-old sitemap.
+# cache-purge.sh exits 0 pass / 1 BLOCK / 2 UNKNOWN, and every checkmark it
+# prints is downstream of a comparison proven to go red (test-cache-purge.sh).
+CACHE_PATHS=(/sitemap.xml / /blog/ /how-to/)
+purge_rc=0
+bash "${SCRIPT_DIR}/cache-purge.sh" "${CACHE_PATHS[@]}" || purge_rc=$?
+if [[ $purge_rc -ne 0 ]]; then
+  echo "" >&2
+  echo "FILES ARE UPLOADED, CACHES ARE NOT CONFIRMED PURGED (exit $purge_rc)." >&2
+  echo "  The origin has the new bytes; the edge may still be serving old ones." >&2
+  echo "  Do NOT declare this deploy done. Resolve the purge, then run:" >&2
+  echo "    bash scripts/cache-purge.sh ${CACHE_PATHS[*]}" >&2
+  echo "    bash scripts/verify-edge.sh ${CACHE_PATHS[*]}" >&2
+  exit 1
+fi
 
-# --- Restart Varnish (CF purge does NOT clear Varnish — blog index is Varnish-cached) ---
-echo "→ Restarting Varnish cache..."
-curl -s -X POST "https://api.cloudways.com/public/v1/service/${CW_SERVER_ID}/${CW_APP_ID}/restart" \
-  -H "Authorization: Bearer ${CW_API_TOKEN}" \
-  -H "Content-Type: application/json" > /dev/null
-sleep 5
-echo "✓ Varnish restarted."
-
-# --- Health check ---
+# --- Acceptance check: ask the EDGE, not ourselves ---
+# The old health check was `curl -sI ... | head -1` on three paths. All three
+# returned 200 through the entire stale-sitemap window, because a stale object
+# is still a 200. Every other signal in this script reports on an action this
+# script performed; this is the only one that does not.
 echo ""
-echo "→ Checking site..."
 sleep 3
-STATUS=$(curl -sI "https://kilokaki.com" | head -1)
-echo "  https://kilokaki.com → $STATUS"
-
-STATUS_BLOG=$(curl -sI "https://kilokaki.com/blog/" | head -1)
-echo "  https://kilokaki.com/blog/ → $STATUS_BLOG"
-
-STATUS_HT=$(curl -sI "https://kilokaki.com/how-to/" | head -1)
-echo "  https://kilokaki.com/how-to/ → $STATUS_HT"
+verify_rc=0
+bash "${SCRIPT_DIR}/verify-edge.sh" "${CACHE_PATHS[@]}" || verify_rc=$?
+if [[ $verify_rc -ne 0 ]]; then
+  echo "" >&2
+  echo "DEPLOY NOT VERIFIED (verify-edge.sh exit $verify_rc)." >&2
+  if [[ $verify_rc -eq 1 ]]; then
+    echo "  The edge is serving something other than the tree that was just shipped." >&2
+  else
+    echo "  The edge could not be checked. That is not the same as it being fine." >&2
+  fi
+  exit 1
+fi
 
 echo ""
-echo "✓ Done!"
+echo "✓ Done! — files uploaded, caches purged (checked), edge serving this tree (checked)."
 
-# --- Post-deploy: curl-verify YOUR article slug in live blog index ---
+# --- Post-deploy ---
+# The old text here told the operator to curl-verify their slug by hand, and
+# asserted "CF purge + Varnish restart = origin correct + CDN correct". That
+# equation is what failed on 2026-07-22: both steps "succeeded" and the CDN was
+# wrong. verify-edge.sh above now does the check that sentence was asking a
+# human to remember, on the paths this deploy actually touched.
 echo ""
-echo "⚠️  IMPORTANT: curl-verify the live blog index for YOUR article slug before declaring done."
-echo "   CF purge + Varnish restart = origin correct + CDN correct."
-echo "   Example: curl -s \"https://kilokaki.com/blog/\" | grep \"your-slug\""
-echo ""
-echo "⚠️  Varnish note: if blog index still stale after restart, restart via Cloudways dashboard."
+echo "Verified above: ${CACHE_PATHS[*]}"
+echo "Shipped a new blog/how-to page? It is only covered if its path is in that"
+echo "list. Check it explicitly:"
+echo "    bash scripts/verify-edge.sh /blog/your-slug/"
 echo ""
 echo "Troubleshooting:"
 echo "  403 on homepage?       → chmod fix above + check index.php.bak exists"
 echo "  403 on /blog/ or /how-to/? → dirs got 700 from rsync — run: sshpass -e ssh ${REMOTE_USER}@${REMOTE_HOST} 'find ${REMOTE_PUBLIC_HTML} -type d -exec chmod 755 {} \;'"
-echo "  Stale blog index?      → Varnish still serving old copy — restart Varnish via Cloudways dashboard or API"
+echo "  verify-edge BLOCK on one path? → that path is still cached somewhere the"
+echo "    targeted PURGE did not reach. Re-run cache-purge.sh for it, then"
+echo "    verify-edge.sh again. If it persists, restart Varnish from the"
+echo "    Cloudways dashboard (the API fallback needs CW_EMAIL, absent today)."
