@@ -10,13 +10,13 @@ Exclusion is by page-level signal, not by filename list:
   - meta refresh  -> redirect stub, the target gets indexed instead
   - robots noindex -> we are explicitly asking Google not to index it
 
-lastmod is STICKY: a url already in sitemap.xml keeps its published date
-verbatim, and only genuinely new urls get a computed one. See published_lastmods().
+lastmod is DERIVED FROM THE PAGE, in this order (see lastmod_for):
+    JSON-LD dateModified -> JSON-LD datePublished -> git %as
+There is no fourth tier and no carried-forward state: a page that answers none
+of the three is an error, not a guess. See lastmod_for() for why mtime is gone.
 
 Run from anywhere:  python3 scripts/gen-sitemap.py [--check]
-  --check            exit 1 if sitemap.xml is stale, write nothing (for CI/cron)
-  --recompute <rel>  drop stickiness for one page (repeatable), e.g.
-                     --recompute blog/the-kopi-problem.html
+  --check   exit 1 if sitemap.xml is stale, write nothing (for CI/cron)
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ from __future__ import annotations
 import re
 import subprocess
 import sys
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
 
 BASE_URL = "https://kilokaki.com"
@@ -47,34 +47,22 @@ RE_LOC = re.compile(r"<loc>\s*([^<\s]+)\s*</loc>")
 RE_LASTMOD = re.compile(r"<lastmod>\s*(\d{4}-\d{2}-\d{2})\s*</lastmod>")
 
 
-class StickyError(Exception):
-    """The published sitemap exists but could not be read as a source of dates."""
+class SitemapError(Exception):
+    """The sitemap cannot be generated from a source we are willing to stand behind."""
 
 
 def published_lastmods() -> dict[str, str]:
-    """loc -> the lastmod we have already published, read back from sitemap.xml.
+    """loc -> the lastmod currently published, read back from sitemap.xml.
 
-    lastmod is a claim about the PAGE, not about the file. Every date this
-    script can compute is derived from git, and git history moves for reasons
-    the page does not: a JSON-LD edit, a rename, a whitespace pass, a rebase.
-    On 2026-07-22 a one-url regen moved 75 lastmods, all forward, for prose
-    nobody had touched -- a 75-url freshness announcement we cannot support,
-    days before a Search Console read that has to stay interpretable.
-
-    So dates are sticky. A url already in the sitemap keeps its published date
-    byte-for-byte; only a url we have never published gets a computed date.
-    Ruling: Coco, 2026-07-22.
-
-    KNOWN BLIND SPOT, stated here so it is not discovered later: this also goes
-    sticky on genuine content edits. The real fix is a content-hash baseline --
-    bump when the rendered page changes, not when git history moves -- and it is
-    queued as a follow-up. Until it lands, --recompute is the only escape hatch,
-    and it is deliberately per-page: there is no flag that re-dates everything,
-    because "re-date everything" is the exact operation this function exists to
-    prevent from happening by accident.
+    REPORTING ONLY. Nothing in the generated output is derived from this; it
+    exists so the run can print which urls move and by how much. It was load
+    bearing under the sticky design (b13ea2e, superseded) and is deliberately
+    demoted rather than deleted, because "what did this change move" is the
+    question a reviewer asks and the answer should come from the file, not
+    from the render describing itself.
     """
     if not SITEMAP.exists():
-        return {}  # first run: nothing has been published, everything is new
+        return {}
     text = SITEMAP.read_text(encoding="utf-8")
     published: dict[str, str] = {}
     for block in RE_URL_BLOCK.finditer(text):
@@ -82,15 +70,6 @@ def published_lastmods() -> dict[str, str]:
         stamp = RE_LASTMOD.search(block.group(1))
         if loc and stamp:
             published[loc.group(1)] = stamp.group(1)
-    # A parse that yields nothing is NOT "no prior state" -- it is indistinguishable
-    # from it, and it degrades silently into exactly the mass re-dating above.
-    # Empty reads as a pass everywhere else in this codebase; here it must not.
-    if text.strip() and not published:
-        raise StickyError(
-            f"{SITEMAP.name} is {len(text)} bytes but no <loc>/<lastmod> pair parsed. "
-            "Refusing to run: with no published dates to carry, every url would be "
-            "re-dated from git and that is the failure this guard exists to stop."
-        )
     return published
 
 
@@ -118,6 +97,29 @@ def git_lastmod(path: Path) -> str | None:
 
 
 RE_DATE_MODIFIED = re.compile(r'"dateModified"\s*:\s*"(\d{4}-\d{2}-\d{2})')
+RE_DATE_PUBLISHED = re.compile(r'"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2})')
+
+
+def declared_published(path: Path) -> str | None:
+    """The page's own JSON-LD datePublished.
+
+    Second tier, above git, on Coco's amendment: a page carrying a
+    datePublished and no dateModified was published and never edited, and its
+    own front matter answers "when did this page last change" more honestly
+    than git does -- git answers "when did this file last move in history",
+    which a rename or an adoption changes without touching the page.
+
+    This tier is gated by check-schema-dates.py, which enforces
+    datePublished == first commit across the corpus. So it is not a second
+    opinion about the same number; it is a claim the page makes about itself
+    that we already verify separately.
+    """
+    try:
+        head = path.read_text(encoding="utf-8", errors="replace")[:8000]
+    except OSError:
+        return None
+    match = RE_DATE_PUBLISHED.search(head)
+    return match.group(1) if match else None
 
 
 def declared_lastmod(path: Path) -> str | None:
@@ -143,13 +145,34 @@ def declared_lastmod(path: Path) -> str | None:
     return match.group(1) if match else None
 
 
-def lastmod_for(path: Path) -> str:
-    stamp = declared_lastmod(path) or git_lastmod(path)
+def lastmod_for(path: Path) -> tuple[str, str]:
+    """(date, which tier produced it). dateModified -> datePublished -> git %as.
+
+    Returning the tier is not decoration. Three tiers that all yield a plausible
+    date are three ways to be wrong that look identical in the output, and the
+    tier is the only thing that distinguishes "the page told us" from "we asked
+    git because the page was silent". The run prints the per-tier census so a
+    reviewer can see the git surface instead of inferring it.
+
+    There is no mtime tier any more. The old one contradicted the function
+    directly above it: git_lastmod's own docstring rejects mtime because rsync
+    and chmod perturb it, and then the fallback reached for mtime anyway. A
+    date we have already written down as untrustworthy is worse than no date,
+    because no date is loud and a wrong date is not. Tier 4 is an error.
+    """
+    stamp = declared_lastmod(path)
     if stamp:
-        return stamp
-    # No schema, uncommitted, or outside git: fall back to mtime rather than
-    # invent a date.
-    return datetime.fromtimestamp(path.stat().st_mtime).strftime("%Y-%m-%d")
+        return stamp, "dateModified"
+    stamp = declared_published(path)
+    if stamp:
+        return stamp, "datePublished"
+    stamp = git_lastmod(path)
+    if stamp:
+        return stamp, "git"
+    raise SitemapError(
+        f"{path.relative_to(ROOT)}: no dateModified, no datePublished, and no git "
+        "history. Refusing to invent a lastmod. Commit the page, or give it schema."
+    )
 
 
 def classify(path: Path) -> str | None:
@@ -189,7 +212,7 @@ def weight_for(path: Path) -> tuple[str, str]:
     return best
 
 
-def collect(published: dict[str, str], recompute: set[str]) -> tuple[list[dict], list[tuple[str, str]]]:
+def collect(published: dict[str, str]) -> tuple[list[dict], list[tuple[str, str]]]:
     included, skipped = [], []
     for section in SECTIONS:
         directory = ROOT / section if section else ROOT
@@ -201,14 +224,15 @@ def collect(published: dict[str, str], recompute: set[str]) -> tuple[list[dict],
                 continue
             priority, changefreq = weight_for(path)
             loc = url_for(path)
-            carried = None if rel in recompute else published.get(loc)
+            stamp, tier = lastmod_for(path)
             included.append({
                 "loc": loc,
-                "lastmod": carried or lastmod_for(path),
+                "lastmod": stamp,
+                "tier": tier,
+                "was": published.get(loc),  # reporting only; never an input
                 "changefreq": changefreq,
                 "priority": priority,
                 "rel": rel,
-                "carried": carried is not None,
             })
     # Homepage first, then blog index, then posts newest-first.
     def sort_key(e):
@@ -252,33 +276,19 @@ def block_diff(old_xml: str, new_xml: str) -> tuple[int, int]:
     return same, len(new_blocks) - same
 
 
-def parse_recompute(argv: list[str]) -> set[str]:
-    """--recompute <rel> [--recompute <rel> ...]. Unknown paths are an error:
-    a typo that silently recomputes nothing looks identical to a clean run."""
-    out, i = set(), 0
-    while i < len(argv):
-        if argv[i] == "--recompute":
-            if i + 1 >= len(argv):
-                raise StickyError("--recompute needs a repo-relative path")
-            rel = argv[i + 1].lstrip("./")
-            if not (ROOT / rel).is_file():
-                raise StickyError(f"--recompute {rel}: no such file under {ROOT}")
-            out.add(rel)
-            i += 2
-            continue
-        i += 1
-    return out
-
-
 def main() -> int:
     check_only = "--check" in sys.argv
+    unknown = [a for a in sys.argv[1:] if a != "--check"]
+    if unknown:
+        print(f"ERROR: unknown argument(s): {' '.join(unknown)}", file=sys.stderr)
+        print("       --recompute is gone; it existed only to escape stickiness.", file=sys.stderr)
+        return 2
+    published = published_lastmods()
     try:
-        recompute = parse_recompute(sys.argv[1:])
-        published = published_lastmods()
-    except StickyError as exc:
+        entries, skipped = collect(published)
+    except SitemapError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
-    entries, skipped = collect(published, recompute)
 
     if not entries:
         print("ERROR: no pages found — refusing to write an empty sitemap.", file=sys.stderr)
@@ -299,11 +309,21 @@ def main() -> int:
     for rel, reason in skipped:
         print(f"  skip  {rel:<52} {reason}")
 
-    fresh = [e for e in entries if not e["carried"]]
-    print(f"\nlastmod: {len(entries) - len(fresh)} carried from sitemap.xml, {len(fresh)} computed")
-    for e in fresh:
-        why = "recompute" if e["rel"] in recompute else "new url"
-        print(f"  write {e['lastmod']}  {e['rel']:<48} ({why})")
+    census = {t: sum(1 for e in entries if e["tier"] == t) for t in ("dateModified", "datePublished", "git")}
+    print("\nlastmod source: " + ", ".join(f"{n} {t}" for t, n in census.items()))
+    for e in entries:
+        if e["tier"] == "git":
+            print(f"  git   {e['lastmod']}  {e['rel']:<48} (page declares neither date)")
+
+    moved = [e for e in entries if e["was"] and e["was"] != e["lastmod"]]
+    added = [e for e in entries if not e["was"]]
+    back = sum(1 for e in moved if e["lastmod"] < e["was"])
+    print(f"\nvs published sitemap.xml: {len(moved)} moved ({back} backwards, "
+          f"{len(moved) - back} forwards), {len(added)} new")
+    for e in moved:
+        print(f"  move  {e['was']} -> {e['lastmod']}  {e['rel']:<48} ({e['tier']})")
+    for e in added:
+        print(f"  new   {e['lastmod']}  {e['rel']:<48} ({e['tier']})")
 
     # Receipt for the commit body, emitted by the artifact instead of hand-counted.
     # Operands come from two different sources -- the file on disk and this render --
