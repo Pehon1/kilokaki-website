@@ -1,0 +1,10 @@
+{
+  "taskId": "live-by-backfill",
+  "taskName": "live_by backfill from prod access logs (retention-expiring)",
+  "source": "work-queue",
+  "currentStep": 4,
+  "totalSteps": 4,
+  "context": "backfill complete, artifact written, invariant proven red+green\n",
+  "startedAt": "2026-07-22T13:55:45+0800",
+  "updatedAt": "2026-07-22T13:58:51+0800"
+}
