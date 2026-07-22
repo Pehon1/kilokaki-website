@@ -73,8 +73,20 @@
 #   F  origin/main does not resolve                -> 2  UNKNOWN
 #   G  unborn HEAD (no commit)                     -> 2  UNKNOWN
 #   H  git off PATH (bash kept reachable)          -> 2  UNKNOWN
-#   I  dirty tree + --dry-run VIA deploy.sh        -> 1  BLOCK   <-- the placement
-#      row. --dry-run returns at deploy.sh:230, above all three other gates.
+#   I  clean tree, HEAD unpublished, --dry-run     -> 1  BLOCK   <-- the placement
+#      row, VIA deploy.sh. --dry-run returns at deploy.sh's `if $DRY_RUN` block,
+#      above all three other gates. (Cited by construct, not line number: the
+#      number in this comment read :230 while the block sat at :345, and a stale
+#      line number in a provenance table is the failure this file is about.)
+#      It carried a DIRTY tree until 2026-07-22. Measured under a neutered gate:
+#      that mutation returned rc=1 in BOTH arms, because SELF_VERIFY's own
+#      dirty-tree check answers it too and aborts with the same code. The rc
+#      carried zero bits; only the marker was working. A dirty tree is shared
+#      subject matter, an unpublished HEAD is this gate's alone -- SELF_VERIFY
+#      is blind to a clean checkout of an unpushed commit. Both arms of the
+#      swapped row are transcribed, not predicted:
+#        REAL gate      rc=1, marker "ABORT: provenance gate"      (gate fired)
+#        NEUTERED gate  rc=1, marker "deploy env not found"  FAIL  (got past it)
 #   J  clean tree + --dry-run reaches secrets check-> 0  (receipt present, then
 #      "deploy env not found"). I's non-zero and a missing-env non-zero are the
 #      same code; without J, I proves nothing about which one it was.
