@@ -19,14 +19,14 @@ GATE="${SCRIPT_DIR}/release-gate.sh"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
-PASS=0; FAIL=0
+PASS=0; FAIL=0; ROWS_SKIPPED=0
 
 # A sandbox: work repo + bare "origin", one commit, identity set locally so the
 # suite does not depend on the runner having a global git identity.
 sandbox() {
   local name="$1" work="${TMP}/${1}" bare="${TMP}/${1}.git"
   rm -rf "$work" "$bare"
-  git init -q --bare "$bare"
+  return 9   # injected: sandbox cannot build
   git init -q "$work"
   git -C "$work" config user.email test@kilokaki
   git -C "$work" config user.name Test
@@ -37,6 +37,37 @@ sandbox() {
   git -C "$work" remote add origin "$bare"
   git -C "$work" push -q origin HEAD:refs/heads/main
   printf '%s' "$work"
+}
+
+# --- ITEM 1: CONSUME THE SUBSHELL'S STATUS -----------------------------------
+# `W=$(mk x)` is a COMMAND SUBSTITUTION, i.e. a subshell. When `sandbox`
+# aborts -- set -u on an unbound var, git failing, disk full -- the abort is
+# CONTAINED: the parent gets W="" plus a non-zero $?, and if nobody reads $?
+# the row proceeds against an empty path. `git -C ""` does not error; it means
+# THE CURRENT DIRECTORY. That is exactly how a sibling build of this suite
+# committed into a real checkout and pushed four release/* tags to a real origin
+# while printing "6 of 9 ok".
+#
+# Measured: `W="$(f rowA)"; rc=$?` -> `W=[]  rc=1`. The status was ALWAYS there.
+# It was never read. Detection without consumption -- so this wrapper reads it.
+#
+# Fail CLOSED with exit 3, not FAIL+1: a harness that cannot build a fixture has
+# not found a defect, it has stopped being an instrument. Counting it as a failed
+# row would let a broken harness report "15 of 16" -- and a partial pass reads as
+# honest coverage in a way a total pass never does. 3 is distinct from 1 (a real
+# red) on purpose.
+mk() {
+  local __w __rc
+  __w=$(sandbox "$1"); __rc=$?
+  if (( __rc != 0 )); then
+    printf 'ABORT %-56s sandbox exited %s -- fixture never built\n' "sandbox/$1" "$__rc" >&2
+    exit 3
+  fi
+  if [[ -z "$__w" || ! -d "$__w" ]]; then
+    printf 'ABORT %-56s sandbox returned no usable path [%s]\n' "sandbox/$1" "$__w" >&2
+    exit 3
+  fi
+  printf '%s' "$__w"
 }
 
 # run <label> <expected_rc> <dir> [needle]
@@ -59,7 +90,7 @@ run() {
 }
 
 # --- A: annotated release tag on origin, peeling to HEAD ---------------------
-W=$(sandbox a)
+W=$(mk a)
 git -C "$W" tag -a release/2026-07-23 -m "authorized: row A" HEAD
 git -C "$W" push -q origin release/2026-07-23
 run "A  annotated release tag on origin peels to HEAD" 0 "$W" "authorized by refs/tags/release/2026-07-23"
@@ -67,7 +98,7 @@ run "A  annotated release tag on origin peels to HEAD" 0 "$W" "authorized by ref
 # --- B: tag exists on origin but peels to a DIFFERENT commit -----------------
 # The freeze case that matters most: an old release is tagged, the tree has
 # moved on. Authorized yesterday is not authorized now.
-W=$(sandbox b)
+W=$(mk b)
 git -C "$W" tag -a release/old -m "authorized: an earlier commit" HEAD
 git -C "$W" push -q origin release/old
 echo "moved on" >> "$W/file.txt"
@@ -76,20 +107,20 @@ git -C "$W" push -q origin HEAD:refs/heads/main
 run "B  tag peels to a different commit" 1 "$W" "NOT AUTHORIZED"
 
 # --- C: no release/* tag on origin at all ------------------------------------
-W=$(sandbox c)
+W=$(mk c)
 run "C  no release/* tag on origin" 1 "$W" "No release/\* tags exist"
 
 # --- D: ls-remote cannot reach the remote ------------------------------------
 # UNKNOWN, not "not authorized". Collapsing these two would let a network
 # failure read as a policy verdict.
-W=$(sandbox d)
+W=$(mk d)
 git -C "$W" remote set-url origin "${TMP}/definitely-not-a-repo-$$"
 run "D  ls-remote fails -> UNKNOWN, not a verdict" 2 "$W" "UNKNOWN"
 
 # --- E: tag exists LOCALLY only, never pushed --------------------------------
 # The single-disk claim. This is the row that makes "published artifact"
 # mean something rather than being a slogan.
-W=$(sandbox e)
+W=$(mk e)
 git -C "$W" tag -a release/local-only -m "never pushed" HEAD
 run "E  tag is local-only, not on origin" 1 "$W" "NOT AUTHORIZED"
 
@@ -98,7 +129,7 @@ run "E  tag is local-only, not on origin" 1 "$W" "NOT AUTHORIZED"
 # ls-remote line whose sha IS the commit and which carries no `^{}` suffix, no
 # tagger, no date and no message. A gate that matched unpeeled lines would go
 # green here. It must not: there is nothing to record about the act.
-W=$(sandbox f)
+W=$(mk f)
 git -C "$W" tag release/lightweight HEAD
 git -C "$W" push -q origin release/lightweight
 run "F  lightweight tag at HEAD is rejected" 1 "$W" "none of these are annotated"
@@ -115,7 +146,7 @@ run "H  unresolvable HEAD -> UNKNOWN" 2 "${TMP}/unborn" "UNKNOWN"
 
 # --- I: annotated tag not matching the release/* namespace -------------------
 # Scope control: the gate must not be satisfied by just any annotated tag.
-W=$(sandbox i)
+W=$(mk i)
 git -C "$W" tag -a v1.0.0 -m "not a release authorization" HEAD
 git -C "$W" push -q origin v1.0.0
 run "I  annotated non-release/* tag does not authorize" 1 "$W" "NOT AUTHORIZED"
