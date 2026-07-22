@@ -121,7 +121,7 @@ def main() -> int:
         # that distinguishes "the page told us" from "we asked git".
         check("tier label is reported, not inferred", lambda: gs.lastmod_for(only_pub)[1], "datePublished")
 
-        print("\nlisting derivation (derive_listing_lastmod)")
+        print("\nlisting derivation (derive_listing_lastmods)")
 
         # THE OPERAND TEST, and it is synthetic ON PURPOSE.
         #
@@ -136,57 +136,101 @@ def main() -> int:
         # not mention. That is the same class as the defect being fixed.
         #
         # Here the fixture owns BOTH operands, so nothing outside this function
-        # can move the threshold. The two index pages and the how-to page are
-        # each set NEWER than every post: any implementation whose operand
-        # admits any of the three returns 2026-12-31 or 2026-12-30, and only an
-        # operand scoped to blog posts returns 2026-05-01.
+        # can move the threshold. All three index pages are set NEWER than every
+        # listed page, and the two sections are set to DIFFERENT maxima:
+        #   - any operand admitting an index page returns 2026-12-31
+        #   - any operand ignoring the prefix returns the other section's max,
+        #     so blog/ answering 2026-11-01 or how-to/ answering 2026-05-01 is a
+        #     cross-contamination and names itself as one
+        # Only per-listing prefix scoping returns 2026-05-01 / 2026-11-01.
         corpus = [
             {"rel": "index.html", "lastmod": "2026-12-31", "tier": "git"},
             {"rel": "blog/index.html", "lastmod": "2026-12-31", "tier": "git"},
             {"rel": "blog/post-a.html", "lastmod": "2026-03-01", "tier": "dateModified"},
             {"rel": "blog/post-b.html", "lastmod": "2026-05-01", "tier": "dateModified"},
-            {"rel": "how-to/anything.html", "lastmod": "2026-12-30", "tier": "dateModified"},
+            {"rel": "how-to/index.html", "lastmod": "2026-12-31", "tier": "git"},
+            {"rel": "how-to/anything.html", "lastmod": "2026-11-01", "tier": "dateModified"},
+            {"rel": "how-to/other.html", "lastmod": "2026-04-01", "tier": "dateModified"},
         ]
+        # ONE assertion over the whole map rather than one per listing, so a map
+        # that quietly loses an entry FAILS here instead of going green on the
+        # entries that remain. A missing lane is the failure mode this change
+        # introduces: LISTING_INDICES is the only thing standing between
+        # how-to/index.html and the git tier, and dropping it from the map
+        # produces a smaller-but-correct-looking dict.
         check(
-            "operand is blog posts only, not the prefix",
-            lambda: gs.derive_listing_lastmod([dict(e) for e in corpus]),
-            ("2026-05-01", "git"),
+            "every listing derives from its own prefix, and only its own",
+            lambda: gs.derive_listing_lastmods([dict(e) for e in corpus]),
+            {"blog/index.html": ("2026-05-01", "git"),
+             "how-to/index.html": ("2026-11-01", "git")},
         )
 
         # The predicate under the max, asserted directly so a wrong answer above
-        # names WHICH page leaked in rather than just a wrong date.
+        # names WHICH page leaked in rather than just a wrong date. Asserted for
+        # BOTH prefixes: the blog arm alone passes under a hardcoded "blog/".
         check(
-            "root homepage is not a blog post",
-            lambda: [e["rel"] for e in corpus if gs.is_blog_post(e["rel"])],
+            "blog listing lists blog posts, not the homepage or itself",
+            lambda: [e["rel"] for e in corpus if gs.lists_under(e["rel"], "blog/")],
             ["blog/post-a.html", "blog/post-b.html"],
         )
-
-        # No posts -> no derivation. Must not raise, must not invent, and must
-        # leave the page on the git tier where the census can show it.
         check(
-            "no blog posts -> None, git tier survives",
-            lambda: gs.derive_listing_lastmod([e for e in corpus if not e["rel"].startswith("blog/post")]),
-            None,
+            "how-to listing lists how-to articles, not itself",
+            lambda: [e["rel"] for e in corpus if gs.lists_under(e["rel"], "how-to/")],
+            ["how-to/anything.html", "how-to/other.html"],
+        )
+
+        # No listed pages -> that listing is OMITTED. Must not raise, must not
+        # invent, and must leave the page on the git tier where the census can
+        # show it. The other listing must still derive: a section emptying out
+        # is not a reason to stop deriving the one that did not.
+        check(
+            "listing with nothing to list is omitted, the other survives",
+            lambda: gs.derive_listing_lastmods([e for e in corpus if not e["rel"].startswith("blog/post")]),
+            {"how-to/index.html": ("2026-11-01", "git")},
+        )
+
+        # A listing that is not in the corpus at all (deleted, noindexed, or
+        # skipped as a redirect stub) must be skipped, not synthesised. The map
+        # is a claim about which pages ARE listings, never that they exist.
+        check(
+            "listing absent from the corpus is not invented",
+            lambda: gs.derive_listing_lastmods([e for e in corpus if e["rel"] != "how-to/index.html"]),
+            {"blog/index.html": ("2026-05-01", "git")},
         )
 
         print("\nlisting derivation is WIRED (collect)")
 
-        # derive_listing_lastmod being correct proves nothing if collect() never
+        # derive_listing_lastmods being correct proves nothing if collect() never
         # calls it, or calls it inside the loop where `included` is partial.
         # This runs the real corpus, and asserts on the TIER, which no
         # coincidence of dates can produce -- only the derivation running can.
         # Asserting the value alone would go green the day some post's
-        # dateModified happens to equal blog/index.html's git date, which is the
-        # masking case this ticket opened on.
+        # dateModified happens to equal the listing's git date, which is the
+        # masking case this ticket opened on -- and how-to/index.html is that
+        # case TODAY: its git tier and its newest article are both 2026-06-07,
+        # so every date assertion about it is satisfied by a coincidence and the
+        # tier label is the only operand that is not.
+        #
+        # LANES IS TYPED OUT HERE, NOT READ FROM gs.LISTING_INDICES, and that is
+        # the point of it. Iterating the module's own map means a map that loses
+        # how-to/index.html loses the assertion about how-to/index.html at the
+        # same instant: the suite goes green over one lane and reports nothing
+        # missing, which is the failure this whole file exists to refuse. Two
+        # files, two authors, two edit occasions -- a lane can only vanish from
+        # both by someone editing both.
         entries, _ = gs.collect({})
-        listing = next((e for e in entries if e["rel"] == gs.LISTING_INDEX), None)
-        check("collect() tags the listing as derived", lambda: listing and listing["tier"], "newest-post")
-
-        # Second operand, computed by the test with its own filter over the same
-        # returned list.
-        want_max = max(e["lastmod"] for e in entries if e["rel"].startswith("blog/")
-                       and e["rel"] != gs.LISTING_INDEX)
-        check("derived value is the newest listed post", lambda: listing and listing["lastmod"], want_max)
+        LANES = [("blog/index.html", "blog/"), ("how-to/index.html", "how-to/")]
+        for listing_rel, prefix in LANES:
+            listing = next((e for e in entries if e["rel"] == listing_rel), None)
+            check(f"collect() tags {listing_rel} as derived",
+                  lambda listing=listing: listing and listing["tier"], "newest-post")
+            # Second operand, computed by the test with its own filter over the
+            # same returned list -- and with its own spelling of "not a listing"
+            # (endswith), so a bug in lists_under cannot answer both sides.
+            want_max = max(e["lastmod"] for e in entries
+                           if e["rel"].startswith(prefix) and not e["rel"].endswith("/index.html"))
+            check(f"{listing_rel} carries the newest page it lists",
+                  lambda listing=listing: listing and listing["lastmod"], want_max)
 
         # THE PREFIX ARM, and the two assertions above do NOT cover it. Measured:
         # mutating collect() to call the derivation with a partial prefix instead
@@ -205,45 +249,66 @@ def main() -> int:
         #   1. strictly newer than every entry collected, both index pages
         #      included -- so it is the sole carrier of the max under any
         #      operand, and no wrong operand can answer with something else.
-        #   2. sorting after blog/index.html in the walk -- so a prefix-scoped
+        #   2. sorting after the listing index in the walk -- so a prefix-scoped
         #      operand cannot contain it, whatever the prefix.
         # Note this exercises collect(), not main(): a seed one day past the
         # corpus max can be a future date, and main()'s future-lastmod guard
         # would refuse it. That guard is asserted elsewhere and is not the
         # subject here.
-        seed_stamp = (date.fromisoformat(max(e["lastmod"] for e in entries))
-                      + timedelta(days=1)).isoformat()
-        seed = gs.ROOT / "blog" / "zzz-sitemap-fixture-newest.html"
+        #
+        # ONE SEED PER LANE, AND THE TWO STAMPS DIFFER BY A DAY. Both are newer
+        # than the whole corpus, so either one satisfies "the listing moved";
+        # only a per-listing operand puts the RIGHT one on each page. A single
+        # shared seed would be answered correctly by an implementation that
+        # maxes over every section at once -- the cross-contamination bug --
+        # because with one seed both lanes have the same right answer.
+        corpus_max = date.fromisoformat(max(e["lastmod"] for e in entries))
+        seeds = {
+            "blog/": (gs.ROOT / "blog" / "zzz-sitemap-fixture-newest.html",
+                      (corpus_max + timedelta(days=1)).isoformat()),
+            "how-to/": (gs.ROOT / "how-to" / "zzz-sitemap-fixture-newest.html",
+                        (corpus_max + timedelta(days=2)).isoformat()),
+        }
         try:
-            seed.write_text(PAGE.format(dates=f',"dateModified":"{seed_stamp}"'), encoding="utf-8")
+            for path, stamp in seeds.values():
+                path.write_text(PAGE.format(dates=f',"dateModified":"{stamp}"'), encoding="utf-8")
             seeded, _ = gs.collect({})
             # Property 1 is asserted against the UNSEEDED collect: after seeding,
-            # blog/index.html itself carries seed_stamp (that is the thing under
-            # test), so a post-seed check would report the subject as its own
-            # corroboration.
+            # the listing pages themselves carry the seed stamps (that is the
+            # thing under test), so a post-seed check would report the subject as
+            # its own corroboration.
+            lowest_seed = min(stamp for _, stamp in seeds.values())
             check(
-                "seed clears every collected date (property 1, not assumed)",
-                lambda: [e["rel"] for e in entries if e["lastmod"] >= seed_stamp],
+                "seeds clear every collected date (property 1, not assumed)",
+                lambda: [e["rel"] for e in entries if e["lastmod"] >= lowest_seed],
                 [],
             )
-            # Property 2 must be read off the WALK order -- sorted(glob) -- and
-            # not off collect()'s return, which is sorted for output with every
-            # index page ahead of every post. Reading it there would make the
-            # assertion trivially true and blind to the thing it names.
-            walk = [p.name for p in sorted((gs.ROOT / "blog").glob("*.html"))]
-            check(
-                "seed sorts after the listing index in the walk (property 2)",
-                lambda: walk.index(seed.name) > walk.index("index.html"),
-                True,
-            )
-            seeded_listing = next((e for e in seeded if e["rel"] == gs.LISTING_INDEX), None)
-            check(
-                "post-loop: the listing sees a post no prefix contains",
-                lambda: seeded_listing and seeded_listing["lastmod"],
-                seed_stamp,
-            )
+            for (listing_rel, prefix) in LANES:
+                path, stamp = seeds[prefix]
+                # Property 2 must be read off the WALK order -- sorted(glob) --
+                # and not off collect()'s return, which is sorted for output with
+                # every index page ahead of every post. Reading it there would
+                # make the assertion trivially true and blind to the thing it
+                # names.
+                walk = [p.name for p in sorted((gs.ROOT / prefix.rstrip("/")).glob("*.html"))]
+                check(
+                    f"{prefix} seed sorts after its index in the walk (property 2)",
+                    lambda walk=walk, path=path: walk.index(path.name) > walk.index("index.html"),
+                    True,
+                )
+                seeded_listing = next((e for e in seeded if e["rel"] == listing_rel), None)
+                # The wrong-lane stamp is a real, present, newer date sitting in
+                # the same corpus. Answering with it is the contamination;
+                # answering with the git tier is the missing lane. Both fail here
+                # and print which one arrived.
+                check(
+                    f"post-loop: {listing_rel} sees its own seed, not the other lane's",
+                    lambda seeded_listing=seeded_listing: seeded_listing and seeded_listing["lastmod"],
+                    stamp,
+                )
         finally:
-            seed.unlink(missing_ok=True)
+            for path, _ in seeds.values():
+                path.unlink(missing_ok=True)
 
         print("\nrefusals (SitemapError)")
 
@@ -352,5 +417,38 @@ def main() -> int:
 # the rule against fabricating counts. Hence the ran-N column: each mutation run
 # reports how many assertions EXECUTED (7, all five times), because a shrinking
 # FAIL count and a suite quietly dying halfway produce the same reassuring line.
+#
+# LISTING_INDICES MAP, PROVEN RED (2026-07-22). Same protocol, run by
+# /private/tmp/nori-mut-listing2.py. Transcribed from the run's stdout:
+#
+#   mutation                                          ran  FAIL
+#   map loses how-to (regression to a singleton)       21     5
+#   map gains the homepage (prefix "", no operand)     21     3
+#   operand ignores the prefix (cross-contamination)   21     8
+#   operand admits the listing pages themselves        21     6
+#   predicate excludes nothing at all                  21     6
+#   derivation not wired into collect()                21     5
+#   wired at the call site: partial prefix             21     3
+#   applied without the tier label                     21     2
+#
+# READ ROW 1 CLOSELY, IT IS THE ONE WITH SOMETHING TO SAY. Under "map loses
+# how-to", the assertion "how-to/index.html carries the newest page it lists"
+# still PASSES. Not a gap in the mutation -- the page's git tier (2026-06-07,
+# 5eb42da) and the newest article it lists (2026-06-07) are the same date, so
+# the derived value and the undrived value are indistinguishable on today's
+# corpus. Every date assertion about that page is currently satisfied by a
+# coincidence. The tier label and the seeded arm are the only two operands that
+# are not, and they are what took that row to 5.
+#
+# Row 2 exists to make a COMMENT falsifiable: LISTING_INDICES says the homepage
+# must never be added, and a comment that nothing can violate is decoration.
+# Adding it (prefix "", so every non-listing page is an operand) fails 3.
+#
+# NOT PROVEN, STATED INSTEAD: lists_under excludes listings by map membership
+# rather than by name (`rel != listing`). The name-based spelling is not
+# writable at this signature -- the function never receives the listing -- so
+# there is no mutation to run and no row to claim. It is prevention against a
+# nested listing, not a fix for a reachable bug, and it is labelled that way in
+# the docstring.
 if __name__ == "__main__":
     sys.exit(main())
