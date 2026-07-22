@@ -40,10 +40,17 @@ RE_NOINDEX = re.compile(r'name=["\']robots["\'][^>]*content=["\'][^"\']*noindex'
 
 def git_lastmod(path: Path) -> str | None:
     """Last commit date touching this file. Authoritative over mtime, which
-    rsync and chmod both perturb."""
+    rsync and chmod both perturb.
+
+    %as (author date), not %cs (committer date). A rebase replays commits and
+    rewrites %cs to the replay time, so the 2026-07-22 rebase of the schema
+    work restamped 27 posts as edited-today when the edit was 07-17. That is
+    the same perturbation this function was written to escape from, one layer
+    up: %cs is to a rebase what mtime is to rsync. %as survives both.
+    """
     try:
         out = subprocess.run(
-            ["git", "log", "-1", "--format=%cs", "--", str(path.relative_to(ROOT))],
+            ["git", "log", "-1", "--format=%as", "--", str(path.relative_to(ROOT))],
             cwd=ROOT, capture_output=True, text=True, timeout=10,
         )
         stamp = out.stdout.strip()
