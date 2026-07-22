@@ -30,6 +30,7 @@ import importlib.util
 import shutil
 import sys
 import tempfile
+from datetime import date, timedelta
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -120,6 +121,130 @@ def main() -> int:
         # that distinguishes "the page told us" from "we asked git".
         check("tier label is reported, not inferred", lambda: gs.lastmod_for(only_pub)[1], "datePublished")
 
+        print("\nlisting derivation (derive_listing_lastmod)")
+
+        # THE OPERAND TEST, and it is synthetic ON PURPOSE.
+        #
+        # A seeded-corpus fixture was the first design and it is not sufficient.
+        # Measured on the real corpus, seed inserted after blog/index.html:
+        # seed 2026-07-22 -> correct and broken BOTH return 2026-07-22 (green,
+        # the homepage carries the max and the seed is never consulted); seed
+        # 2026-07-23 -> red. So such a fixture is blind at <= the two index
+        # pages' git stamps, and those are MUTABLE GIT DATES -- the day anyone
+        # commits a nav tweak to index.html the cap moves up and the fixture
+        # decays to a silent pass, triggered by a commit to a file the test does
+        # not mention. That is the same class as the defect being fixed.
+        #
+        # Here the fixture owns BOTH operands, so nothing outside this function
+        # can move the threshold. The two index pages and the how-to page are
+        # each set NEWER than every post: any implementation whose operand
+        # admits any of the three returns 2026-12-31 or 2026-12-30, and only an
+        # operand scoped to blog posts returns 2026-05-01.
+        corpus = [
+            {"rel": "index.html", "lastmod": "2026-12-31", "tier": "git"},
+            {"rel": "blog/index.html", "lastmod": "2026-12-31", "tier": "git"},
+            {"rel": "blog/post-a.html", "lastmod": "2026-03-01", "tier": "dateModified"},
+            {"rel": "blog/post-b.html", "lastmod": "2026-05-01", "tier": "dateModified"},
+            {"rel": "how-to/anything.html", "lastmod": "2026-12-30", "tier": "dateModified"},
+        ]
+        check(
+            "operand is blog posts only, not the prefix",
+            lambda: gs.derive_listing_lastmod([dict(e) for e in corpus]),
+            ("2026-05-01", "git"),
+        )
+
+        # The predicate under the max, asserted directly so a wrong answer above
+        # names WHICH page leaked in rather than just a wrong date.
+        check(
+            "root homepage is not a blog post",
+            lambda: [e["rel"] for e in corpus if gs.is_blog_post(e["rel"])],
+            ["blog/post-a.html", "blog/post-b.html"],
+        )
+
+        # No posts -> no derivation. Must not raise, must not invent, and must
+        # leave the page on the git tier where the census can show it.
+        check(
+            "no blog posts -> None, git tier survives",
+            lambda: gs.derive_listing_lastmod([e for e in corpus if not e["rel"].startswith("blog/post")]),
+            None,
+        )
+
+        print("\nlisting derivation is WIRED (collect)")
+
+        # derive_listing_lastmod being correct proves nothing if collect() never
+        # calls it, or calls it inside the loop where `included` is partial.
+        # This runs the real corpus, and asserts on the TIER, which no
+        # coincidence of dates can produce -- only the derivation running can.
+        # Asserting the value alone would go green the day some post's
+        # dateModified happens to equal blog/index.html's git date, which is the
+        # masking case this ticket opened on.
+        entries, _ = gs.collect({})
+        listing = next((e for e in entries if e["rel"] == gs.LISTING_INDEX), None)
+        check("collect() tags the listing as derived", lambda: listing and listing["tier"], "newest-post")
+
+        # Second operand, computed by the test with its own filter over the same
+        # returned list.
+        want_max = max(e["lastmod"] for e in entries if e["rel"].startswith("blog/")
+                       and e["rel"] != gs.LISTING_INDEX)
+        check("derived value is the newest listed post", lambda: listing and listing["lastmod"], want_max)
+
+        # THE PREFIX ARM, and the two assertions above do NOT cover it. Measured:
+        # mutating collect() to call the derivation with a partial prefix instead
+        # of post-loop leaves this suite 12-ran / 0-FAIL, fully GREEN. The
+        # prefix's max happens to equal the whole corpus's max, because the
+        # newest post sorts early. Both assertions above are satisfied by
+        # coincidence -- the same "green from a coincidence of dates" this ticket
+        # opened on, one layer up, in the test written to close it.
+        #
+        # A seed is the only thing that discriminates here, and it must be
+        # COMPUTED, not typed. Hardcoding 2026-07-23 decays into a silent pass
+        # the day anyone commits a nav tweak to either index page, because the
+        # threshold it must clear is those pages' mutable git dates. So the seed
+        # is derived from the corpus at runtime and its two required properties
+        # are ASSERTED rather than assumed:
+        #   1. strictly newer than every entry collected, both index pages
+        #      included -- so it is the sole carrier of the max under any
+        #      operand, and no wrong operand can answer with something else.
+        #   2. sorting after blog/index.html in the walk -- so a prefix-scoped
+        #      operand cannot contain it, whatever the prefix.
+        # Note this exercises collect(), not main(): a seed one day past the
+        # corpus max can be a future date, and main()'s future-lastmod guard
+        # would refuse it. That guard is asserted elsewhere and is not the
+        # subject here.
+        seed_stamp = (date.fromisoformat(max(e["lastmod"] for e in entries))
+                      + timedelta(days=1)).isoformat()
+        seed = gs.ROOT / "blog" / "zzz-sitemap-fixture-newest.html"
+        try:
+            seed.write_text(PAGE.format(dates=f',"dateModified":"{seed_stamp}"'), encoding="utf-8")
+            seeded, _ = gs.collect({})
+            # Property 1 is asserted against the UNSEEDED collect: after seeding,
+            # blog/index.html itself carries seed_stamp (that is the thing under
+            # test), so a post-seed check would report the subject as its own
+            # corroboration.
+            check(
+                "seed clears every collected date (property 1, not assumed)",
+                lambda: [e["rel"] for e in entries if e["lastmod"] >= seed_stamp],
+                [],
+            )
+            # Property 2 must be read off the WALK order -- sorted(glob) -- and
+            # not off collect()'s return, which is sorted for output with every
+            # index page ahead of every post. Reading it there would make the
+            # assertion trivially true and blind to the thing it names.
+            walk = [p.name for p in sorted((gs.ROOT / "blog").glob("*.html"))]
+            check(
+                "seed sorts after the listing index in the walk (property 2)",
+                lambda: walk.index(seed.name) > walk.index("index.html"),
+                True,
+            )
+            seeded_listing = next((e for e in seeded if e["rel"] == gs.LISTING_INDEX), None)
+            check(
+                "post-loop: the listing sees a post no prefix contains",
+                lambda: seeded_listing and seeded_listing["lastmod"],
+                seed_stamp,
+            )
+        finally:
+            seed.unlink(missing_ok=True)
+
         print("\nrefusals (SitemapError)")
 
         # No schema, no git history: the old code invented an mtime here.
@@ -197,6 +322,26 @@ def main() -> int:
 # green, the code was right, and the evidence was fiction. The mutation table is
 # the test for the tests; writing it from memory is how a suite earns tenure it
 # has not done anything to deserve.
+#
+# LISTING DERIVATION, PROVEN RED (2026-07-22). Same protocol, run by
+# /private/tmp/nori-mut-listing.py: mutate gen-sitemap.py alone, re-run, revert,
+# assert the file hashes back to the original. ran-N transcribed from each run.
+#
+#   mutation                                          ran  FAIL
+#   operand admits root homepage (max over collected)  15     4
+#   operand admits blog/index.html itself              15     4
+#   operand admits how-to/ (pages not in the listing)  15     3
+#   derivation not wired into collect()                15     3
+#   wired at the call site: partial prefix             15     1
+#
+# THE LAST ROW WAS 15-RAN / 0-FAIL ON THE FIRST PASS -- fully GREEN, suite
+# healthy, mutation uncaught. The two assertions then covering the wiring
+# ("tags the listing as derived", "value is the newest listed post") are both
+# satisfied by a prefix-scoped operand on today's corpus, because the newest
+# post happens to sort early enough to fall inside the prefix. Green from a
+# coincidence of dates, in the suite written to close a bug whose whole
+# character is green from a coincidence of dates. The seeded arm below exists
+# because of that run and nothing else; it is what took the row to 1 FAIL.
 #
 # THIRD correction, same shape as the first two: "delete the tier -> 3 FAIL" was
 # also predicted, and the rerun says 2. The third assertion I expected to fall

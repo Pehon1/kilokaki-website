@@ -15,6 +15,13 @@ lastmod is DERIVED FROM THE PAGE, in this order (see lastmod_for):
 There is no fourth tier and no carried-forward state: a page that answers none
 of the three is an error, not a guess. See lastmod_for() for why mtime is gone.
 
+ONE PAGE IS NOT A PAGE, IT IS A LISTING: blog/index.html's lastmod is derived
+from the newest post it lists, in a second pass after the walk, overriding the
+git tier. It declares no dates of its own and its git history is adoption and
+comment-only commits, so all three tiers above answer a question about the repo
+rather than about what a returning reader would see. See derive_listing_lastmod()
+for why this cannot be a tier inside lastmod_for.
+
 Run from anywhere:  python3 scripts/gen-sitemap.py [--check]
   --check   exit 1 if sitemap.xml is stale, write nothing (for CI/cron)
 """
@@ -242,6 +249,68 @@ def weight_for(path: Path) -> tuple[str, str]:
     return best
 
 
+LISTING_INDEX = "blog/index.html"
+
+
+def is_blog_post(rel: str) -> bool:
+    """The operand set for derive_listing_lastmod: what blog/index.html LISTS.
+
+    Spelled out as a named predicate instead of inlined into the max(), because
+    the operand is the entire defect. An earlier reading of this ticket had the
+    fix as "max over the pages collected so far", which is a different set in
+    two ways at once, and both of them let a poisoned date answer first:
+
+      - it contains the ROOT HOMEPAGE. included[0] is index.html, git tier,
+        2026-07-22 off 0edc2b4 "homepage: add self-referencing canonical" -- a
+        head-tag-only commit, i.e. the exact poisoning this function exists to
+        remove -- and it sits ahead of every other entry. Excluded here by the
+        blog/ prefix.
+      - it contains blog/index.html itself, whose git date is the thing being
+        replaced. Excluded here by name.
+
+    It also excludes how-to/, which the listing does not carry. Deriving a
+    listing's date from pages it does not list is the same class of error as
+    deriving it from git: a fact about the repo wearing a claim about the page.
+    """
+    return rel.startswith("blog/") and rel != LISTING_INDEX
+
+
+def derive_listing_lastmod(included: list[dict]) -> tuple[str, str] | None:
+    """(new lastmod, superseded tier) for blog/index.html, or None if inapplicable.
+
+    blog/index.html declares neither dateModified nor datePublished, so
+    lastmod_for falls to git %as -- and git answers "when did this file last
+    move in history", which for this page means adoption commits and
+    comment-only commits. 1678682 is the load-bearing example: 1 file changed,
+    26 insertions, all 26 of them an HTML comment, zero reader-visible bytes.
+    The comment argued that this page's content genuinely moves; it moved the
+    page's date without moving the content, which is the bug.
+
+    The honest answer is the newest post the listing carries, which is what a
+    reader coming back to this page would see as new.
+
+    WHY THIS IS POST-LOOP AND NOT A TIER INSIDE lastmod_for. The max is over a
+    list collect() has not finished building. Every call site inside that loop
+    holds a partial `included`, and it is partial in a way with no signature in
+    the output: :257 resolves the date and :258 appends, so the current path is
+    absent from its own prefix by construction, and the entries missing from
+    blog/index.html's prefix are the alphabetically-later posts, not the older
+    ones. An inline edit reads correct, ships green, and silently maxes over a
+    fraction of the corpus. There is no cheap tier here; there is a second pass.
+
+    Returns None rather than raising when the corpus carries no blog posts:
+    with nothing to list, the git date is the only date there is, and it stays
+    on the git tier where the census will show it.
+    """
+    stamps = [e["lastmod"] for e in included if is_blog_post(e["rel"])]
+    if not stamps:
+        return None
+    entry = next((e for e in included if e["rel"] == LISTING_INDEX), None)
+    if entry is None:
+        return None
+    return max(stamps), entry["tier"]
+
+
 def collect(published: dict[str, str]) -> tuple[list[dict], list[tuple[str, str]]]:
     included, skipped = [], []
     for section in SECTIONS:
@@ -264,6 +333,16 @@ def collect(published: dict[str, str]) -> tuple[list[dict], list[tuple[str, str]
                 "priority": priority,
                 "rel": rel,
             })
+    # SECOND PASS. Only now is `included` complete enough to max over.
+    derived = derive_listing_lastmod(included)
+    if derived:
+        stamp, superseded = derived
+        for e in included:
+            if e["rel"] == LISTING_INDEX:
+                e["superseded"] = (e["lastmod"], superseded)
+                e["lastmod"] = stamp
+                e["tier"] = "newest-post"
+
     # Homepage first, then blog index, then posts newest-first.
     def sort_key(e):
         depth = 0 if e["rel"] == "index.html" else (1 if e["rel"].endswith("index.html") else 2)
@@ -339,11 +418,22 @@ def main() -> int:
     for rel, reason in skipped:
         print(f"  skip  {rel:<52} {reason}")
 
-    census = {t: sum(1 for e in entries if e["tier"] == t) for t in ("dateModified", "datePublished", "git")}
+    census = {t: sum(1 for e in entries if e["tier"] == t)
+              for t in ("dateModified", "datePublished", "git", "newest-post")}
     print("\nlastmod source: " + ", ".join(f"{n} {t}" for t, n in census.items()))
     for e in entries:
         if e["tier"] == "git":
             print(f"  git   {e['lastmod']}  {e['rel']:<48} (page declares neither date)")
+    # Print what the derivation REPLACED, not just what it produced. "derived
+    # 2026-07-21" alone is consistent with the derivation never running and git
+    # having said 07-21 anyway -- the masking case this ticket opened on, where
+    # a real adoption and a comment-only commit landed the same day and the two
+    # tiers agreed by coincidence. The superseded value is what makes the run
+    # able to report that it did something.
+    for e in entries:
+        if e.get("superseded"):
+            old, old_tier = e["superseded"]
+            print(f"  derive {old} ({old_tier}) -> {e['lastmod']}  {e['rel']:<43} (newest listed post)")
 
     moved = [e for e in entries if e["was"] and e["was"] != e["lastmod"]]
     added = [e for e in entries if not e["was"]]
