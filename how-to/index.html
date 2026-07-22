@@ -5,35 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>How-To — KiloKaki</title>
   <meta name="description" content="Step-by-step guides for every KiloKaki feature. Learn how to log, track, and hit your goals.">
-  <!-- dateModified is DECLARED here, not derived from git. The git tier happens to
-       agree TODAY — last commit is 5eb42da (2026-06-07), a real CTA edit — and that
-       agreement is exactly the reason to declare now rather than later: the next
-       head-tag-only commit poisons it silently, which is the trap index.html already
-       fell into (0edc2b4, canonical, 1 insertion, no reader-visible byte).
+  <!-- NO dateModified HERE, ON PURPOSE — and it was here, in 1678682, until this
+       commit withdrew it. Do not re-add it.
 
-       Declaring against a currently-correct git date is not a no-op. It moves the
-       number out of a tier that answers "when did this file last move in history"
-       and into one that answers "when did this page last change".
+       This page is a LISTING: its bytes are the list of how-to articles, so its
+       true lastmod is a fact about the newest article it carries, and that is a
+       thing a script can compute. Declaring it hands a self-correcting number to
+       a human who has to remember to edit it. The discriminator is a property of
+       the page, not a preference: DERIVE where the page's content IS a list of
+       dated things, DECLARE where there is nothing to derive from (Coco, ruling
+       2026-07-22). index.html declares because it has no operand. This does not.
 
-       This page qualifies as STATIC in the sense the bar means: nothing rewrites it
-       as a SIDE EFFECT. Do not read that as "no script generates it" — no script
-       generates blog/index.html either (`grep -rln blog/index.html scripts/` is
-       empty, checked 2026-07-22), and blog/index.html still fails the bar. The
-       operative difference is the ADOPTION path: copying a live post into git
-       rewrites the blog listing, so blog/index.html's git date tracks real content
-       movement. Nothing adopts into this listing.
+       1678682's defence of the declaration — that it buys immunity to
+       head-tag-only commits — was true and is now moot: derivation is immune to
+       the same commits AND self-corrects when an article ships, so the trade it
+       accepted no longer has to be made.
 
-       Stated straight, because it argues against this change: when a how-to article
-       DOES ship, the same commit edits this file (7ce2df3 shipped 13 articles and
-       this listing together), so the git tier is self-correcting on real edits. What
-       declaring buys is narrow — immunity to head-tag-only commits — and it costs
-       that self-correction. Narrow and one-directional, but the poisoning is silent
-       and the loss is not: a stale declared date is at least greppable.
-
-       A declared date does not self-correct: edit the content, edit this. -->
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebPage","name":"How-To — KiloKaki","url":"https://kilokaki.com/how-to/","dateModified":"2026-06-07","inLanguage":"en-SG"}
-  </script>
+       The derivation lives in scripts/gen-sitemap.py: LISTING_INDICES maps this
+       path to the prefix it lists. UNTIL that generalisation merges, this page
+       is on the git tier and its git date is 2026-07-22 — poisoned by 1678682
+       and by this commit, both schema/comment-only. Merging this arm alone
+       publishes that date. Order the merges, or land them together. -->
   <style>
     :root { --green: #84cc16; --green-dark: #4d7c0f; --orange: #f97316; --cream: #fffaf2; --text: #1f2937; --muted: #6b7280; --card: #ffffff; --line: #e5e7eb; }
     * { box-sizing: border-box; }
