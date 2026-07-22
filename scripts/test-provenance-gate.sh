@@ -174,15 +174,42 @@ row_H() {
   PATH="$shim" bash "$GATE" "$s"
 }
 
-# I  THE PLACEMENT ROW (Coco, 2026-07-22): dirty tree + --dry-run, through
-# deploy.sh, must still exit non-zero. --dry-run returns at deploy.sh:203, above
-# all three other gates. If a guard about the deploy's own provenance is
-# skippable by that flag, the defect has just been rebuilt one layer up.
-# Runs with a deliberately absent env file: nothing here should reach secrets.
+# I  THE PLACEMENT ROW (Coco, 2026-07-22; mutation swapped by Nori 2026-07-22
+# after measuring the old one). It must still exit non-zero when --dry-run is
+# passed: that flag returns from deploy.sh at the `if $DRY_RUN` block near the
+# end, above all three other gates. If a guard about the deploy's own provenance
+# is skippable by that flag, the defect has just been rebuilt one layer up.
+#
+# WHY THE MUTATION IS "CLEAN TREE, UNPUBLISHED HEAD" AND NOT "DIRTY TREE".
+# This row used to dirty the tree. Measured, not reasoned: with the gate
+# neutered (wrapped in `if ! $DRY_RUN`), that version returned rc=1 either way
+# -- SELF_VERIFY's own dirty-tree check answers the same question a few lines
+# below the gate and aborts with the same code. It went red only because the
+# marker did not match. So the rc carried ZERO BITS and the whole row rested on
+# the marker string disentangling two guards that both fire on one input.
+# A dirty tree is not this gate's exclusive subject; an unpublished HEAD is.
+# SELF_VERIFY cannot see a clean checkout of an unpushed commit, so under this
+# mutation the provenance gate is the ONLY thing in deploy.sh that can produce
+# a non-zero before the env check. Both operands are asserted below: the tree
+# must be CLEAN (or SELF_VERIFY could be the one answering) and HEAD must be
+# UNPUBLISHED (or nothing is being tested at all).
+#
+# The rc is still 1 in both arms -- neutered, it reaches row J's missing-env
+# abort -- so the MARKER is what discriminates, per the doctrine at :36-43.
+# The difference from the old row is that the marker is now disambiguating one
+# guard's two outcomes instead of two different guards' identical outcome.
+#
+# Runs with a deliberately absent env file: no credential, no rsync, no packet.
+# An I' that needs live SFTP creds to score green would break the property this
+# row was written to hold.
 row_I() {
   local s; s=$(fixture I) || return $?
-  must bash -c "echo '<!-- uncommitted -->' >> '$s/index.html'"
-  [[ -n "$(git -C "$s" status --porcelain)" ]] || { echo "mutation did not dirty tree" >&2; return 99; }
+  must bash -c "echo '<!-- local only -->' >> '$s/index.html'"
+  must git -C "$s" -c user.email=t@t -c user.name=t commit --quiet -am "unpublished commit"
+  [[ -z "$(git -C "$s" status --porcelain)" ]] \
+    || { echo "mutation left the tree dirty: SELF_VERIFY can answer this too" >&2; return 99; }
+  git -C "$s" merge-base --is-ancestor HEAD origin/main 2>/dev/null \
+    && { echo "mutation did not unpublish HEAD" >&2; return 99; }
   KILOKAKI_DEPLOY_ENV="${WORK}/no-such-env" bash "${s}/scripts/deploy.sh" --dry-run
 }
 
@@ -215,7 +242,7 @@ check E ".git stripped, copy inside ANOTHER repo"       2 row_E "is not the root
 check F "origin/main does not resolve"                  2 row_F "does not resolve in"
 check G "unborn HEAD (no commit)"                       2 row_G "HEAD does not resolve"
 check H "git off PATH (bash kept reachable)"            2 row_H "git is not on PATH"
-check I "dirty tree + --dry-run via deploy.sh"          1 row_I "working tree is dirty"
+check I "clean tree, HEAD unpublished, --dry-run"       1 row_I "ABORT: provenance gate"
 check J "clean tree + --dry-run reaches secrets check"  0 row_J
 
 echo ""
