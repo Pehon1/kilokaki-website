@@ -125,8 +125,30 @@ As of 2026-07-22 16:1x the same capture exists in four places across three trees
 
     13:57  ~/.openclaw-nori/workspace/state/live-by/first-serve-by-page.json
     13:58  ~/.openclaw-nori/workspace/evidence/adoption-logs/live-by.json   4 slugs, `bounds` schema — NOT this artifact
-    13:59  ~/.openclaw-nori/workspace/state/archive/live-by-backfill-*.json
+    13:59  `~/.openclaw-nori/workspace/state/archive/live-by-backfill-*.json`  <-- PRUNABLE, see below
+    ----   fixtures/live-by-backfill-20260722-135900.json                     <-- tracked copy of that capture
     15:50  evidence/first-200-utc.json                                      <-- THIS FILE
+
+### Why the 13:59 line is backticked and the others are not
+
+`check-cited-paths.sh` strips backticked spans before extracting citations, so a
+backticked path is NAMED, not CITED. That distinction is doing real work here.
+
+The archive copy sits under a written retention policy -- `AGENTS.md:63` says
+*keep last 20* and the directory holds 29 as of 2026-07-23 03:0x. It is also the
+SOLE match for that glob, so the checker reports `(glob, 1 match)`: the margin
+between green and red is one file. Citing it means the next agent who honours
+their own documented retention turns THIS repo red, in a pre-commit, with nothing
+in the offending diff to explain why. A path under a keep-N policy is more
+perishable than a git blob -- gc is a maybe, *keep last 20* is a schedule.
+
+So the durable artifact is cited and the volatile one is named. The tracked copy
+is byte-identical: sha256[0:16] `a9e05ca067130a71` on both, measured 2026-07-23.
+
+Known gap, stated rather than implied: the checker only extracts `~/` tokens, so
+a repo-relative citation like the fixtures line above is not verified by it at
+all. It cannot dangle the way a `~/` path can, but "not checkable" and "checked
+and fine" are different states and this file should not blur them.
 
 **Cite this one, and only this one.** Not because it is more accurate — it is a
 byte-identical copy of the same capture — but because it is the only one inside
