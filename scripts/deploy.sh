@@ -210,6 +210,24 @@ if $DRY_RUN; then
   exit 0
 fi
 
+# --- Sitemap gate ---
+# Runs FIRST of the three: it needs no network, so it is the cheapest, and it
+# answers the most local question — "is sitemap.xml consistent with the HTML
+# about to ship beside it?" The other two ask about origin and about production.
+#
+# This exists because `gen-sitemap.py --check` was written "for CI/cron" and then
+# had no caller of any kind for its whole life. Six days of lastmod drift across
+# 63 URLs surfaced on 2026-07-22 only because someone asked for a regen. The
+# detector worked; nothing ran it. Fail closed: exit 1 stale, exit 2 unknown,
+# both abort. See sitemap-gate.sh for why exit 1 alone is not trusted.
+sitemap_rc=0
+bash "${SCRIPT_DIR}/sitemap-gate.sh" || sitemap_rc=$?
+if [[ $sitemap_rc -ne 0 ]]; then
+  echo "" >&2
+  echo "ABORT: sitemap gate exit $sitemap_rc. Nothing was deployed." >&2
+  exit 1
+fi
+
 # --- Content gate ---
 # Runs BEFORE the drift guard: it is cheaper, and it answers a prior question.
 # The drift guard asks "what would --delete remove that only production has?".
