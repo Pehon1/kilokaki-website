@@ -1,0 +1,94 @@
+{
+  "_README": [
+    "Posts that were PUBLISHED ON PRODUCTION and only later adopted into git.",
+    "",
+    "For these, git answers the wrong question. A post's first commit is the date",
+    "SOMEONE COPIED IT INTO THE REPO, not the date it went live. gen-sitemap.py:122",
+    "already knew this ('an adoption changes when a file last moved in history",
+    "without touching a byte the reader sees') while check-schema-dates.py was built",
+    "on the opposite premise. This file is where the two stop contradicting each",
+    "other: the checker reads the expected datePublished FROM HERE for these paths,",
+    "and from git for everything else.",
+    "",
+    "WHO WRITES IT: whoever performs an adoption, in the same commit as the adoption.",
+    "An adoption with no entry here is a post whose datePublished nothing can verify.",
+    "",
+    "WHAT THIS FILE IS NOT: independent evidence that the value is TRUE. The",
+    "datePublished below is the production page's own claim, which is also what the",
+    "HTML says — so the checker's comparison is a declaration-vs-artifact match, not",
+    "a derivation. Its job is to make DRIFT visible and to stop fix-schema-dates.py",
+    "overwriting a true date with a false one. Independence comes from",
+    "`evidence.first_serve_utc`: an access-log row proving the page was served before",
+    "the adopting commit existed. You cannot serve a file that does not exist.",
+    "",
+    "KEYED BY REPO-RELATIVE PATH, never basename. blog/index.html and",
+    "how-to/index.html collapse to one string under a basename key, and the lane that",
+    "loses is silent."
+  ],
+
+  "_evidence_source": {
+    "file": "~/.openclaw-nori/workspace/evidence/adoption-logs/live-by.json",
+    "raw": "~/.openclaw-nori/workspace/evidence/adoption-logs/raw-evidence.txt",
+    "captured_sgt": "2026-07-22",
+    "expires_approx": "2026-08-15 (30 daily rotations; the 16-Jul rows age out first)",
+    "note": "Prod access logs, static_* family, status 200 only. A 404 row proves NON-existence and must never mint a bound. Counts: buffet 14, cai-fan 14, intermittent-fasting 23, kopi 19."
+  },
+
+  "adopted": {
+    "blog/how-to-log-a-buffet.html": {
+      "datePublished": "2026-07-16",
+      "adopting_commit": "96da7b0",
+      "adopted_sgt": "2026-07-17 00:03:24 +0800",
+      "evidence": {
+        "first_serve_utc": "2026-07-16T15:48:26+00:00",
+        "third_party": true,
+        "ip": "8.219.253.76",
+        "status": 200,
+        "adopting_commit_later_by_seconds": 898
+      },
+      "note": "Served to a third party (Alibaba Cloud, curl/8.14.1) 898s BEFORE the adopting commit. The git date is falsified, not merely doubted."
+    },
+
+    "blog/how-to-log-cai-fan.html": {
+      "datePublished": "2026-07-16",
+      "adopting_commit": "96da7b0",
+      "adopted_sgt": "2026-07-17 00:03:24 +0800",
+      "evidence": {
+        "first_serve_utc": "2026-07-16T15:48:26+00:00",
+        "third_party": true,
+        "ip": "47.236.180.22",
+        "status": 200,
+        "adopting_commit_later_by_seconds": 898
+      },
+      "note": "Same 898s gap. State it in SECONDS — '16 Jul vs 17 Jul' is a midnight-SGT artifact (23:48 vs 00:03) and reporting it as a one-day gap re-imports the exact ambiguity this file exists to kill."
+    },
+
+    "blog/intermittent-fasting-food-logging.html": {
+      "datePublished": "2026-07-16",
+      "adopting_commit": "96da7b0",
+      "adopted_sgt": "2026-07-17 00:03:24 +0800",
+      "evidence": {
+        "first_serve_utc": "2026-07-16T15:48:26+00:00",
+        "third_party": true,
+        "ip": "47.236.180.255",
+        "status": 200,
+        "adopting_commit_later_by_seconds": 898
+      },
+      "note": "Same 898s gap."
+    },
+
+    "blog/how-to-log-kopi-and-teh.html": {
+      "datePublished": "2026-07-21",
+      "adopting_commit": "7ece2bb",
+      "adopted_sgt": "2026-07-22 11:08:36 +0800",
+      "evidence": {
+        "first_serve_utc": "2026-07-22T02:18:55+00:00",
+        "third_party": false,
+        "ip": "103.11.50.23",
+        "status": 200,
+        "adopting_commit_later_by_seconds": 2981
+      },
+      "note": "WEAKEST OF THE FOUR AND THE FIELD SAYS SO: the first serve is OUR OWN deploy-verification curl from our egress IP, so it is an existence proof but NOT independent (third_party=false). 2026-07-21 is the production page's own value and is the truer date - the post was live on the 21st. Do NOT 'fix' it to the adopting commit's date 2026-07-22; that falsifies content to green a broken instrument. This is the entry the old TZ bucket failed to spare, purely because the adoption ran at 11:08 instead of 00:03."
+    }
+  }
+}

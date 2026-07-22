@@ -9,8 +9,19 @@ Dry-run by default. Pass --apply to write.
 
 What it will NOT do, deliberately:
 
-  TZ artifacts are skipped. schema=UTC vs git=SGT is two clocks disagreeing,
-  not a wrong date. The checker classifies these; we honour that.
+  Adopted posts are REFUSED, never rewritten. blog/adopted.json names the posts
+  that were live on production before git ever saw them; for those, the first
+  commit is a copy date and writing it destroys the truer value. The set is
+  imported from check-schema-dates.load_adopted() — one definition, one answer.
+  If the file is absent or unparseable this script refuses to run at all.
+
+  It used to say "TZ artifacts are skipped ... the checker classifies these; we
+  honour that." Both halves were false. This script never imported the checker's
+  classification; it carried its OWN copy of the UTC test, so the two could drift
+  and a reader auditing the checker would have audited the wrong file. And the
+  test itself could not tell a clock offset from an adoption lag — it exonerated
+  three adopted posts and rewrote a fourth purely on the hour their adopting
+  commits happened to run. The copy is deleted, not repaired.
 
   dateModified is only ever lifted, never lowered. Setting datePublished to an
   earlier fact can leave dateModified behind it, which is incoherent (modified
@@ -25,6 +36,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 
 LD = r'<script type="application/ld\+json">(.*?)</script>'
 
@@ -38,6 +50,7 @@ _spec = importlib.util.spec_from_file_location(
 _checker = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_checker)
 population = _checker.population
+load_adopted = _checker.load_adopted
 
 
 def first_commit(path):
@@ -95,16 +108,51 @@ def main():
 
     root = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
     os.chdir(root)
-    fixed = added = lifted = skipped_tz = 0
+    fixed = added = lifted = refused = 0
+
+    # --- Adoption guard. Fails closed, and runs before anything is computed. ---
+    #
+    # Every write below sets datePublished from git. For a post that was published
+    # on production and adopted into the repo later, git's first commit is the date
+    # SOMEBODY COPIED THE FILE, and writing it destroys the truer value to satisfy a
+    # false premise. blog/how-to-log-kopi-and-teh.html is the live case: this script
+    # would rewrite 2026-07-21 -> 2026-07-22 AND lift dateModified after it, so two
+    # true fields for one wrong reason.
+    #
+    # Until 2026-07-22 the three OTHER adopted posts were spared here, but only by
+    # accident: their adopting commit landed at 00:03 SGT, so its UTC date happened
+    # to equal the schema date and the old TZ test read that coincidence as "two
+    # clocks disagreeing". kopi's adoption ran at 11:08 and was not spared. Same
+    # defect, same shape, opposite outcome, decided by the hour on the clock.
+    #
+    # ABSENT is UNKNOWN, never "no adoptions to spare" — refuse rather than run
+    # unguarded over a corpus we cannot classify.
+    try:
+        adopted = load_adopted()
+    except json.JSONDecodeError as exc:
+        print(f"!! REFUSING TO RUN: {_checker.ADOPTED} is present but unparseable: {exc}")
+        print("!! An unreadable declaration file must not degrade into 'nothing to spare'.")
+        return 2
+    if adopted is None:
+        print(f"!! REFUSING TO RUN: {_checker.ADOPTED} is ABSENT.")
+        print("!! Without it this script cannot tell an adopted post from a published one,")
+        print("!! and every adopted post is a date it would overwrite with a copy date.")
+        return 2
+    print(f"→ Adoption guard: {len(adopted)} declared adoption(s) will be REFUSED, not rewritten.")
 
     for path in population()[0]:
         name = os.path.basename(path)
+        if path in adopted:
+            decl = adopted[path]
+            refused += 1
+            print(f"  REFUSED   {name:<52} adopted @ {decl['adopting_commit']}, "
+                  f"declared {decl['datePublished']} — git date is a copy date, not a publish date")
+            continue
         html = open(path, encoding="utf-8").read()
         commit = first_commit(path)
         if commit is None:
             continue
         local = commit.date().isoformat()
-        utc = (commit - commit.utcoffset()).date().isoformat()
         block = re.search(LD, html, re.S)
 
         if not block:
@@ -131,9 +179,6 @@ def main():
         published = data.get("datePublished")
         if not published or published == local:
             continue
-        if published == utc:
-            skipped_tz += 1
-            continue
 
         new_raw = re.sub(r'("datePublished"\s*:\s*")[^"]*(")', rf"\g<1>{local}\g<2>", raw)
         note = ""
@@ -149,9 +194,10 @@ def main():
             open(path, "w", encoding="utf-8").write(out)
 
     print(f"\n>>> {fixed} datePublished fixed, {added} schema blocks added, "
-          f"{lifted} dateModified lifted, {skipped_tz} TZ skipped")
+          f"{lifted} dateModified lifted, {refused} adopted REFUSED")
     print(">>> DRY RUN — nothing written. Pass --apply to write." if not args.apply else ">>> WRITTEN.")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -28,6 +28,31 @@ import subprocess
 import sys
 
 STUB_BYTES = 2000  # redirect stubs are ~500B and carry no schema by design
+ADOPTED = "blog/adopted.json"
+
+
+def load_adopted():
+    """Declared publish dates for posts that were LIVE ON PROD before git saw them.
+
+    THE definition of "which posts is git the wrong instrument for" — single
+    source, same rule as population(): import this, never restate it. The
+    duplicated TZ test that used to live in fix-schema-dates.py is exactly what
+    this exists to prevent.
+
+    Three return values, deliberately distinguishable:
+      None  — the file is ABSENT. Not "no adoptions"; UNKNOWN. Callers that can
+              damage content (fix-schema-dates.py) must fail closed on this.
+      {}    — the file is PRESENT and declares nothing. A real, readable state.
+      dict  — repo-relative path -> declaration.
+
+    Malformed JSON raises rather than degrading to {}. A declaration file that
+    cannot be parsed must never read as "nothing to spare" — that is the exact
+    shape that would silently re-arm the writer against the adopted set.
+    """
+    if not os.path.exists(ADOPTED):
+        return None
+    with open(ADOPTED, encoding="utf-8") as fh:
+        return json.load(fh).get("adopted", {})
 
 
 def population():
