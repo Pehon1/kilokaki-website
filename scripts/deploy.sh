@@ -231,23 +231,19 @@ fi
 
 drift_guard
 
-# --- Sitemap staleness guard ---
-# gen-sitemap.py grew a --check mode ("exit 1 if sitemap.xml is stale, write
-# nothing") and then had NO caller anywhere: not here, not in crontab, not in a
-# LaunchAgent, not in any other workspace. Grepped 2026-07-22. A check nothing
-# runs is a check that does not exist — the same defect class as a purge whose
-# result goes to /dev/null. This is its caller.
-echo "→ Checking sitemap.xml is current with the tree..."
-sitemap_rc=0
-python3 "${SCRIPT_DIR}/gen-sitemap.py" --check || sitemap_rc=$?
-if [[ $sitemap_rc -ne 0 ]]; then
-  echo "" >&2
-  echo "ABORT: sitemap.xml is stale (gen-sitemap.py --check exit $sitemap_rc)." >&2
-  echo "  Run: python3 scripts/gen-sitemap.py   then review and commit the result." >&2
-  echo "  Nothing was deployed." >&2
-  exit 1
-fi
-echo "✓ sitemap.xml matches the tree."
+# --- Sitemap staleness gate: DELIBERATELY NOT HERE ---
+# This branch used to call `gen-sitemap.py --check` directly and abort on its
+# exit 1. Removed 2026-07-22 by Coco's ruling: the gate lives in
+# scripts/sitemap-gate.sh on branch sitemap-gate (b63dabf), which does NOT trust
+# the generator's exit 1 — it distinguishes stale (1) from "could not reach a
+# verdict" (2), because a generator that raises also exits 1 and my version read
+# that as a clean stale-detection.
+#
+# DO NOT RE-ADD A CALLER HERE. Two callers is the failure mode, not two files:
+# the merge of this branch and sitemap-gate is CLEAN (measured, exit 0, zero
+# conflict markers) and lands BOTH gates — the rejected design survives after
+# drift_guard with nothing to make a reviewer look. If you want the check, the
+# answer is sitemap-gate.sh, once it merges.
 
 # --check stops here: the guards are the thing under test, and they must be
 # exercisable without deploying. --dry-run exits before them, so it never
