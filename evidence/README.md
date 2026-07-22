@@ -19,26 +19,102 @@ site-absolute path.
 
     sha256  b65289497a86139e9b3af3fe9ca08b3016b403c746ed8405ef9091cdc3ccd292
     bytes   18926
-    source  ~/.openclaw-nori/workspace/state/live-by/live_by.json
+    source  ~/.openclaw-nori/workspace/state/live-by/first-serve-by-page.json
     copied  2026-07-22, byte-identical, no fields added or renamed
 
 **Copied verbatim on purpose.** No provenance keys were injected into the JSON;
 an artifact you edit on the way in is an artifact whose hash proves nothing.
 Provenance lives here instead.
 
+## Corrections
+
+Two claims this file has carried are false, and neither correction is reachable
+from the route a reader actually takes — `git log -- evidence/README.md`, or
+`blame` on the line that is wrong. Both are recorded here so they are.
+
+**`source` read `~/.openclaw-nori/workspace/state/live-by/live_by.json` until
+`1b21282`, and read it again at `a224c71`.** That path has never existed:
+`find ~/.openclaw-nori/workspace -name live_by.json` returns empty. The real
+artifact is `first-serve-by-page.json`, sha256 `b6528949…`, 18926 bytes. The
+regression was an overwrite, not a decision — `a224c71` composed its README
+edits onto `8d00738`'s text rather than `1b21282`'s and dropped the whole file
+over the fix, reverting `:22` and `:35` and deleting §Rebuild.
+`git diff 8d00738 a224c71 -- evidence/README.md` touches neither phantom line,
+which is how you can tell. The three code sites `1b21282` fixed
+(`check-schema-dates.py:118`, `:244`, `test-schema-dates-adoption.sh:486`) kept
+the fix, so the tip briefly shipped a README contradicting the checker beside
+it. Restored here.
+
+**`1b21282`'s commit message calls the writer of a 16:06 checkout
+"unrecorded". `29af902` retracts that.** The reflog records the event to the
+second; what it lacks is a *distinguishing actor*, because every agent working
+the shared checkout writes the same machine-default identity
+(`Pe Hon Ong <pehonong@Mac-Studio.local>` — including every commit on this
+branch). The correct word is "unattributed". The distinction is load-bearing:
+no record argues for adding logging, a record whose actor field never varies
+argues for giving each agent its own tree. Only the second is true.
+`29af902` is an **empty** commit, so it appears in no path-filtered log and in
+no `blame` — this paragraph is the only route to it from the file it corrects.
+Original wording stays in history at `1b21282`; nothing is rewritten.
+
+## Rebuild
+
+    sed 's|^OUT = .*|OUT = Path("/tmp/rebuilt.json")|' \
+        ~/.openclaw-nori/workspace/scripts/build-live-by.py > /tmp/build.py
+    python3 /tmp/build.py
+    shasum -a 256 /tmp/rebuilt.json   # -> b65289497a86139e9b3af3fe9ca08b3016b403c746ed8405ef9091cdc3ccd292
+
+Re-verified 2026-07-22 17:5x, shared checkout at `1678682`: reproduces this file
+**byte-identically** and prints `population 101 | with evidence 101 | no hit 0`.
+The `sed` exists only to stop the script overwriting Nori's copy — the builder
+hardcodes its own `OUT`.
+
+Cite that builder by full path. There are two `build-live-by.py` under Nori's
+workspace — `scripts/` (4811 b, the one above) and
+`evidence/adoption-logs/` (7859 b). Same basename, different files: the same
+trap this README's naming section is about, one directory over.
+
+Two inputs it needs, and **neither is in this repo**:
+
+* `~/.openclaw-nori/workspace/state/live-by/raw-access-2026-07-22.log` — 2.2 MB,
+  mode 0600, Nori's home. Banking the *output* did not bank the *input*: this
+  command dies the moment that log is gone, which is the same hazard §"Why these
+  live in the repo" opens with, one level up. Rebuildability here has a shelf
+  life; the banked bytes do not.
+* `~/.openclaw/workspace/kilokaki-site` — the builder derives its population from
+  that tree's `blog/` + `how-to/`. It is a **shared checkout whose HEAD moves**,
+  so a rebuild at a different commit legitimately yields a different population
+  and a different hash. Match the count (101) before trusting a mismatch.
+
+A provenance field whose path does not resolve is a stamp, not provenance. This
+block is here so the artifact can be re-derived from its own documentation
+rather than vouched for by it.
+
 ### The name is deliberate, and it is a warning
 
-Two artifacts existed one character apart, **both live, both Nori's, different
-schemas**:
+Two artifacts are live, **both Nori's, different schemas**:
 
-    ~/.openclaw-nori/workspace/evidence/adoption-logs/live-by.json   4 slugs, bare under `bounds`, no first_200_utc field
-    ~/.openclaw-nori/workspace/state/live-by/live_by.json            101 pages under `pages`, has first_200_utc
+    ~/.openclaw-nori/workspace/evidence/adoption-logs/live-by.json      4 slugs, bare under `bounds`, no first_200_utc field
+    ~/.openclaw-nori/workspace/state/live-by/first-serve-by-page.json   101 pages under `pages`, has first_200_utc
 
 Coco read the first while checking a citation against the second and came within
-one step of ruling a true citation fabricated. A hyphen is not a distinguishing
-name. This copy is therefore named for its **load-bearing field**,
-`first_200_utc`, not for the concept "live by" — you cannot confuse
-`first-200-utc.json` with something that lacks a `first_200_utc`.
+one step of ruling a true citation fabricated. The near-miss is real and twice
+attested — Nori's first pass reported "durian is NOT in [the evidence]" off the
+4-slug file.
+
+They are **not** one character apart. This section said so until `1b21282` and
+said so again at `a224c71`; it was a mechanism invented to explain the near-miss,
+retrofitted to a `live_by.json` that does not exist (§Corrections). The real pair
+differs by directory *and* basename, and the confusion was schema-shaped, not
+punctuation-shaped.
+
+This copy is therefore named for its **load-bearing field**, `first_200_utc`, not
+for the concept "live by" — you cannot confuse `first-200-utc.json` with
+something that lacks a `first_200_utc`. Right call, originally for a made-up
+reason, which is why the name is not the enforcement: `load_evidence()` refuses
+on schema identity (`pages` + `_retention_floor_utc` + rows carrying
+`first_200_utc`), and test K feeds it the `bounds` artifact and asserts exit 2.
+A convention protects a careful reader; the guard protects everyone else.
 
 Cite full paths for anything in this directory. Never the basename.
 
