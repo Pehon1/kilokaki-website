@@ -5,18 +5,44 @@ Rule (MEMORY.md, 2026-06-05): datePublished == date of the post's FIRST commit.
 Target publish dates never go in schema; 13 posts once shipped crawlable with
 future datePublished because someone stamped the plan instead of the fact.
 
-Exit 1 if any real bug is found, so this can gate a deploy.
-
-Two traps this script exists to avoid, both hit by hand-audits on 2026-07-17:
+Traps this script exists to avoid:
 
   --follow is mandatory. Four posts were renamed by "SEO Sprint P1: 4 URL
   renames with 301 redirects" (8a059b0). Without --follow their first commit
   reads as the rename date and four clean posts look backdated.
 
-  Timezone. git --date=short reports the author's local date (SGT). A generator
-  stamping UTC produces an off-by-one for anything committed 00:00-08:00 SGT.
-  That is a disagreement between two clocks, not a wrong date. Classified as
-  TZ and never counted as a bug.
+  Adoption. For a post published on production and copied into git afterwards,
+  the first commit is the date SOMEBODY RAN `git add`. blog/adopted.json declares
+  those posts and the date they actually went live; this script reads its
+  comparand from there for them, and from git for everything else.
+
+DELETED 2026-07-22 — the TZ bucket, and why its removal is the whole point:
+
+  It classified `schema == commit-date-in-UTC` as "two clocks disagreeing, not a
+  wrong date" and exonerated it. That test cannot tell a clock offset from an
+  ADOPTION LAG. Both produce the identical -1d shape, and which one you get is
+  decided by nothing but the wall-clock HOUR of the commit: an adoption at
+  00:03 SGT has a UTC date one day earlier, matches the schema, and walks; the
+  same adoption at 11:08 SGT does not, and gets reported as drift. Four posts,
+  one mechanism, three exonerated and one flagged, on a coin flip.
+
+  So the bucket was worse than wrong — it was right often enough to keep. Three
+  genuine instrument failures were closed as "NOT A BUG, no action" from
+  2026-07-17, and fix-schema-dates.py honoured the same verdict, which made it a
+  writer that spared three true dates by accident and stood ready to overwrite
+  the fourth.
+
+  The replacement does not try to discriminate better. It refuses to exonerate
+  anything it cannot distinguish: an adoption must be DECLARED by the human who
+  performed it, in a second file, or its date is a finding. The cost is real and
+  intended — a genuinely UTC-stamped post now needs a declaration instead of a
+  free pass. Measured at deletion: the old TZ bucket held 3 posts and all 3 were
+  adoptions, so nothing legitimate loses its exemption today.
+
+Exit 1 if any real bug is found, so this can gate a deploy. NOTE, unchanged and
+still true: nothing invokes this script. `grep -rn check-schema-dates *.sh` is
+empty; gen-sitemap.py:128 cites it as live protection and that citation is a
+phantom. Wiring it in is a separate ask, and it is Coco's.
 """
 import argparse
 import datetime
@@ -116,9 +142,28 @@ def main():
     if args.count:
         return print_count()
 
-    buckets = {"FWD": [], "BACK": [], "MINOR": [], "TZ": [], "NOSCHEMA": [], "NODATE": []}
+    buckets = {"FWD": [], "BACK": [], "MINOR": [], "ADOPTED_DRIFT": [],
+               "NOSCHEMA": [], "NODATE": [], "ORPHAN": []}
 
-    for path in population()[0]:
+    real = population()[0]
+    adopted = load_adopted()
+    if adopted is None:
+        adopted = {}
+        adopted_state = f"{ADOPTED} ABSENT — 0 declarations, every post judged against git"
+    else:
+        adopted_state = f"{ADOPTED}: {len(adopted)} declaration(s)"
+        # An entry naming a path that is not in the population is a POPULATION
+        # MISMATCH, not a date bug — opposite diagnosis, so it gets its own word
+        # and its own bucket even though it shares the exit code. A declaration
+        # that matches nothing is how a file quietly stops covering what it names.
+        for decl in sorted(adopted):
+            if decl not in real:
+                buckets["ORPHAN"].append(
+                    (decl, "declared adopted, matches no post in the population"))
+
+    by_declaration = by_git = no_commit = 0
+
+    for path in real:
         name = os.path.basename(path)
         html = open(path, encoding="utf-8").read()
         block = re.search(r'<script type="application/ld\+json">(.*?)</script>', html, re.S)
@@ -133,18 +178,31 @@ def main():
         if not published:
             buckets["NODATE"].append((name, ""))
             continue
+
+        # Adopted posts are judged against the declaration, never against git.
+        # The hour of the adopting commit is not consulted, which is the entire
+        # fix: the verdict must be identical whether the copy ran at 00:03 or
+        # 11:08.
+        if path in adopted:
+            by_declaration += 1
+            expected = adopted[path]["datePublished"]
+            if published != expected:
+                buckets["ADOPTED_DRIFT"].append(
+                    (name, f"schema {published} | declared {expected} "
+                           f"(adopted @ {adopted[path]['adopting_commit']})"))
+            continue
+
         commit = first_commit(path)
         if commit is None:
+            no_commit += 1
             continue
+        by_git += 1
         local = commit.date().isoformat()
         if published == local:
             continue
-        utc = (commit - commit.utcoffset()).date().isoformat()
         delta = (datetime.date.fromisoformat(published) - commit.date()).days
         detail = f"schema {published} | commit {local} ({delta:+d}d)"
-        if published == utc:
-            buckets["TZ"].append((name, detail))
-        elif delta > 3:
+        if delta > 3:
             buckets["FWD"].append((name, detail))
         elif delta < -3:
             buckets["BACK"].append((name, detail))
@@ -155,9 +213,10 @@ def main():
         ("FWD", "FORWARD-DATED - schema later than first commit. Violates the rule."),
         ("BACK", "BACKDATED >3d"),
         ("MINOR", "MINOR DRIFT <=3d - authored-vs-committed slippage"),
+        ("ADOPTED_DRIFT", "ADOPTED POST DISAGREES WITH ITS DECLARATION"),
         ("NOSCHEMA", "REAL ARTICLE WITH NO JSON-LD BLOCK"),
         ("NODATE", "HAS SCHEMA, NO datePublished"),
-        ("TZ", "TZ-ARTIFACT - schema=UTC, git=SGT. NOT A BUG, no action."),
+        ("ORPHAN", "DECLARED-BUT-ABSENT - blog/adopted.json names a post that isn't there"),
     ]
     for key, label in labels:
         rows = buckets[key]
@@ -165,8 +224,27 @@ def main():
         for name, detail in rows:
             print(f"    {name:<52} {detail}")
 
-    bugs = sum(len(buckets[k]) for k, _ in labels if k != "TZ")
-    print(f"\n>>> {bugs} real bugs, {len(buckets['TZ'])} TZ artifacts (ignored)")
+    # Coverage, emitted every run and derived, never typed. A checker that is
+    # green on everything and silent about how much it looked at is
+    # indistinguishable from a no-op. These must add up to the population.
+    judged = by_declaration + by_git
+    accounted = judged + no_commit + len(buckets["NOSCHEMA"]) + len(buckets["NODATE"])
+    print(f"\n--- coverage ---")
+    print(f"    {adopted_state}")
+    print(f"    {by_declaration:>4}  judged against {ADOPTED}")
+    print(f"    {by_git:>4}  judged against git first-commit")
+    print(f"    {no_commit:>4}  UNJUDGED - in the population, no first commit found")
+    print(f"    {len(buckets['NOSCHEMA']):>4}  UNJUDGED - no JSON-LD block")
+    print(f"    {len(buckets['NODATE']):>4}  UNJUDGED - no datePublished")
+    print(f"    {accounted:>4}  accounted for / {len(real)} real posts"
+          f"{'' if accounted == len(real) else '   <-- DOES NOT ADD UP'}")
+
+    bugs = sum(len(buckets[k]) for k, _ in labels)
+    if accounted != len(real):
+        print(f"\n>>> ARITHMETIC: {accounted} accounted for but the population is "
+              f"{len(real)}. The verdict below is over an unknown subset.")
+        return 1
+    print(f"\n>>> {bugs} real bugs over {judged} judged posts")
     return 1 if bugs else 0
 
 
