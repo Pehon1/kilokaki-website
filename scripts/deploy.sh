@@ -438,15 +438,41 @@ echo "→ ${#_changed[@]} file(s) changed, ${#_deleted[@]} deleted → ${#CACHE_
 # A cap that drops paths silently is the same bug as the hand-kept list, wearing
 # a nicer hat. If it truncates, it says exactly what it dropped and how to
 # finish the job by hand.
+#
+# THE TWO ARRAYS ARE CAPPED INDEPENDENTLY, AND THAT IS NOT A STYLE CHOICE.
+# The previous version capped CACHE_PATHS and then rebuilt the verify set from
+# the survivors: `VERIFY_PATHS=(${CACHE_PATHS[@]})`. CACHE_PATHS is VERIFY_PATHS
+# followed by the delete-only paths, so that assignment could only ever be
+# harmless while the purge set fit under the cap. Once it overflowed with
+# deletions in the tree, the line pushed deleted paths INTO the verify set —
+# and verify-edge diffs the edge against a repo file, which a deleted path does
+# not have. Measured on a 10-changed/40-deleted tree: 28 deleted paths entered
+# VERIFY_PATHS, i.e. a red deploy for a clean delete. It broke the exact
+# invariant the two-array split exists to hold, at the one moment the split
+# mattered. Capping below can only ever REMOVE members; it can never add one.
 if [[ ${#CACHE_PATHS[@]} -gt $MAX_PATHS ]]; then
-  dropped=(${CACHE_PATHS[@]:$MAX_PATHS})
+  dropped_purge=(${CACHE_PATHS[@]:$MAX_PATHS})
   CACHE_PATHS=("${CACHE_PATHS[@]:0:$MAX_PATHS}")
-  VERIFY_PATHS=(${CACHE_PATHS[@]+"${CACHE_PATHS[@]}"})
   echo "" >&2
-  echo "WARNING: ${#dropped[@]} path(s) exceed the ${MAX_PATHS}-path cap and were NOT purged:" >&2
-  printf '  %s\n' "${dropped[@]}" >&2
+  echo "WARNING: ${#dropped_purge[@]} path(s) exceed the ${MAX_PATHS}-path cap and were NOT purged:" >&2
+  printf '  %s\n' "${dropped_purge[@]}" >&2
   echo "  Purge them after this run:" >&2
-  echo "    bash scripts/cache-purge.sh ${dropped[*]}" >&2
+  echo "    bash scripts/cache-purge.sh ${dropped_purge[*]}" >&2
+fi
+
+# The verify set gets its own warning for the same reason it gets its own cap.
+# The old block's single message said "were NOT purged" and handed back a
+# cache-purge.sh line. An operator who ran exactly what they were told still had
+# unverified paths and no way to learn which ones — the silent drop this comment
+# opens by disavowing, happening on the other array in the same block.
+if [[ ${#VERIFY_PATHS[@]} -gt $MAX_PATHS ]]; then
+  dropped_verify=(${VERIFY_PATHS[@]:$MAX_PATHS})
+  VERIFY_PATHS=("${VERIFY_PATHS[@]:0:$MAX_PATHS}")
+  echo "" >&2
+  echo "WARNING: ${#dropped_verify[@]} path(s) exceed the ${MAX_PATHS}-path cap and were NOT verified:" >&2
+  printf '  %s\n' "${dropped_verify[@]}" >&2
+  echo "  This deploy's ✓ does NOT cover them. Check them after this run:" >&2
+  echo "    bash scripts/verify-edge.sh ${dropped_verify[*]}" >&2
 fi
 
 purge_rc=0
