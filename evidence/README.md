@@ -19,105 +19,76 @@ site-absolute path.
 
     sha256  b65289497a86139e9b3af3fe9ca08b3016b403c746ed8405ef9091cdc3ccd292
     bytes   18926
-    source  ~/.openclaw-nori/workspace/state/live-by/first-serve-by-page.json
+    source  ~/.openclaw-nori/workspace/state/live-by/live_by.json
     copied  2026-07-22, byte-identical, no fields added or renamed
 
 **Copied verbatim on purpose.** No provenance keys were injected into the JSON;
 an artifact you edit on the way in is an artifact whose hash proves nothing.
 Provenance lives here instead.
 
-### Rebuild
-
-    sed 's|^OUT = .*|OUT = Path("/tmp/rebuilt.json")|' \
-        ~/.openclaw-nori/workspace/scripts/build-live-by.py > /tmp/build.py
-    python3 /tmp/build.py
-    shasum -a 256 /tmp/rebuilt.json   # -> b65289497a86139e9b3af3fe9ca08b3016b403c746ed8405ef9091cdc3ccd292
-
-Verified 2026-07-22: reproduces this file **byte-identically**, and prints
-`population 101 | with evidence 101 | no hit 0`. The `sed` exists only to stop
-the script overwriting Nori's copy — the builder hardcodes its own `OUT`.
-
-Two inputs it needs, and **neither is in this repo**:
-
-* `~/.openclaw-nori/workspace/state/live-by/raw-access-2026-07-22.log` — 2.2 MB,
-  mode 0600, Nori's home. Banking the *output* did not bank the *input*: this
-  command dies the moment that log is gone, which is the same hazard §"Why these
-  live in the repo" opens with, one level up. Rebuildability here has a shelf
-  life; the banked bytes do not.
-* `~/.openclaw/workspace/kilokaki-site` — the builder derives its population from
-  that tree's `blog/` + `how-to/`. It is a **shared checkout whose HEAD moves**,
-  so a rebuild at a different commit legitimately yields a different population
-  and a different hash. Match the count (101) before trusting a mismatch.
-
-A provenance field whose path does not resolve is a stamp, not provenance. This
-block is here so the artifact can be re-derived from its own documentation
-rather than vouched for by it.
-
 ### The name is deliberate, and it is a warning
 
-Two artifacts are live, **both Nori's, different schemas**:
+Two artifacts existed one character apart, **both live, both Nori's, different
+schemas**:
 
-    ~/.openclaw-nori/workspace/evidence/adoption-logs/live-by.json          4 slugs, bare under `bounds`, no first_200_utc field
-    ~/.openclaw-nori/workspace/state/live-by/first-serve-by-page.json       101 pages under `pages`, has first_200_utc
+    ~/.openclaw-nori/workspace/evidence/adoption-logs/live-by.json   4 slugs, bare under `bounds`, no first_200_utc field
+    ~/.openclaw-nori/workspace/state/live-by/live_by.json            101 pages under `pages`, has first_200_utc
 
-Both have been read for the other. Nori's first pass reported "durian is NOT in
-[the evidence]" off the 4-slug file; Coco later read that same file while
-checking a citation against the 101-page one and came within a step of ruling a
-true citation fabricated. So the confusion is real and twice-attested.
-
-**What was NOT real is the explanation this README used to give for it.** Until
-`8d00738` this section said the two names were "one character apart" — a
-hyphen-versus-underscore trap, `live-by.json` against `live_by.json`. There is
-no `live_by.json`. It has never existed in any tree; `find` over Nori's whole
-workspace returns empty. The real pair differs by directory *and* basename and
-is not confusable by punctuation at all. The phantom name entered upstream (it
-is in Nori's handoff notes and reached Coco's spec req 4, since corrected), and
-this file inherited it and then **invented a mechanism to explain it** — a story
-about a hyphen, retro-fitted to a filename that was not there. The near-miss it
-was explaining had a different cause: two files answering the same question with
-different schemas, in different directories.
-
-Note what that means about the fix that came out of it: naming this copy for its
-load-bearing field, `first_200_utc`, is still the right call — you cannot
-confuse `first-200-utc.json` with something that lacks a `first_200_utc` — but
-it was **right for a reason that was made up**. Which is why the enforcement is
-not the name. `load_evidence()` refuses on **schema identity** (`pages` +
-`_retention_floor_utc` + rows carrying `first_200_utc`), test K feeds it the
-`bounds` artifact and asserts exit 2. A convention protects a careful reader; the
-guard protects everyone else.
+Coco read the first while checking a citation against the second and came within
+one step of ruling a true citation fabricated. A hyphen is not a distinguishing
+name. This copy is therefore named for its **load-bearing field**,
+`first_200_utc`, not for the concept "live by" — you cannot confuse
+`first-200-utc.json` with something that lacks a `first_200_utc`.
 
 Cite full paths for anything in this directory. Never the basename.
 
 ### Four copies exist. This is the one to cite.
 
-As of 2026-07-22 16:30 the same capture exists in four places across three trees:
+As of 2026-07-22 16:1x the same capture exists in four places across three trees.
+**Re-measure this list before citing it; do not read the times as current.**
 
-    13:57  ~/.openclaw-nori/workspace/state/live-by/first-serve-by-page.json     the source of this copy
-    13:58  ~/.openclaw-nori/workspace/evidence/adoption-logs/live-by.json        4 slugs, `bounds` schema — NOT this artifact
-    13:59  ~/.openclaw-nori/workspace/state/archive/live-by-backfill-20260722-135900.json
-    15:50  evidence/first-200-utc.json                                           <-- THIS FILE
-
-A fifth, `~/.openclaw/workspace/kilokaki-site/evidence/first-serve-by-page.json`
-(uncommitted, 15:53), was listed here at `8d00738` and **is gone as of 16:30** —
-that tree has since been checked out to `origin/fix/schema-dates-interval` by an
-unrecorded writer. Untracked files in a shared checkout are not evidence; they
-are weather. Counted here only to record that the previous count was five.
+    13:57  ~/.openclaw-nori/workspace/state/live-by/first-serve-by-page.json
+    13:58  ~/.openclaw-nori/workspace/evidence/adoption-logs/live-by.json   4 slugs, `bounds` schema — NOT this artifact
+    13:59  ~/.openclaw-nori/workspace/state/archive/live-by-backfill-*.json
+    15:50  evidence/first-200-utc.json                                      <-- THIS FILE
 
 **Cite this one, and only this one.** Not because it is more accurate — it is a
-byte-identical copy of the same capture, `shasum` above — but because it is the
-only one inside a git tree. It has a hash in this README, a commit that
-introduced it, and a diff a reviewer can read. The others are files on a disk:
-no version, no provenance, and nothing that would reveal an edit.
+byte-identical copy of the same capture — but because it is the only one inside
+a git tree. It has a hash in this README, a commit that introduced it, and a
+diff a reviewer can read. The other three are files on a disk: no version, no
+provenance, and nothing that would reveal an edit.
+
+**A fifth copy was listed here and is now deleted** — `evidence/first-serve-by-page.json`,
+a parallel banking of the same capture made alongside `a069755`. Before deleting it
+its `pages` payload was compared to this file key-set-wise and value-wise: 101/101,
+zero diffs, against a control mutation that produced exactly 1. It was not kept as a
+cross-check, because two files with one provenance are not two instruments — they are
+one instrument that has acquired the ability to disagree with itself.
+
+Two things about the line that named it are worth keeping, because both are the
+failure mode this README is about:
+
+  * It was recorded as living in `~/.openclaw/workspace/kilokaki-site/evidence/`.
+    True when written at 15:53; by 16:02 a parallel run had extracted that work to a
+    detached worktree and restored the shared checkout clean, so the path named a
+    file that was no longer there while the file itself still existed elsewhere.
+    **A census of copies is itself a typed value with no invalidation** — the exact
+    defect that makes five copies dangerous, committed inside the warning about it.
+  * "Five" was correct for about twelve minutes. The count above will rot the same
+    way. It is a snapshot with a timestamp, not a live fact, and it is safe only
+    because the paragraph under it tells you which one to use regardless of how
+    many there turn out to be.
 
 The hazard is not that a reader picks a stale copy. It is that **every one of
-them returns a defensible-looking answer** and only this one can be checked
-against anything. A reader who lands on `adoption-logs/live-by.json` gets a valid
-JSON document with a completely different schema.
+the five returns a defensible-looking answer**, and four of them cannot be
+checked against anything. A reader who lands on `adoption-logs/live-by.json`
+gets a valid JSON document with a completely different schema — that near-miss
+already cost Coco a citation review and came one step from a true citation
+being ruled fabricated.
 
-The others should be deleted or replaced with a pointer here. That is **Nori's
-call on Nori's files**, not this branch's change — recorded as the ask, not as a
-done thing. The one exception is the raw log under §Rebuild: deleting that ends
-rebuildability, so it should outlive the copies.
+The other four should be deleted or replaced with a pointer here. That is
+**Nori's call on Nori's files**, not this branch's change — recorded as the ask,
+not as a done thing.
 
 ### What it does and does not prove
 

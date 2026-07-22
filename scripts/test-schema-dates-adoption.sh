@@ -77,7 +77,7 @@ INTERVAL_V1_REF="a069755" # interval arm v1: scored floor-pinned posts as clean
 WORK=$(mktemp -d) || exit 2
 trap 'rm -rf "$WORK"' EXIT
 
-DECLARED=24
+DECLARED=28
 RAN=0; PASSED=0; FAILED=0
 
 # check <name> <want_rc> <want_marker> <thunk...>
@@ -250,23 +250,93 @@ MIDNIGHT="2026-07-17 00:03:24 +0800"   # UTC date 2026-07-16 — the hour that w
 MIDDAY="2026-07-17 11:08:36 +0800"     # UTC date 2026-07-17 — the hour that got flagged
 
 echo "=== baseline: the real corpus ==="
-# 🔴 THIS ROW USED TO ASSERT "0 real bugs, exit 0" AND THAT IS NO LONGER TRUE.
-# The interval arm (added 2026-07-22) surfaces blog/how-to-log-durian.html: an
-# undeclared adoption, served 1414s before its own commit, invisible to the date
-# arm because both instants fall on 2026-07-16.
+# 🔴 CLOSED 2026-07-22. These two rows were pinned to a KNOWN OPEN FINDING —
+# blog/how-to-log-durian.html, an undeclared adoption served 1414s before its own
+# commit, invisible to the date arm because both instants fall on 2026-07-16.
+# The declaration landed, so they are restored to the exact assertion the pin
+# said to restore. The marker was NOT widened to make both states pass.
 #
-# It is pinned as a KNOWN OPEN FINDING rather than left red or quietly relaxed.
-# A suite someone expects to fail is a suite nobody reads, and "0 bugs" here
-# would have been a green assertion over a corpus with a live breach in it.
+# The coverage those rows used to provide did not survive the fix on its own — a
+# green row proves the finding is gone, never that the instrument that found it
+# still works. Rows N1/N2 below re-establish it from the other side: they take
+# durian back out of the real blog/adopted.json and require it to come back.
+# (Those rows exist as of 2026-07-22. This comment named them before they were
+# written — the sentence you are reading was the coverage. See §N.)
+check "0a: real repo, unmutated -> 0 bugs, exit 0" 0 "0 real bugs over 78 judged posts" \
+  python3 "$REPO/scripts/check-schema-dates.py"
+check "0b: ...and the date arm still accounts for all 78" 0 "78  accounted for / 78 real posts" \
+  python3 "$REPO/scripts/check-schema-dates.py"
+check "0c: durian is now CORROBORATED, not merely silent" 0 \
+  "5  declared adoptions CORROBORATED by a pre-commit serve" \
+  python3 "$REPO/scripts/check-schema-dates.py"
+
+echo
+echo "=== N: remove the durian declaration and require the finding to come BACK ==="
+# These are the rows the 0a/0b comment above promises. Until 2026-07-22 that
+# comment cited "rows N1/N2 below" and there were no such rows — the claim of
+# coverage was the whole coverage. Written now, not deleted, because the gap it
+# described is real: 0a/0b go green the moment the finding is fixed, and would
+# stay green against a checker rewritten to score every adopted post clean.
 #
-# WHEN DURIAN IS DECLARED in blog/adopted.json — Coco is briefing Nori, it is not
-# this branch's change — 0a goes red and the fix is to restore exactly:
-#     check "0a: real repo, unmutated -> 0 bugs, exit 0" 0 "0 real bugs over 78 judged posts"
-# Do not instead widen the marker to make both states pass.
-check "0a: real repo -> durian, the row the date arm cannot emit" 1 "how-to-log-durian.html" \
+# The mutation is on the REAL blog/adopted.json, so restoration is registered in
+# the EXIT trap BEFORE the file is touched. A restore line at the end of this
+# block would leave the repo mutated for any run that dies between the two.
+ADOPTED_REAL="$REPO/blog/adopted.json"
+cp "$ADOPTED_REAL" "$WORK/adopted.json.orig" || exit 2
+trap 'cp -f "$WORK/adopted.json.orig" "$ADOPTED_REAL" 2>/dev/null; rm -rf "$WORK"' EXIT
+
+# Mutate, then PROVE the mutation applied. A mutation that silently no-ops
+# produces a green row that reads exactly like a caught regression — on this
+# project M4's first attempt did not apply and was re-run rather than counted.
+# Asserted structurally against the `adopted` map, never by grepping the whole
+# file: "durian" also appears in _README prose, so a file-wide grep would match
+# the mutated file and the check could not go red.
+python3 - "$ADOPTED_REAL" <<'PY' || exit 2
+import json, sys
+p = sys.argv[1]
+d = json.load(open(p))
+key = "blog/how-to-log-durian.html"
+if key not in d["adopted"]:
+    sys.exit("ABORT: durian not declared at baseline; row N is testing nothing.")
+del d["adopted"][key]
+json.dump(d, open(p, "w"), indent=2)
+d2 = json.load(open(p))
+if key in d2["adopted"]:
+    sys.exit("ABORT: durian still declared after mutation; N did not apply.")
+PY
+
+check "N1: undeclared durian is re-reported as a real bug" 1 \
+  "UNDECLARED ADOPTION - served before its own commit, absent from blog/adopted.json  (1)" \
   python3 "$REPO/scripts/check-schema-dates.py"
-check "0b: ...and the date arm still accounts for all 78" 1 "78  accounted for / 78 real posts" \
+
+# Second operand, different bucket. If the checker stopped emitting the
+# UNDECLARED line entirely, N1 would go red for the right reason but so would a
+# checker that merely renamed the marker. The corroborated count is computed by
+# a different branch and must fall 5 -> 4 on the same mutation.
+check "N2: ...and the corroborated count falls 5 -> 4" 1 \
+  "4  declared adoptions CORROBORATED by a pre-commit serve" \
   python3 "$REPO/scripts/check-schema-dates.py"
+
+# N3 — the SECOND OPERAND's own red arm. Until 2026-07-22 cross_check() had no
+# row in this suite at all: SILENT_ADOPTION was emitted by check-schema-dates.py
+# and asserted by nothing. It was the only bucket whose red arm had never been
+# demonstrated, which is the same shape as the N1/N2 gap one level up — the
+# operand that exists to catch a wrong verdict, itself unchecked.
+#
+# Deliberately the SAME mutation as N1/N2 and a DIFFERENT function: N1 is the
+# interval arm (interval_arm), N3 is the commit-message operand (cross_check).
+# One mutation that two independent code paths must both notice is worth more
+# than two mutations each seen by one path. Note the wording differs from N1 on
+# purpose — "UNDECLARED ADOPTION" is the interval arm's word for served-before-
+# commit; "SILENT ADOPTION" is this operand's word for declared-by-a-commit-
+# message-but-absent-from-the-file. cross_check() gives each mismatch its own
+# word precisely so the two can never be collapsed, so the suite must assert
+# them separately or that design decision is untested.
+check "N3: ...and the commit-message operand fires SILENT_ADOPTION" 1 \
+  "SILENT ADOPTION - declared by a commit message, absent from blog/adopted.json  (1)" \
+  python3 "$REPO/scripts/check-schema-dates.py"
+
+cp -f "$WORK/adopted.json.orig" "$ADOPTED_REAL" || exit 2
 
 echo
 echo "=== A: the fixture itself is green — positive control ==="

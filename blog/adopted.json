@@ -27,14 +27,58 @@
   ],
 
   "_evidence_source": {
-    "file": "~/.openclaw-nori/workspace/evidence/adoption-logs/live-by.json",
+    "file": "../evidence/first-200-utc.json",
     "raw": "~/.openclaw-nori/workspace/evidence/adoption-logs/raw-evidence.txt",
     "captured_sgt": "2026-07-22",
-    "expires_approx": "2026-08-15 (30 daily rotations; the 16-Jul rows age out first)",
-    "note": "Prod access logs, static_* family, status 200 only. A 404 row proves NON-existence and must never mint a bound. Counts: buffet 14, cai-fan 14, intermittent-fasting 23, kopi 19."
+    "expires_approx": "N/A for the banked copy — see _banking below",
+    "note": "Prod access logs, status 200 only. A 404 row proves NON-existence and must never mint a bound. Counts: buffet 14, cai-fan 14, intermittent-fasting 23, kopi 19, durian 25.",
+    "_banking": [
+      "The 4-slug bound file (~/.openclaw-nori/workspace/evidence/adoption-logs/live-by.json)",
+      "and the 101-page corpus it was drawn from both lived in Nori's workspace at mode",
+      "0600, outside any repo, on a 30-day log rotation. Evidence with an expiry date is",
+      "not evidence a year from now, and a 0600 path is unreadable to every other agent",
+      "and to CI. The corpus is therefore BANKED IN-REPO at ../evidence/first-200-utc.json,",
+      "with ../evidence/derive-adoption-set.py to re-derive this whole file's population",
+      "from it. Both are outside the deploy allow-list (scripts/deploy.sh ends --exclude='*'",
+      "and only traverses /blog/, /how-to/, /mini/), so they are versioned, not published.",
+      "",
+      "ONE BANKED COPY, NOT TWO. This field named ../evidence/first-serve-by-page.json",
+      "until 2026-07-22 — a second banking of the same 101-page capture, made in parallel",
+      "with Mochi's a069755 and holding a byte-equal `pages` payload (verified key-set and",
+      "value-wise, 101/101, 0 diffs, against a control that produced 1). It was deleted",
+      "rather than kept as a cross-check: two files with the same provenance are not two",
+      "instruments, they are one instrument that can now disagree with itself. The",
+      "surviving copy is the one check-schema-dates.py actually reads.",
+      "",
+      "NAMING: the confusable pair was never two FILES. `state/live-by/live_by.json` does",
+      "not exist and never did. `live_by` is a FIELD — it is `pages[path].live_by` in the",
+      "real capture, whose `_what` header opens `live_by = UPPER BOUND on datePublished`.",
+      "A field name got read as the artifact's identity and written down as a path. The two",
+      "real artifacts are `state/live-by/first-serve-by-page.json` (101 pages, `pages`",
+      "schema, durian present) and `evidence/adoption-logs/live-by.json` (4 slugs, `bounds`",
+      "schema), both under ~/.openclaw-nori/workspace — different directory AND basename,",
+      "not one character apart. The banked copy is named for its load-bearing FIELD,",
+      "first_200_utc, and that convention is still right for a sharper reason than it was",
+      "adopted for: naming a file for its field is what stops a field becoming a filename.",
+      "See ../evidence/README.md."
+    ]
   },
 
   "adopted": {
+    "blog/how-to-log-durian.html": {
+      "datePublished": "2026-07-16",
+      "adopting_commit": "d31cca9",
+      "adopted_sgt": "2026-07-16 22:55:39 +0800",
+      "evidence": {
+        "first_serve_utc": "2026-07-16T14:32:05+00:00",
+        "third_party": true,
+        "ip": "8.222.202.223",
+        "status": 200,
+        "adopting_commit_later_by_seconds": 1414
+      },
+      "note": "STRONGEST OF THE FIVE, and it is the one that was missing. Served to a third party (Alibaba Cloud, curl/8.14.1 — same scraper family as buffet/cai-fan, and NOT our egress 103.11.50.23, so self_generated=false) 1414s BEFORE the adopting commit existed. It does not rest on one row: THREE non-egress serves precede the commit (14:32:05, 14:32:06, 14:37:00 UTC) and our own first curl is 14:52:12, still 20m before the commit. 25 rows, all 200, zero 404. State the gap in SECONDS: both instants fall on 2026-07-16, and that is precisely why the checker's calendar-day comparison `continue`d over this row — the entry was not flagged and not waved, it was ABSENT. WHY IT ESCAPED THE HAND-WRITTEN SET: this file was created 2026-07-22 in d80405a, five days after every adoption it describes, so the README's 'written in the same commit as the adoption' rule could not have been followed by ANY of these five — all were back-filled. The back-fill was transcribed from 96da7b0's commit body, whose `new:` line lists exactly the three that got entries; durian appears one line lower under `mod:` ('+133B vs d31cca9 rescue') because it had already been rescued 68 minutes earlier in its own commit. One commit's file list was read as if it were the population. The population is ../evidence/first-200-utc.json — re-derive it, do not transcribe it."
+    },
+
     "blog/how-to-log-a-buffet.html": {
       "datePublished": "2026-07-16",
       "adopting_commit": "96da7b0",

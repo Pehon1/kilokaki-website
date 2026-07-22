@@ -306,6 +306,11 @@ def interval_arm(real, adopted, path):
     undeclared, dark, undecidable = [], [], []
     corroborated = within = no_row = no_commit = 0
 
+    # Paths the arm actually reached: it had a serve row AND the commit sits
+    # inside the evidence window, so the invariant could have gone red on them.
+    # Everything else is coverage, and the second operand below exists for it.
+    reached = set()
+
     for p in real:
         commit = first_commit(p)
         if commit is None:
@@ -348,8 +353,10 @@ def interval_arm(real, adopted, path):
                                     f"{_fmt(floor)} — first serve could not have been earlier"))
             else:
                 within += 1
+                reached.add(p)
             continue
 
+        reached.add(p)
         gap = int((commit_utc - first).total_seconds())
         detail = (f"first 200 {_fmt(first)} | commit {_fmt(commit_utc)} "
                   f"— served {gap}s BEFORE its own commit")
@@ -366,7 +373,156 @@ def interval_arm(real, adopted, path):
         # commit sits inside the evidence window, where the invariant could have
         # gone red and did not. Everything else is corroboration or coverage.
         "tested": corroborated + within + len(undeclared),
+        "reached": reached,
     }
+
+
+DECLARES_ADOPTION = re.compile(r"\b(adopt|adopts|adopted|adoption|rescue|restore)\b", re.I)
+
+
+class OperandUnavailable(RuntimeError):
+    """The second operand could not be read at all.
+
+    PROVEN RED 2026-07-22, and it is the reason this class exists rather than a
+    bare `except`. Before it, both subprocess calls below took `.stdout` and
+    dropped `returncode`. With a `git` on PATH that exits 128 on every call,
+    `git_declared_adoptions()` returned `{}` — and `{}` is not a neutral value
+    here, it is the SHAPE OF A CLEAN RUN read through the wrong direction:
+
+        0  post(s) added by a commit whose message declares an adoption
+        1  post(s) declared in blog/adopted.json
+        1  post(s) the interval arm could NOT have failed on — this operand
+           still covers them                              <-- claimed by nobody
+        UNWITNESSED_BY_COMMIT — ... (back-fill is legitimate; this is not a finding)
+        >>> 0 real bugs ... exit 0
+
+    A dead instrument printed a positive coverage claim and then explained its
+    own silence with the word reserved for the legitimate case. The one branch
+    that would have caught it — `if not declared: BOTH ARE EMPTY` — is only
+    reachable when blog/adopted.json is ALSO empty, i.e. never in this repo.
+
+    Empty reads as pass; empty WEARING THE EXPECTED-STATE LABEL reads as a
+    careful pass. So the failure is raised, never returned.
+    """
+
+
+def git_declared_adoptions():
+    """Posts added by a commit whose OWN MESSAGE declares an adoption.
+
+    The SECOND OPERAND, and the reason it is worth the lines: it is independent
+    of the access log in provenance AND in reach.
+
+      provenance — written by the adopter, at adoption time, in a different
+      artifact, on a different occasion. Nothing derives it from the log and the
+      log does not derive it from anything.
+
+      reach — this is the half that matters. The log operand has a 30-day
+      retention floor; measured 2026-07-22 it could have gone red on 13 of 78
+      posts and was structurally incapable of failing on the other 65. Commit
+      messages have no floor. So the two instruments are not merely independent,
+      their blind spots do not overlap: the region where the interval arm cannot
+      fail is exactly the region this one still covers.
+
+    Deliberately over-broad. A normal post commit that happens to say "restore"
+    lands here and raises a disagreement that a human has to close. That trade is
+    made on purpose — a false alarm costs one read; the failure this exists to
+    catch is an adoption nobody declared anywhere, and nothing else in the repo
+    would ever surface it.
+
+    NOT A GUARD ON ITS OWN. It reports what commit messages CLAIM. A commit that
+    performs an adoption and says nothing is invisible to it, exactly as a serve
+    below the retention floor is invisible to the log. Neither operand is a
+    population; disagreement between them is the only thing either can prove.
+    """
+    log = subprocess.run(
+        ["git", "log", "--format=%H%x00%B%x01", "--all"],
+        capture_output=True, text=True,
+    )
+    if log.returncode != 0:
+        raise OperandUnavailable(f"git log exited {log.returncode}")
+    declared = {}
+    for entry in log.stdout.split("\x01"):
+        if "\x00" not in entry:
+            continue
+        sha, body = entry.strip().split("\x00", 1)
+        if not DECLARES_ADOPTION.search(body):
+            continue
+        show = subprocess.run(
+            ["git", "show", "--diff-filter=A", "--name-only", "--format=", sha],
+            capture_output=True, text=True,
+        )
+        if show.returncode != 0:
+            raise OperandUnavailable(f"git show {sha[:7]} exited {show.returncode}")
+        for path in show.stdout.splitlines():
+            path = path.strip()
+            if path.endswith(".html"):
+                declared.setdefault(path, (sha[:7], body.splitlines()[0]))
+    return declared
+
+
+def cross_check(real, adopted, reached):
+    """Do the two operands name the same adoptions? Each mismatch gets its OWN word.
+
+    Returns (findings, lines, unavailable) — findings are bugs, lines are printed
+    either way, unavailable is a REFUSAL and outranks both. A same-exit-code
+    disagreement is not the same as agreement, and two different disagreements are
+    not each other; collapsing any of those three is how the report starts reading
+    as a pass.
+    """
+    try:
+        declared = {p: v for p, v in git_declared_adoptions().items() if p in real}
+    except OperandUnavailable as exc:
+        # Its own word, its own exit path, and NO coverage line. The sentence
+        # "this operand still covers them" is the thing that must not survive an
+        # operand that never ran — it is a claim about 65 posts sourced from an
+        # empty dict.
+        return [], [
+            "",
+            "--- second operand: the adopting commits' own messages ---",
+            f"    OPERAND_UNAVAILABLE — {exc}",
+            "    The commit-message operand did not run. It is NOT empty and it is",
+            f"    NOT agreeing with {ADOPTED}; it has no value at all. Every post the",
+            "    interval arm could not reach is now covered by nothing.",
+        ], True
+    lines = [
+        "",
+        "--- second operand: the adopting commits' own messages ---",
+        f"    {len(declared):>4}  post(s) added by a commit whose message declares an adoption",
+        f"    {len(adopted):>4}  post(s) declared in {ADOPTED}",
+        f"    {len(real) - len(reached):>4}  post(s) the interval arm could NOT have failed on — "
+        f"this operand still covers them",
+    ]
+
+    silent = sorted(set(declared) - set(adopted))
+    unwitnessed = sorted(set(adopted) - set(declared))
+    findings = []
+
+    if silent:
+        # The dangerous direction. A commit says it adopted a post and the
+        # declaration file has no entry, so the checker is judging that post
+        # against a git date its own history says is wrong.
+        lines.append(f"    SILENT_ADOPTION — a commit message declares it, {ADOPTED} does not:")
+        for p in silent:
+            sha, subj = declared[p]
+            blind = "" if p in reached else "  [interval arm blind here — only this operand sees it]"
+            lines.append(f"        {p}  {sha} {subj[:56]}{blind}")
+            findings.append((os.path.basename(p), f"declared adopted by {sha}, absent from {ADOPTED}"))
+    if unwitnessed:
+        # Not a bug and it must never share a word with the above. Back-filled
+        # entries live here legitimately: all five entries in this file were
+        # written 2026-07-22 in d80405a, days after the adoptions, so an adopting
+        # commit that never used the word is expected. Named so it cannot be read
+        # as the other direction.
+        lines.append(f"    UNWITNESSED_BY_COMMIT — declared in {ADOPTED}, no commit message says so:")
+        for p in unwitnessed:
+            lines.append(f"        {p}  (back-fill is legitimate; this is not a finding)")
+    if not silent and not unwitnessed:
+        lines.append("    AGREE — both operands name the same set.")
+        if not declared:
+            # An empty set agreeing with an empty set is not agreement, it is two
+            # silences. Say so rather than printing a clean line.
+            lines.append("    >>> ...but BOTH ARE EMPTY. That is two silences, not a corroboration.")
+    return findings, lines, False
 
 
 def main():
@@ -527,7 +683,28 @@ def main():
                   f"{_fmt(ev['floor'])} no longer covers them. Re-bank a fresh capture; "
                   f"deleting the artifact makes this notice disappear, not the gap.")
 
-    bugs += len(undeclared)
+    # --- second operand -------------------------------------------------
+    # Runs even when the interval arm REFUSED. That is the whole point: git
+    # history has no retention floor and no 0600 path, so the operand that
+    # survives an unusable evidence file is the one that must not be gated on it.
+    # `reached` is empty under a refusal, which correctly reports every post as
+    # outside the interval arm's reach rather than silently claiming coverage.
+    cc_findings, cc_lines, cc_unavailable = cross_check(
+        real, adopted, ev["reached"] if ev else set())
+    for line in cc_lines:
+        print(line)
+    if cc_unavailable:
+        # Promoted to the same rank as an unusable evidence file. Both arms are
+        # now capable of saying "I could not run", and neither may say it quietly.
+        refusal = (refusal or "") + \
+            " | second operand unavailable — see OPERAND_UNAVAILABLE above"
+    if cc_findings:
+        print(f"\n### SILENT ADOPTION - declared by a commit message, absent from "
+              f"{ADOPTED}  ({len(cc_findings)})")
+        for name, detail in cc_findings:
+            print(f"    {name:<52} {detail}")
+
+    bugs += len(undeclared) + len(cc_findings)
     print(f"\n>>> {bugs} real bugs over {judged} judged posts")
     if refusal:
         # Refusal outranks violation: an instrument that could not run makes the
