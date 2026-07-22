@@ -48,7 +48,46 @@ mkdir -p "$BIN"
 # ---------------------------------------------------------------------------
 cat > "${BIN}/curl" <<'STUB'
 #!/usr/bin/env bash
-# -f is what makes a 4xx a non-zero exit. 22 is curl's code for it.
+# Routes on the URL, because one stub now serves three different callers:
+# Cloudflare purge_cache, the api/v1 OAuth mint, and api/v1 service/state.
+# The two api/v1 callers use `-o <file> -w '%{http_code}'`, so this has to honour
+# both: body to the file, status code to stdout. Getting that split wrong would
+# make the subject read a status code as a body and pass for the wrong reason.
+url=""; outfile=""; prev=""
+for a in "$@"; do
+  [[ "$prev" == "-o" ]] && outfile="$a"
+  case "$a" in https://*) url="$a" ;; esac
+  prev="$a"
+done
+
+emit() { # <body> <http_code>
+  if [[ -n "$outfile" ]]; then printf '%s' "$1" > "$outfile"; printf '%s' "$2"
+  else printf '%s' "$1"; fi
+}
+
+case "$url" in
+  *oauth/access_token*)
+    # The stub VALIDATES the api_key it was handed, rather than accepting any
+    # string. Without this the harness is blind to the original defect: sending
+    # CW_API_TOKEN instead of CW_API_KEY would mint a token here and every case
+    # would stay green. A stub that answers 200 to anything cannot test an
+    # authentication bug — it only tests the plumbing around one.
+    sent_key=""
+    for a in "$@"; do case "$a" in api_key=*) sent_key="${a#api_key=}" ;; esac; done
+    if [[ -z "${STUB_MINT_CODE:-}" && -n "${STUB_GOOD_API_KEY:-}" \
+          && "$sent_key" != "$STUB_GOOD_API_KEY" ]]; then
+      emit '{"error":"invalid_credentials","error_description":"The user credentials were incorrect."}' 403
+      exit 0
+    fi
+    emit "${STUB_MINT_BODY:-{\"access_token\":\"tok-abc\",\"expires_in\":3600\}}" \
+         "${STUB_MINT_CODE:-200}"
+    exit "${STUB_MINT_RC:-0}" ;;
+  *service/state*)
+    emit "${STUB_STATE_BODY:-{\"status\":true\}}" "${STUB_STATE_CODE:-200}"
+    exit "${STUB_STATE_RC:-0}" ;;
+esac
+
+# Cloudflare. -f is what makes a 4xx a non-zero exit. 22 is curl's code for it.
 if [[ "${STUB_CF_HTTP_FAIL:-0}" == "1" ]]; then
   echo "curl: (22) The requested URL returned error: 400"
   exit 22
@@ -74,6 +113,14 @@ STUB
 chmod +x "${BIN}/curl" "${BIN}/sshpass"
 
 # --- A complete, valid env file. Cases mutate copies of it, never this one. ---
+#
+# It MIRRORS the real deploy.env key-for-key, including the Cloudways OAuth pair
+# added 2026-07-22. That is not decoration. Before then this fixture had no
+# CW_EMAIL, and the "no CW_EMAIL -> refuses" case built its input with
+# `grep -v '^CW_EMAIL='` — over a file that never contained CW_EMAIL. The case
+# passed without ever removing anything: green about a mutation it did not make.
+# Same family as the refusal tests that pinned the wrong refusal. A fixture that
+# does not carry the var cannot prove what happens when the var goes missing.
 GOOD_ENV="${TMPROOT}/deploy.env"
 cat > "$GOOD_ENV" <<'ENV'
 SSHPASS=not-a-real-password
@@ -81,6 +128,11 @@ CF_ZONE_ID=zone123
 CF_API_TOKEN=cftoken123
 REMOTE_USER=deployuser
 REMOTE_HOST=deploy.example.invalid
+CW_SERVER_ID=srv123
+CW_APP_ID=app123
+CW_API_TOKEN=cwtoken-41-chars-and-the-WRONG-credential
+CW_EMAIL=deploy@example.invalid
+CW_API_KEY=cwapikey-30-chars-the-right-one
 ENV
 
 pass=0
@@ -109,6 +161,33 @@ run_case() {
   else
     printf '  ✗ %s\n' "$name"
     printf '      expected rc=%s containing: %s\n' "$want_rc" "$want_txt"
+    printf '      got      rc=%s\n' "$rc"
+    sed 's/^/      | /' "$out"
+    fail=$((fail + 1))
+    FAILED+=("$name")
+  fi
+  rm -f "$out"
+}
+
+# refute_case <name> <expected_rc> <FORBIDDEN_substring> [--] <args...>
+# The mirror of run_case, and the fallback group needs it. Every check here
+# asserts that some text IS present, which cannot express the actual defect
+# class: printing `✓ Varnish restarted.` for a call that failed. Asserting the
+# error appears does not prove the checkmark did not ALSO appear two lines up.
+refute_case() {
+  local name="$1" want_rc="$2" bad_txt="$3"; shift 3
+  [[ "${1:-}" == "--" ]] && shift
+
+  local out="${TMPROOT}/out.$$"
+  local rc=0
+  PATH="${BIN}:${PATH}" bash "$SUBJECT" "$@" > "$out" 2>&1 || rc=$?
+
+  if [[ "$rc" == "$want_rc" ]] && ! grep -qF "$bad_txt" "$out"; then
+    printf '  ✓ %s\n' "$name"
+    pass=$((pass + 1))
+  else
+    printf '  ✗ %s\n' "$name"
+    printf '      expected rc=%s and NO occurrence of: %s\n' "$want_rc" "$bad_txt"
     printf '      got      rc=%s\n' "$rc"
     sed 's/^/      | /' "$out"
     fail=$((fail + 1))
@@ -191,15 +270,87 @@ export STUB_SSH_RC=0
 # `✓ Varnish restarted` in exactly this configuration. Pinning the refusal is
 # the only thing that stops it coming back.
 # ---------------------------------------------------------------------------
+#
+# UPDATED 2026-07-22 after Coco falsified the premise these cases were written
+# under. The old note said the fallback could not run because CW_EMAIL was
+# absent. True, but not the reason it 403'd: the function was ALSO sending
+# CW_API_TOKEN as the api_key, and that credential authenticates nowhere on
+# api/v1. A missing var and a wrong var return the identical 403, so fixing only
+# the missing one would have shipped a still-broken call under a green presence
+# check. Hence the split below: presence cases prove the diagnosis, and the MINT
+# cases prove the verdict. The corrupted-key case is the one Coco asked for by
+# name — "I want to see it go red before I trust it green."
+# ---------------------------------------------------------------------------
 export CACHE_PURGE_FALLBACK_RESTART=true
-NO_EMAIL_ENV="${TMPROOT}/no-email.env"
-grep -v '^CW_EMAIL=' "$GOOD_ENV" > "$NO_EMAIL_ENV"
-export KILOKAKI_DEPLOY_ENV="$NO_EMAIL_ENV"
-run_case "api/v1 fallback, no CW_EMAIL -> UNKNOWN, refuses by name" 2 \
-  "Refusing to print a checkmark for a call I cannot authenticate" -- /sitemap.xml
-run_case "api/v1 fallback, no CW_EMAIL -> never prints a Varnish checkmark" 2 \
-  "CW_EMAIL is absent" -- /sitemap.xml
-unset CACHE_PURGE_FALLBACK_RESTART
+# Must match CW_API_KEY in GOOD_ENV. The stub 403s anything else, so a subject
+# that sends the wrong variable goes red here instead of sailing through.
+export STUB_GOOD_API_KEY='cwapikey-30-chars-the-right-one'
+
+# --- The regression test for the actual 2026-07-22 bug: the fallback must send
+# CW_API_KEY as the api_key. Sending CW_API_TOKEN (present, well-formed, wrong)
+# is what produced the 403 that got misdiagnosed as a missing CW_EMAIL.
+run_case "fallback sends CW_API_KEY, not CW_API_TOKEN, as the api_key" 0 \
+  "restart REQUESTED via api/v1" -- /sitemap.xml
+
+# --- Presence: each var stripped INDIVIDUALLY from a fixture that really has it.
+for v in CW_EMAIL CW_API_KEY CW_SERVER_ID; do
+  STRIPPED="${TMPROOT}/no-${v}.env"
+  grep -v "^${v}=" "$GOOD_ENV" > "$STRIPPED"
+  # Guard the mutation itself. If the fixture ever stops carrying the var, this
+  # says so instead of quietly passing on a no-op strip — the exact way the
+  # previous version of this case was green without removing anything.
+  if ! grep -q "^${v}=" "$GOOD_ENV"; then
+    echo "EXIT 3: fixture does not contain ${v}; the strip below proves nothing." >&2
+    exit 3
+  fi
+  export KILOKAKI_DEPLOY_ENV="$STRIPPED"
+  run_case "fallback, no ${v} -> UNKNOWN, names the missing var" 2 \
+    "absent from" -- /sitemap.xml
+  refute_case "fallback, no ${v} -> prints NO Varnish checkmark" 2 \
+    "✓ Varnish" -- /sitemap.xml
+done
+export KILOKAKI_DEPLOY_ENV="$GOOD_ENV"
+
+# --- The mint. Present-but-WRONG key: every var set, 403 from Cloudways.
+# This is the case a presence check structurally cannot catch, and it is the
+# shape of the real bug: CW_API_TOKEN was present, well-formed, and wrong.
+export STUB_MINT_CODE=403
+export STUB_MINT_BODY='{"error":"invalid_credentials","error_description":"The user credentials were incorrect."}'
+run_case "fallback, corrupted CW_API_KEY -> BLOCK on the mint" 1 \
+  "Cloudways refused to mint an access_token" -- /sitemap.xml
+run_case "fallback, corrupted CW_API_KEY -> states nothing was restarted" 1 \
+  "NOTHING WAS RESTARTED" -- /sitemap.xml
+run_case "fallback, corrupted CW_API_KEY -> echoes the 403 body, not just a code" 1 \
+  "invalid_credentials" -- /sitemap.xml
+refute_case "fallback, corrupted CW_API_KEY -> prints NO Varnish checkmark" 1 \
+  "✓ Varnish" -- /sitemap.xml
+
+# 200 with no token in it. Cheap to dismiss, and it is the Cloudflare
+# success:false lesson one API over: a good status carrying a useless body.
+export STUB_MINT_CODE=200 STUB_MINT_BODY='{"expires_in":3600}'
+run_case "fallback, mint 200 but no access_token -> BLOCK" 1 \
+  "Cloudways refused to mint an access_token" -- /sitemap.xml
+refute_case "fallback, mint 200 without a token -> never calls service/state" 1 \
+  "restart REQUESTED" -- /sitemap.xml
+
+# --- service/state. Token good, restart refused: the failure must not be
+# attributed to auth, or the runbook sends the next reader to the wrong key.
+export STUB_MINT_CODE=200 STUB_MINT_BODY='{"access_token":"tok-abc"}'
+export STUB_STATE_CODE=403 STUB_STATE_BODY='{"error":"forbidden"}'
+run_case "fallback, mint OK + service/state 403 -> BLOCK, blames the restart" 1 \
+  "this is the RESTART that failed, not the auth" -- /sitemap.xml
+refute_case "fallback, service/state 403 -> prints NO Varnish checkmark" 1 \
+  "✓ Varnish" -- /sitemap.xml
+
+# --- Fallback happy path. Note what the checkmark is allowed to claim.
+export STUB_STATE_CODE=200 STUB_STATE_BODY='{"status":true}'
+run_case "fallback, mint OK + restart accepted -> pass" 0 \
+  "restart REQUESTED via api/v1" -- /sitemap.xml
+refute_case "fallback green NEVER claims Varnish was restarted" 0 \
+  "✓ Varnish restarted" -- /sitemap.xml
+
+unset CACHE_PURGE_FALLBACK_RESTART STUB_MINT_CODE STUB_MINT_BODY \
+      STUB_STATE_CODE STUB_STATE_BODY
 export KILOKAKI_DEPLOY_ENV="$GOOD_ENV"
 
 # ---------------------------------------------------------------------------
