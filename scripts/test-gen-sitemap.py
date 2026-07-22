@@ -567,20 +567,31 @@ def _collision_rows(work) -> None:
             sys.argv = argv
     check("main() does NOT refuse when the same guard reports clean", _clean_rc, 0)
 
-    # THE REAL-CORPUS ROW, AND ITS CONTROL CAUGHT ME. I first asserted
-    # declared_lastmod(blog/index.html) is None and paired it with "...and the
-    # file DOES contain the word, so the None is not a miss". The control went
-    # RED: at d776419 blog/index.html contains no occurrence AT ALL. Both
-    # comments -- blog/index.html's "NO dateModified HERE, ON PURPOSE" and
-    # how-to/index.html's -- live only on 9da0e78. So on THIS branch the None
-    # is vacuous, and without the paired control it would have read as "the
-    # parser correctly ignored a comment" while testing nothing.
+    # MEANINGFUL ONLY POST-MERGE. If these rows are red, the merge is wrong --
+    # NOT this block. Do not delete them to get to green.
     #
-    # Same finding as the deletion that cannot be committed here: the state
-    # this arm exists to discriminate is not present on this branch, for either
-    # page. The discrimination is covered synthetically above; these two rows
-    # assert the branch's ACTUAL state so the vacuity is on the record instead
-    # of disguised as a pass.
+    # History, because the shape recurs: on fix/listing-lastmod these three
+    # rows were VACUITY RECEIPTS. Nori first asserted declared_lastmod is None
+    # and paired it with "...and the file DOES contain the word, so the None is
+    # not a miss". The control went RED -- at d776419 blog/index.html contains
+    # no occurrence AT ALL, because both comments (blog/index.html's "NO
+    # dateModified HERE, ON PURPOSE" and how-to/index.html's) live only on
+    # 9da0e78. So the pairing had no operand and the rows asserted the branch's
+    # actual state instead, to keep the vacuity on the record rather than
+    # disguised as a pass.
+    #
+    # fe0fc48 merged 9da0e78. The operand arrived. The rows became the control
+    # they were standing in for, and were flipped to assert it: the word IS
+    # present, AND no actual declaration parses out of it. That pairing is what
+    # makes this "the parser correctly ignored a comment" rather than two facts
+    # sitting next to each other -- and the two halves use DIFFERENT readers
+    # (substring vs RE_DATE_MODIFIED), so no single broken reader satisfies both.
+    #
+    # The trap this comment exists to defuse: a test that goes red on BECOMING
+    # meaningful is byte-identical to a test that has gone obsolete. Whoever
+    # hits that at 9pm mid-merge will be tempted to delete it, and the label
+    # that used to sit here -- "vacuous here, by measurement" -- argued for
+    # deletion at exactly the moment it stopped being true.
     for rel in gs.LISTING_INDICES:
         check(f"real {rel}: the word IS present, so the None below is not a miss",
               lambda rel=rel: (gs.ROOT / rel).read_text(encoding="utf-8").count("dateModified") > 0, True)
