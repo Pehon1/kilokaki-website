@@ -60,9 +60,18 @@ def published_lastmods() -> dict[str, str]:
     demoted rather than deleted, because "what did this change move" is the
     question a reviewer asks and the answer should come from the file, not
     from the render describing itself.
+
+    Demoted to reporting is NOT demoted to optional. The move census is the
+    entire basis on which this change was reviewed and unblocked -- 63 moved,
+    60 backward -- and a parse that silently yields nothing reports that same
+    corpus as "78 new, 0 moved", which is the shape of a first run. The output
+    written to disk would be identical either way, so nothing downstream can
+    catch it; the only casualty is the reviewer's evidence, and it fails in the
+    direction that looks clean. Empty reads as a pass everywhere else in this
+    codebase. Here it must not: non-empty file, zero pairs parsed -> refuse.
     """
     if not SITEMAP.exists():
-        return {}
+        return {}  # first run: nothing published yet, "0 moved" is the truth
     text = SITEMAP.read_text(encoding="utf-8")
     published: dict[str, str] = {}
     for block in RE_URL_BLOCK.finditer(text):
@@ -70,6 +79,13 @@ def published_lastmods() -> dict[str, str]:
         stamp = RE_LASTMOD.search(block.group(1))
         if loc and stamp:
             published[loc.group(1)] = stamp.group(1)
+    if text.strip() and not published:
+        raise SitemapError(
+            f"{SITEMAP.name} is {len(text)} bytes but no <loc>/<lastmod> pair parsed. "
+            "Refusing to run: the move census would report every url as new, which "
+            "is indistinguishable from a first run and is how this change gets "
+            "reviewed on evidence that silently does not exist."
+        )
     return published
 
 
@@ -103,16 +119,30 @@ RE_DATE_PUBLISHED = re.compile(r'"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2})')
 def declared_published(path: Path) -> str | None:
     """The page's own JSON-LD datePublished.
 
-    Second tier, above git, on Coco's amendment: a page carrying a
-    datePublished and no dateModified was published and never edited, and its
-    own front matter answers "when did this page last change" more honestly
-    than git does -- git answers "when did this file last move in history",
-    which a rename or an adoption changes without touching the page.
+    Second tier, above git. A page carrying a datePublished and no dateModified
+    is claiming it was published and never edited, and that claim answers "when
+    did this page last change" more honestly than git does -- git answers "when
+    did this file last move in history", which a rename or an adoption changes
+    without touching a byte the reader sees.
 
     This tier is gated by check-schema-dates.py, which enforces
     datePublished == first commit across the corpus. So it is not a second
     opinion about the same number; it is a claim the page makes about itself
     that we already verify separately.
+
+    ATTRIBUTION, corrected 2026-07-22: an earlier revision of this docstring
+    credited the tier to "Coco's amendment". She never made that amendment --
+    she is the one who caught the citation. The reasoning above is mine and is
+    load bearing on nothing but itself, which is the point of saying so: a
+    borrowed name is a shortcut past the argument, and it works best exactly
+    where the argument is weakest. Judge the tier on the paragraph, not the
+    signature.
+
+    NOT EXERCISED BY THE CORPUS: as of 2026-07-22 this tier fires 0 times
+    (78 dateModified, 0 datePublished, 16 git), and structurally so -- no page
+    here carries datePublished without dateModified. It is covered by
+    test-gen-sitemap.py instead, because a branch the corpus cannot reach is a
+    branch no production run can prove correct.
     """
     try:
         head = path.read_text(encoding="utf-8", errors="replace")[:8000]
@@ -283,8 +313,8 @@ def main() -> int:
         print(f"ERROR: unknown argument(s): {' '.join(unknown)}", file=sys.stderr)
         print("       --recompute is gone; it existed only to escape stickiness.", file=sys.stderr)
         return 2
-    published = published_lastmods()
     try:
+        published = published_lastmods()
         entries, skipped = collect(published)
     except SitemapError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
