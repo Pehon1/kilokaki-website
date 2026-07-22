@@ -140,10 +140,11 @@ class InstrumentRefusal(Exception):
 def load_adopted():
     """Declared publish dates for posts that were LIVE ON PROD before git saw them.
 
-    THE definition of "which posts is git the wrong instrument for" — single
-    source, same rule as population(): import this, never restate it. The
-    duplicated TZ test that used to live in fix-schema-dates.py is exactly what
-    this exists to prevent.
+    Defines which posts git is the WRONG instrument for, and nothing else: it
+    does not decide the population, only which members of it are judged against
+    a declaration instead of a first commit. Import it rather than restating the
+    rule — the duplicated TZ test that used to live in fix-schema-dates.py is
+    what that prevents.
 
     Three return values, deliberately distinguishable:
       None  — the file is ABSENT. Not "no adoptions"; UNKNOWN. Callers that can
@@ -162,7 +163,21 @@ def load_adopted():
 
 
 def population():
-    """THE definition of 'a blog post'. Single source — import this, never re-derive.
+    """Which files in this repo count as a blog post, and which are excluded.
+
+    Scope, stated rather than claimed: it enumerates `blog/*.html` in THIS
+    checkout and excludes index.html and sub-2KB redirect stubs. It is not a
+    census of what production serves — the origin log artifact covers 101 URLs
+    against this population's 78, and the two differ legitimately (renamed
+    paths, non-blog pages, files never committed). Do not read a count from one
+    as a correction to the other.
+
+    The "single source, never re-derive" claim that used to head this docstring
+    is deleted on purpose (Coco, 2026-07-22). A competing filesystem-wide
+    definition asserted the same uniqueness and produced 107; two files each
+    declaring themselves THE source falsifies both claims. The competitor is
+    gone, and the survivor earns its authority by naming its boundary, not by
+    asserting it has no peer.
 
     Run with --count to make the corpus emit its own number.
 
@@ -287,7 +302,7 @@ def interval_arm(real, adopted, path):
     IS — so for those the violation is the CORROBORATION, not the finding.
     """
     pages, floor = load_evidence(path)
-    undeclared, dark = [], []
+    undeclared, dark, undecidable = [], [], []
     corroborated = within = no_row = no_commit = 0
 
     for p in real:
@@ -314,7 +329,24 @@ def interval_arm(real, adopted, path):
 
         first = _utc(row["first_200_utc"])
         if first >= commit_utc:
-            within += 1
+            # NOT clean by default, and this branch was wrong until 2026-07-22.
+            # If the commit predates the retention floor, then `first` could not
+            # have been observed earlier than the floor, and therefore could not
+            # have been earlier than the commit — the invariant was ARITHMETICALLY
+            # INCAPABLE of failing here. It did not hold; it was never tested.
+            #
+            # Scoring those "invariant holds" is the same defect one level up
+            # that this whole arm exists to catch: a rule that cannot go red on
+            # the population it is applied to, reporting green. Measured at the
+            # fix: 65 of 73 — 89% of the clean bucket was untestable, so the
+            # headline number was almost entirely a claim about posts the
+            # evidence cannot reach. Own bucket, out of the clean denominator.
+            if commit_utc < floor:
+                undecidable.append((os.path.basename(p),
+                                    f"commit {_fmt(commit_utc)} predates evidence floor "
+                                    f"{_fmt(floor)} — first serve could not have been earlier"))
+            else:
+                within += 1
             continue
 
         gap = int((commit_utc - first).total_seconds())
@@ -328,6 +360,11 @@ def interval_arm(real, adopted, path):
     return undeclared, dark, {
         "corroborated": corroborated, "within": within, "no_row": no_row,
         "no_commit": no_commit, "floor": floor, "pages": len(pages),
+        "undecidable": undecidable,
+        # The only number in this arm that is a claim about anything: posts whose
+        # commit sits inside the evidence window, where the invariant could have
+        # gone red and did not. Everything else is corroboration or coverage.
+        "tested": corroborated + within + len(undeclared),
     }
 
 
@@ -474,10 +511,14 @@ def main():
     else:
         print(f"    {ev['pages']:>4}  URLs in the evidence, floor {_fmt(ev['floor'])}")
         print(f"    {ev['corroborated']:>4}  declared adoptions CORROBORATED by a pre-commit serve")
-        print(f"    {ev['within']:>4}  first serve at or after first commit — invariant holds")
+        print(f"    {ev['within']:>4}  first serve at or after first commit — invariant TESTED and holds")
+        print(f"    {len(ev['undecidable']):>4}  UNDECIDABLE - has a serve row, but commit predates the floor:")
+        print(f"          the invariant could not have failed here. Not clean; untested.")
         print(f"    {ev['no_row']:>4}  no serve row inside the covered window (Cloudflare: proves nothing)")
         print(f"    {ev['no_commit']:>4}  no first commit found")
-        print(f"    {len(dark):>4}  DARK - evidence floor above the commit, arm structurally blind")
+        print(f"    {len(dark):>4}  DARK - no serve row AND commit below the floor, arm structurally blind")
+        print(f"    ---- interval arm judged {ev['tested']} post(s); "
+              f"{len(ev['undecidable']) + len(dark) + ev['no_row']} outside its reach ----")
         for name, why in dark:
             print(f"          {name:<46} {why}")
         if dark:

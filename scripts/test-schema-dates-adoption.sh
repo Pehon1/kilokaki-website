@@ -73,10 +73,11 @@ cd "$(dirname "$0")/.." || exit 2
 REPO="$PWD"
 
 PREFIX_REF="cbaa8a8"     # last commit before the TZ bucket was deleted
+INTERVAL_V1_REF="a069755" # interval arm v1: scored floor-pinned posts as clean
 WORK=$(mktemp -d) || exit 2
 trap 'rm -rf "$WORK"' EXIT
 
-DECLARED=21
+DECLARED=24
 RAN=0; PASSED=0; FAILED=0
 
 # check <name> <want_rc> <want_marker> <thunk...>
@@ -371,7 +372,7 @@ check "H: --apply with adopted.json ABSENT -> refuses, exit 2" 2 "REFUSING TO RU
   run_fixer "$WORK/h" --apply
 
 echo
-echo "=== I/J/K/L: the interval arm ==="
+echo "=== I/J/K/L/M: the interval arm ==="
 
 # I — THE ROW THE DATE ARM CANNOT EMIT. Adoption commit at 22:55:39 +0800, so its
 # LOCAL date is 2026-07-16 and the post's schema says 2026-07-16: equal, so the
@@ -440,6 +441,54 @@ PY
 check "L: floor above commit -> DARK by name, exit 0 (never a permanent red)" 0 \
   "interval arm dark for 1 post(s)" \
   run_checker "$WORK/l"
+
+# M — THE UNTESTABLE PASS. Row L's twin, and the difference is one line: L
+# DELETES the serve row, M KEEPS it. That single change used to flip the post
+# from "DARK, named, unjudgeable" to "invariant holds" — a silent promotion into
+# the clean bucket, because the code only asked "is first >= commit?" and never
+# "could first have been less?". Below the retention floor it could not: the log
+# starts at the floor, so first >= floor > commit is forced by arithmetic. The
+# invariant did not hold, it was never tested.
+#
+# Measured on the real corpus at the fix: 65 of 73 "invariant holds" were this.
+# The arm's own headline was 89% a claim about posts its evidence cannot reach —
+# the same defect it was built to catch (a rule that cannot go red reporting
+# green), one level up, in the detector.
+M_FLOOR="2026-07-16T00:00:00Z"
+build_fixture "$WORK/m" "$MIDNIGHT" LIVE || exit 2
+python3 - "$WORK/m/evidence/first-200-utc.json" "$M_FLOOR" <<'PY'
+import json, sys
+p, floor = sys.argv[1], sys.argv[2]
+d = json.load(open(p))
+d["_retention_floor_utc"] = floor
+# The row STAYS — that is the whole distinction from row L.
+assert "/blog/normal-post.html" in d["pages"], "fixture lost the row M depends on"
+json.dump(d, open(p, "w"), indent=2)
+PY
+check "M1: floor above commit, row PRESENT -> UNDECIDABLE, not clean" 0 \
+  "1  UNDECIDABLE - has a serve row" \
+  run_checker "$WORK/m"
+
+# M2 is what makes M1 mean anything. Identical fixture, the checker as it stood
+# at a069755. If this does NOT report the post as holding the invariant, the
+# defect never reproduced and M1 is asserting a bucket that was never wrong.
+build_fixture "$WORK/m_pre" "$MIDNIGHT" "$INTERVAL_V1_REF" || exit 2
+python3 - "$WORK/m_pre/evidence/first-200-utc.json" "$M_FLOOR" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1]))
+d["_retention_floor_utc"] = sys.argv[2]
+json.dump(d, open(sys.argv[1], "w"), indent=2)
+PY
+check "M2: PRE-FIX ($INTERVAL_V1_REF) scores the same post as clean" 0 \
+  "1  first serve at or after first commit — invariant holds" \
+  run_checker "$WORK/m_pre"
+
+# M3 — the denominator must move with the bucket. Splitting UNDECIDABLE out and
+# leaving the summary line quoting the old total would report the honest count
+# in one place and the flattering one in the place people read.
+check "M3: ...and the judged count excludes it" 0 \
+  "interval arm judged 1 post(s); 1 outside its reach" \
+  run_checker "$WORK/m"
 
 echo
 echo "--- RAN $RAN / declared $DECLARED · PASS $PASSED · FAIL $FAILED ---"

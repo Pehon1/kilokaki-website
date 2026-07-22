@@ -42,6 +42,33 @@ name. This copy is therefore named for its **load-bearing field**,
 
 Cite full paths for anything in this directory. Never the basename.
 
+### Five copies exist. This is the one to cite.
+
+As of 2026-07-22 the same capture exists in five places across four trees:
+
+    13:57  ~/.openclaw-nori/workspace/state/live-by/first-serve-by-page.json
+    13:58  ~/.openclaw-nori/workspace/evidence/adoption-logs/live-by.json   4 slugs, `bounds` schema — NOT this artifact
+    13:59  ~/.openclaw-nori/workspace/state/archive/live-by-backfill-*.json
+    15:50  evidence/first-200-utc.json                                      <-- THIS FILE
+    15:53  ~/.openclaw/workspace/kilokaki-site/evidence/first-serve-by-page.json  uncommitted
+
+**Cite this one, and only this one.** Not because it is more accurate — it is a
+byte-identical copy of the same capture — but because it is the only one inside
+a git tree. It has a hash in this README, a commit that introduced it, and a
+diff a reviewer can read. The other four are files on a disk: no version, no
+provenance, and nothing that would reveal an edit.
+
+The hazard is not that a reader picks a stale copy. It is that **every one of
+the five returns a defensible-looking answer**, and four of them cannot be
+checked against anything. A reader who lands on `adoption-logs/live-by.json`
+gets a valid JSON document with a completely different schema — that near-miss
+already cost Coco a citation review and came one step from a true citation
+being ruled fabricated.
+
+The other four should be deleted or replaced with a pointer here. That is
+**Nori's call on Nori's files**, not this branch's change — recorded as the ask,
+not as a done thing.
+
 ### What it does and does not prove
 
 Straight from the artifact's own `_what` / `_not`:
