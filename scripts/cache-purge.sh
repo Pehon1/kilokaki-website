@@ -237,7 +237,11 @@ purge_varnish() {
     return 1
   fi
 
-  echo "✓ Varnish: ${#seen[@]}/${#PURGE_PATHS[@]} path(s) purged, all 200/204."
+  # Wording is load-bearing: this says ACCEPTED, not PURGED. Varnish answers 200
+  # to a PURGE of a path it never cached (measured above), so "purged" would be a
+  # claim this check is structurally unable to make. Eviction is proven by
+  # verify-edge.sh comparing content, and nowhere else.
+  echo "✓ Varnish: ${#seen[@]}/${#PURGE_PATHS[@]} PURGE(s) accepted (200/204) — transport only, not proof of eviction."
   return 0
 }
 
@@ -320,5 +324,6 @@ if [[ $cf_rc -ne 0 || $va_rc -ne 0 ]]; then
   exit 2
 fi
 
-echo "✓ Caches purged: Cloudflare zone + ${#PURGE_PATHS[@]} targeted Varnish path(s)."
+echo "✓ Cloudflare zone purged (body-asserted); ${#PURGE_PATHS[@]} Varnish PURGE(s) accepted."
+echo "  Eviction is NOT proven here. verify-edge.sh decides that, on content."
 exit 0

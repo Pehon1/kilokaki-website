@@ -208,7 +208,7 @@ export KILOKAKI_DEPLOY_ENV="$GOOD_ENV"
 # ---------------------------------------------------------------------------
 export STUB_SSH_OUT=$'PURGE\t/sitemap.xml\t200\nPURGE\t/blog/\t204\nPURGE-END'
 run_case "all good -> pass" 0 \
-  "Caches purged" -- /sitemap.xml /blog/
+  "Eviction is NOT proven here" -- /sitemap.xml /blog/
 
 echo ""
 if [[ $fail -gt 0 ]]; then
