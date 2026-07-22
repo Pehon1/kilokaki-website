@@ -538,8 +538,13 @@ def main() -> int:
 
     collisions = mechanism_collisions(entries)
     if collisions:
-        print(f"ERROR: {len(collisions)} page(s) owned by two lastmod mechanisms "
-              f"— refusing to write.", file=sys.stderr)
+        # len(problems), NOT len(pages): mechanism_collisions() appends from two
+        # independent loops, so ONE page caught by both arms produces two
+        # entries. The old wording printed "2 page(s)" for a single page and
+        # sent a reader hunting for a second one. Verdict and exit code are
+        # unaffected -- `if collisions:` is truthy either way -- label only.
+        print(f"ERROR: {len(collisions)} collision report(s) owned by two lastmod "
+              f"mechanisms — refusing to write.", file=sys.stderr)
         for c in collisions:
             print(f"  {c}", file=sys.stderr)
         print("       Delete the declaration, or remove the page from "
