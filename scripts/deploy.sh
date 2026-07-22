@@ -87,14 +87,20 @@ SELF_VERIFY() {
 
   echo "→ Self-verify: checking deploy.sh is committed and tree is clean..."
 
-  # 1. Assert tracked files are clean (no staged, no modified)
-  #    Untracked files don't ship via rsync allow-list, so they don't count.
+  # 1. Assert the tree is clean — tracked AND untracked.
+  #    RSYNC_FILTER below is GLOB-based ('/*.css', '/blog/*.html', ...), not a
+  #    list of tracked paths. rsync walks the filesystem, not the index, so an
+  #    untracked file matching any root or blog/ glob ships exactly like a
+  #    committed one. Git tracking has no bearing on what leaves this machine.
+  #    --untracked-files=all, not =normal: =normal collapses a wholly-untracked
+  #    directory to 'blog/' and the abort below would name a directory instead
+  #    of the file that would have shipped.
   local _sv_dirty
-  _sv_dirty=$(cd "$_sv_src_dir" && git status --porcelain --untracked-files=no 2>/dev/null || true)
+  _sv_dirty=$(cd "$_sv_src_dir" && git status --porcelain --untracked-files=all 2>/dev/null || true)
   if [[ -n "$_sv_dirty" ]]; then
     echo "" >&2
     echo "ABORT: uncommitted changes detected in the deploy tree." >&2
-    echo "The deploy script or its inputs have local edits. Nothing was deployed." >&2
+    echo "The deploy tree has local edits or untracked files. Nothing was deployed." >&2
     echo "" >&2
     printf '%s\n' "$_sv_dirty" | sed 's/^/    /' >&2
     echo "" >&2
@@ -162,6 +168,23 @@ SSH_CMD="sshpass -e ssh -o StrictHostKeyChecking=no"
 # clean them, and every dry-run will report clean regardless. That is a false
 # PASS with a long fuse -- see PUBLIC-MANIFEST.md.
 RSYNC_FILTER=(
+  # FIRST RULE, DELIBERATELY. rsync is first-match-wins, so this beats every
+  # --include below. Do not move it down the list; below the includes it is
+  # dead text.
+  #
+  # AppleDouble sidecars are the one debris class whose prefix survives onto a
+  # SHIPPABLE extension: '._draft.html' matches --include='/blog/*.html' (rsync
+  # globs are not shell globs -- a leading dot is not special), and '._*' in
+  # .gitignore hides it from `git status --untracked-files=all`, so SELF_VERIFY
+  # never sees it either. Measured: both '._ghost.html' and '._sidecar.png'
+  # shipped before this line existed. Every other ignored pattern (*.swp, *~,
+  # .DS_Store, Thumbs.db, .AppleDouble, the dir entries) ends in a suffix no
+  # include matches, so it cannot reach the CDN regardless.
+  #
+  # This lives here rather than being removed from .gitignore on purpose: the
+  # .gitignore entry is a convenience, and a convenience must not be the only
+  # thing standing between an editor's sidecar and a crawlable URL.
+  --exclude='._*'
   # Root: the pages and assets, explicitly.
   --include='/index.html'
   --include='/about.html'
@@ -324,18 +347,16 @@ fi
 drift_guard
 
 # --- Sitemap staleness gate: DELIBERATELY NOT HERE ---
-# This branch used to call `gen-sitemap.py --check` directly and abort on its
-# exit 1. Removed 2026-07-22 by Coco's ruling: the gate lives in
-# scripts/sitemap-gate.sh on branch sitemap-gate (b63dabf), which does NOT trust
-# the generator's exit 1 — it distinguishes stale (1) from "could not reach a
-# verdict" (2), because a generator that raises also exits 1 and my version read
-# that as a clean stale-detection.
+# DO NOT RE-ADD A CALLER HERE. The sitemap gate is already wired, once, above —
+# `sitemap-gate.sh` at the "--- Sitemap gate ---" block. Two callers is the
+# failure mode, not two files: a second one down here runs the rejected design
+# (raw `gen-sitemap.py --check`, trusting its exit 1) after drift_guard, with
+# nothing to make a reviewer look.
 #
-# DO NOT RE-ADD A CALLER HERE. Two callers is the failure mode, not two files:
-# the merge of this branch and sitemap-gate is CLEAN (measured, exit 0, zero
-# conflict markers) and lands BOTH gates — the rejected design survives after
-# drift_guard with nothing to make a reviewer look. If you want the check, the
-# answer is sitemap-gate.sh, once it merges.
+# The rejected design is rejected because `gen-sitemap.py` exits 1 both when the
+# sitemap is stale and when the generator itself raises. sitemap-gate.sh keeps
+# those apart — stale is 1, "could not reach a verdict" is 2 — and deploy.sh
+# aborts on either. Ruled 2026-07-22 by Coco.
 
 # --dry-run stops here too, and it stops here ON PURPOSE — every guard above has
 # already run and every one of them can still abort before this line is reached.
