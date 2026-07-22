@@ -281,12 +281,25 @@ if $CHECK_ONLY; then
 fi
 
 # --- Upload recursively via rsync + sshpass ---
+# --out-format is not cosmetic: it is the input to derive_cache_paths() below.
+# Without an itemized record of what moved, the only honest purge set is a
+# hand-maintained guess, which is what this replaced.
 echo "→ Uploading files (recursive)..."
-rsync -avz --delete \
+XFER_LOG="$(mktemp -t kk-rsync-xfer.XXXXXX)"
+trap 'rm -f "$XFER_LOG"' EXIT
+
+rsync_rc=0
+rsync -avz --delete --out-format='%i %n' \
   "${RSYNC_FILTER[@]}" \
   -e "$SSH_CMD" \
   "$SRC_DIR/" \
-  "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PUBLIC_HTML}/"
+  "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PUBLIC_HTML}/" \
+  | tee "$XFER_LOG" || rsync_rc=${PIPESTATUS[0]}
+
+if [[ $rsync_rc -ne 0 ]]; then
+  echo "ABORT: rsync failed (exit $rsync_rc). Nothing further was attempted." >&2
+  exit 1
+fi
 
 echo "✓ Files uploaded."
 
@@ -303,7 +316,94 @@ echo "✓ Permissions fixed."
 # 2026-07-22 they printed green while the edge served a six-day-old sitemap.
 # cache-purge.sh exits 0 pass / 1 BLOCK / 2 UNKNOWN, and every checkmark it
 # prints is downstream of a comparison proven to go red (test-cache-purge.sh).
-CACHE_PATHS=(/sitemap.xml / /blog/ /how-to/)
+#
+# THE PATH SET IS DERIVED, NOT DECLARED.
+# It used to be `CACHE_PATHS=(/sitemap.xml / /blog/ /how-to/)` — a hand-kept
+# list. That list covers the incident that produced it and nothing after: a
+# newly-published /blog/<new-slug>/ is not in it, so Varnish keeps serving the
+# 404 it cached before the post existed and verify-edge never looks. The script
+# said as much in its own post-deploy text, which is honest and is not a fix.
+# (Cloudflare is purge_everything, so CF was never the exposure — the exposure
+# is the origin PURGE loop and the acceptance check, both of which take this
+# list verbatim.)
+#
+# Two sets, because they answer different questions:
+#   PURGE  — everything that moved, INCLUDING deletions. A deleted page is
+#            exactly the object you most need evicted.
+#   VERIFY — only paths that still exist in the tree. verify-edge diffs the
+#            edge against a repo file; a deleted path has none, and it would
+#            correctly return UNKNOWN, i.e. a red deploy for a clean delete.
+# NO `mapfile` AND NO BARE `${arr[@]}` BELOW — both are bash 4 conveniences and
+# macOS ships bash 3.2.57. `mapfile` is merely absent (127, loud). The empty-array
+# expansion is the nasty one: under `set -u`, bash 3.2 treats `"${empty[@]}"` as
+# an unbound variable and aborts — so a deploy that changed nothing would die
+# AFTER uploading, before purging. Hence `${arr[@]+...}` throughout.
+MAX_PATHS=40
+
+to_url_path() {
+  case "$1" in
+    index.html)   printf '/' ;;
+    */index.html) printf '/%s/' "${1%/index.html}" ;;
+    *)            printf '/%s' "$1" ;;
+  esac
+}
+
+# %i is rsync's itemized-change string. `>f`/`<f` = a file was transferred;
+# `*deleting` = one was removed. Everything else — directory entries (cd/.d),
+# attribute-only ticks (.f), and the summary lines — is not a cache event.
+_changed=()
+while IFS= read -r f; do
+  [[ -n "$f" ]] && _changed+=("$f")
+done < <(awk '$1 ~ /^[<>]f/ {sub(/^[^ ]+ /,""); print}' "$XFER_LOG")
+
+_deleted=()
+while IFS= read -r f; do
+  [[ -n "$f" ]] && _deleted+=("$f")
+done < <(awk '$1 == "*deleting" {sub(/^[^ ]+ +/,""); print}' "$XFER_LOG")
+
+# Floor: / and /sitemap.xml are checked every run whether or not they moved.
+# They are the two objects a stale edge hurts most, and verifying an unchanged
+# path is a valid pass, not a false one.
+_verify_raw=(/ /sitemap.xml)
+for f in ${_changed[@]+"${_changed[@]}"}; do
+  _verify_raw+=("$(to_url_path "$f")")
+done
+_purge_raw=(${_verify_raw[@]+"${_verify_raw[@]}"})
+for f in ${_deleted[@]+"${_deleted[@]}"}; do
+  _purge_raw+=("$(to_url_path "$f")")
+done
+
+dedupe_into() {  # dedupe_into <outvar> <path>...
+  local __out=$1; shift
+  local seen="" p result=()
+  for p in "$@"; do
+    case "$seen" in
+      *"|${p}|"*) ;;
+      *) result+=("$p"); seen="${seen}|${p}|" ;;
+    esac
+  done
+  eval "$__out=(\${result[@]+\"\${result[@]}\"})"
+}
+
+dedupe_into VERIFY_PATHS ${_verify_raw[@]+"${_verify_raw[@]}"}
+dedupe_into CACHE_PATHS  ${_purge_raw[@]+"${_purge_raw[@]}"}
+
+echo "→ ${#_changed[@]} file(s) changed, ${#_deleted[@]} deleted → ${#CACHE_PATHS[@]} path(s) to purge."
+
+# A cap that drops paths silently is the same bug as the hand-kept list, wearing
+# a nicer hat. If it truncates, it says exactly what it dropped and how to
+# finish the job by hand.
+if [[ ${#CACHE_PATHS[@]} -gt $MAX_PATHS ]]; then
+  dropped=(${CACHE_PATHS[@]:$MAX_PATHS})
+  CACHE_PATHS=("${CACHE_PATHS[@]:0:$MAX_PATHS}")
+  VERIFY_PATHS=(${CACHE_PATHS[@]+"${CACHE_PATHS[@]}"})
+  echo "" >&2
+  echo "WARNING: ${#dropped[@]} path(s) exceed the ${MAX_PATHS}-path cap and were NOT purged:" >&2
+  printf '  %s\n' "${dropped[@]}" >&2
+  echo "  Purge them after this run:" >&2
+  echo "    bash scripts/cache-purge.sh ${dropped[*]}" >&2
+fi
+
 purge_rc=0
 bash "${SCRIPT_DIR}/cache-purge.sh" "${CACHE_PATHS[@]}" || purge_rc=$?
 if [[ $purge_rc -ne 0 ]]; then
@@ -324,7 +424,7 @@ fi
 echo ""
 sleep 3
 verify_rc=0
-bash "${SCRIPT_DIR}/verify-edge.sh" "${CACHE_PATHS[@]}" || verify_rc=$?
+bash "${SCRIPT_DIR}/verify-edge.sh" "${VERIFY_PATHS[@]}" || verify_rc=$?
 if [[ $verify_rc -ne 0 ]]; then
   echo "" >&2
   echo "DEPLOY NOT VERIFIED (verify-edge.sh exit $verify_rc)." >&2
@@ -346,7 +446,7 @@ echo "✓ Done! — files uploaded, caches purged (checked), edge serving this t
 # wrong. verify-edge.sh above now does the check that sentence was asking a
 # human to remember, on the paths this deploy actually touched.
 echo ""
-echo "Verified above: ${CACHE_PATHS[*]}"
+echo "Verified above: ${VERIFY_PATHS[*]}"
 echo "Shipped a new blog/how-to page? It is only covered if its path is in that"
 echo "list. Check it explicitly:"
 echo "    bash scripts/verify-edge.sh /blog/your-slug/"

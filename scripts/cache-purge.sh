@@ -252,46 +252,106 @@ purge_varnish() {
 # dashboard or API" has a correct implementation to point at instead of the
 # public/v1 one that never worked.
 #
-# It refuses rather than pretends. The Cloudways API is OAuth: you POST email +
-# api_key to /api/v1/oauth/access_token, get a bearer, and only then call
-# /api/v1/service/state. `~/.config/kilokaki-site/deploy.env` holds CW_API_TOKEN
-# but NO CW_EMAIL, so that exchange cannot be performed with today's config.
-# Saying so is the whole point: the step it replaces printed a checkmark in
-# exactly this situation.
+# It refuses rather than pretends. api/v1 is OAuth: POST email + api_key to
+# /api/v1/oauth/access_token, get a bearer, and only then call
+# /api/v1/service/state. There is no static-bearer path on api/v1 at all.
+#
+# THE CREDENTIAL, AND THE WRONG ANSWER THAT LIVED IN THIS COMMENT
+# Until 2026-07-22 this function sent CW_API_TOKEN as the api_key, and the text
+# right here asserted "CW_API_TOKEN is the api key; only CW_EMAIL is absent."
+# Both halves were wrong and the second half was mine. MEASURED by Coco and
+# reproduced here, one operand varied against a control, SAME email both times:
+#     api_key=$CW_API_KEY    (30 char)  -> 200, access_token minted
+#     api_key=$CW_API_TOKEN  (41 char)  -> 403 {"error":"invalid_credentials"}
+# CW_API_TOKEN is a different credential; it was never going to authenticate
+# here under any variable name.
+#
+# WHY THE WRONG INFERENCE SURVIVED — this is worth more than the fix.
+# A MISSING var and a WRONG var throw the identical 403. Two true observations
+# ("CW_EMAIL is absent", "this call 403s") got joined by a causal claim that was
+# never tested, because the loudest gap absorbed the blame for a failure it did
+# not cause. Nothing short of varying one operand at a time could separate them.
+#
+# So PRESENCE IS NOT THE GATE. A var can be present and wrong — that is this
+# exact bug. The gate is THE MINT ITSELF: no checkmark is printed, and
+# service/state is never called, unless Cloudways hands back a token. Proven red
+# on demand against a deliberately corrupted key — see scripts/test-cache-purge.sh.
 restart_varnish_fallback() {
   echo "→ Varnish: full restart via Cloudways api/v1 (fallback)..."
 
-  if [[ -z "${CW_EMAIL:-}" || -z "${CW_API_TOKEN:-}" || -z "${CW_SERVER_ID:-}" ]]; then
+  # Presence check first. It is NOT the gate, and on its own it is exactly the
+  # insufficient check described above — but it produces a strictly better error
+  # than the mint can. The mint answers "missing" and "wrong" with the same 403;
+  # only this can tell them apart, and it names the variable instead of the
+  # symptom. Keep both: this one for the diagnosis, the mint for the verdict.
+  local missing=() v
+  for v in CW_EMAIL CW_API_KEY CW_SERVER_ID; do
+    [[ -n "${!v:-}" ]] || missing+=("$v")
+  done
+  if [[ ${#missing[@]} -gt 0 ]]; then
     echo "" >&2
     echo "UNKNOWN: cannot restart Varnish — the Cloudways API is not configured." >&2
-    echo "  /api/v1/oauth/access_token needs CW_EMAIL + CW_API_TOKEN (the api key)." >&2
-    echo "  CW_EMAIL is absent from ${ENV_FILE}." >&2
+    echo "  /api/v1/oauth/access_token needs CW_EMAIL + CW_API_KEY (the API KEY —" >&2
+    echo "  NOT CW_API_TOKEN, which is a different credential and 403s here)." >&2
+    printf '  absent from %s: %s\n' "$ENV_FILE" "${missing[*]}" >&2
     echo "Refusing to print a checkmark for a call I cannot authenticate." >&2
     return 2
   fi
 
-  local tok_body rc=0
-  tok_body=$(curl -sS -f -X POST "https://api.cloudways.com/api/v1/oauth/access_token" \
-    -d "email=${CW_EMAIL}" -d "api_key=${CW_API_TOKEN}" 2>&1) || rc=$?
-  if [[ $rc -ne 0 || "$tok_body" != *'"access_token"'* ]]; then
-    echo "BLOCK: Cloudways OAuth exchange failed (curl exit $rc)." >&2
+  # THE GATE. Deliberately no -f: we want to READ the 403 body and report it,
+  # not let a flag flatten it into an exit code. That is the rule this whole
+  # file is built on, and -f is the narrow instance of it that loses the reason.
+  local tok_file tok_code token rc=0
+  tok_file=$(mktemp)
+  tok_code=$(curl -sS -o "$tok_file" -w '%{http_code}' -X POST \
+    "https://api.cloudways.com/api/v1/oauth/access_token" \
+    --data-urlencode "email=${CW_EMAIL}" \
+    --data-urlencode "api_key=${CW_API_KEY}" 2>&1) || rc=$?
+  token=$(sed -n 's/.*"access_token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$tok_file" | head -1)
+
+  if [[ $rc -ne 0 || "$tok_code" != "200" || -z "$token" ]]; then
+    echo "" >&2
+    echo "BLOCK: Cloudways refused to mint an access_token — HTTP ${tok_code:-none} (curl exit $rc)." >&2
+    echo "No token means no restart. NOTHING WAS RESTARTED." >&2
+    echo "  A 403 here is ambiguous BY DESIGN: an absent CW_API_KEY, a corrupted" >&2
+    echo "  one, and a valid-but-unauthorised one all produce this same answer." >&2
+    echo "  The presence check above has already ruled out absent, so suspect the" >&2
+    echo "  VALUE: check CW_API_KEY in ${ENV_FILE} against Cloudways -> Account ->" >&2
+    echo "  API Key. Do not substitute CW_API_TOKEN; that is the original bug." >&2
+    echo "--- response ---" >&2
+    sed 's/^/  | /' "$tok_file" >&2; echo "" >&2
+    rm -f "$tok_file"
     return 1
   fi
-  local token
-  token=$(printf '%s' "$tok_body" | sed -n 's/.*"access_token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
-  [[ -n "$token" ]] || { echo "BLOCK: no access_token in the OAuth response." >&2; return 1; }
+  rm -f "$tok_file"
+  echo "  token minted (HTTP 200) — the credential is good."
 
-  local body
+  local body_file body code
   rc=0
-  body=$(curl -sS -f -X POST "https://api.cloudways.com/api/v1/service/state" \
+  body_file=$(mktemp)
+  code=$(curl -sS -o "$body_file" -w '%{http_code}' -X POST \
+    "https://api.cloudways.com/api/v1/service/state" \
     -H "Authorization: Bearer ${token}" \
     -d "server_id=${CW_SERVER_ID}" -d "service=varnish" -d "state=restart" 2>&1) || rc=$?
-  if [[ $rc -ne 0 ]]; then
-    echo "BLOCK: Cloudways service/state restart failed (curl exit $rc)." >&2
-    printf '%s\n' "$body" >&2
+  body=$(cat "$body_file"); rm -f "$body_file"
+
+  if [[ $rc -ne 0 || "$code" != "200" ]]; then
+    echo "" >&2
+    echo "BLOCK: Cloudways service/state restart failed — HTTP ${code:-none} (curl exit $rc)." >&2
+    echo "The token was good, so this is the RESTART that failed, not the auth." >&2
+    echo "--- response ---" >&2
+    printf '%s\n' "$body" | sed 's/^/  | /' >&2
     return 1
   fi
-  echo "✓ Varnish: restart requested via api/v1. Response: ${body}"
+
+  # Wording is load-bearing, same as the PURGE checkmark above. Cloudways queues
+  # service/state as an asynchronous operation, so a 200 means the restart was
+  # ACCEPTED, not that Varnish has come back. Claiming "restarted" here would be
+  # the original `✓ Varnish restarted.` with a better auth flow behind it.
+  echo "✓ Varnish: restart REQUESTED via api/v1 (token minted, HTTP 200)."
+  echo "  Requested, not completed — Cloudways runs this asynchronously."
+  echo "  Eviction is NOT proven here. verify-edge.sh decides that, on content."
+  printf '  response: %s\n' "$body"
   return 0
 }
 
