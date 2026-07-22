@@ -56,9 +56,23 @@ set -uo pipefail
 MSG_FILE="${1:?commit-msg hook requires the message file path}"
 [[ -f "$MSG_FILE" ]] || exit 0
 
-# Already has one (any value, including unknown): leave it alone.
-if grep -qE '^Session:[[:space:]]*\S' "$MSG_FILE"; then
+# Already has a REAL one: leave it alone -- the caller's assertion beats ours.
+#
+# `unknown` is deliberately NOT treated as a supplied value. It is a placeholder
+# meaning "asked, could not answer", so a later run that CAN answer must be free
+# to fill it in. Measured the hard way: commit fe2c9c0 was written with a stale
+# installed hook, got `Session: unknown`, and `--amend` under the correct hook
+# preserved the placeholder because the original rule said "any value, including
+# unknown". A placeholder that survives the conditions that would resolve it is
+# just a wrong value with a polite name.
+if grep -qE '^Session:[[:space:]]*\S' "$MSG_FILE" \
+   && ! grep -qE '^Session:[[:space:]]*unknown[[:space:]]*$' "$MSG_FILE"; then
   exit 0
+fi
+# Strip any placeholder before appending, so we never emit two Session lines.
+if grep -qE '^Session:[[:space:]]*unknown[[:space:]]*$' "$MSG_FILE"; then
+  grep -vE '^Session:[[:space:]]*unknown[[:space:]]*$' "$MSG_FILE" > "${MSG_FILE}.tmp" \
+    && mv "${MSG_FILE}.tmp" "$MSG_FILE"
 fi
 
 SESSION_ID="${CLAUDE_CODE_SESSION_ID:-}"

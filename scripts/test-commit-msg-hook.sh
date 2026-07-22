@@ -46,6 +46,22 @@ row "C  existing trailer left alone" "supplied-by-caller" \
      f=$(mktemp); printf "subject\n\nSession: supplied-by-caller\n" > "$f"; "$0" "$f" >/dev/null 2>&1
      grep -E "^Session:" "$f" | head -1 | sed -E "s/^Session:[[:space:]]*//"' "$HOOK")"
 
+# --- E: `unknown` is a placeholder, not a supplied value --------------------
+# fe2c9c0 was committed under a stale installed hook, got `Session: unknown`,
+# and --amend under the FIXED hook preserved it -- the original rule said "any
+# value, including unknown". A placeholder that survives the conditions that
+# would resolve it is a wrong value with a polite name.
+row "E  unknown placeholder gets refilled" "real-id-42" \
+  "$(CLAUDE_CODE_SESSION_ID=real-id-42 bash -c '
+     f=$(mktemp); printf "subject\n\nSession: unknown\n" > "$f"; "$0" "$f" >/dev/null 2>&1
+     grep -E "^Session:" "$f" | head -1 | sed -E "s/^Session:[[:space:]]*//"' "$HOOK")"
+
+# --- F: refilling must not leave two Session lines ---------------------------
+row "F  exactly one Session line after refill" "1" \
+  "$(CLAUDE_CODE_SESSION_ID=real-id-42 bash -c '
+     f=$(mktemp); printf "subject\n\nSession: unknown\n" > "$f"; "$0" "$f" >/dev/null 2>&1
+     grep -cE "^Session:" "$f"' "$HOOK")"
+
 # --- D: THE PRODUCTION ROW. Nothing supplied; ambient env must carry an id. ---
 amb=$(trailer "$(emit 'ambient row')" Session)
 if [[ -z "${CLAUDE_CODE_SESSION_ID:-}${OPENCLAW_MCP_SESSION_ID:-}" ]]; then
