@@ -163,10 +163,29 @@ SSH_CMD="sshpass -e ssh -o StrictHostKeyChecking=no"
 # guard measures a different delete-set than the deploy performs, and it lies.
 #
 # NOTE: --exclude PROTECTS a path from --delete; it does not remove what is
-# already live. The 9 scripts/*.py and the copy deck serving 200 today need a
-# one-time manual rm on prod. This list stops them coming back; it will not
-# clean them, and every dry-run will report clean regardless. That is a false
-# PASS with a long fuse -- see PUBLIC-MANIFEST.md.
+# already live. This list stops non-public files coming back; it will NOT clean
+# what is already there, and every dry-run reports clean regardless. A live
+# exposure is therefore a false PASS with a long fuse -- see PUBLIC-MANIFEST.md.
+#
+# The specific exposure this note used to assert (9 scripts/*.py + the copy deck
+# "serving 200 today") is CLOSED. It was an undated bare claim sitting in
+# executable code, so it outlived its subject silently and was read back as
+# current fact months later. That is the defect worth naming, not the wrong
+# number. What follows is a DATED MEASUREMENT, not an invariant -- re-derive it
+# before relying on it:
+#
+#   2026-07-22 19:40 SGT -- prod public_html: 115 files total; 0 matching
+#   *.py/*.sh/*.md/*.env; no scripts/ dir; no .git.
+#
+#   set -a; . ~/.config/kilokaki-site/deploy.env; set +a
+#   sshpass -e ssh -o StrictHostKeyChecking=no "${REMOTE_USER}@${REMOTE_HOST}" \
+#     "find ${REMOTE_BASE_DIR}/public_html -type f \( -name '*.py' -o -name '*.sh' \
+#       -o -name '*.md' -o -name '*.env' \) | wc -l"                        # -> 0
+#
+# That probe was EXECUTED as written at 19:40 SGT, not merely documented -- a
+# re-derivation nobody has run once is the same defect one layer over. A
+# non-zero count means something non-public is live NOW, and this filter will
+# not remove it: that still needs a manual rm on prod.
 RSYNC_FILTER=(
   # FIRST RULE, DELIBERATELY. rsync is first-match-wins, so this beats every
   # --include below. Do not move it down the list; below the includes it is
