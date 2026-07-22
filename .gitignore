@@ -5,3 +5,26 @@ deploy.env
 *.env
 !*.env.example
 .DS_Store
+
+# --- Debris suppression for the self-verify gate (scripts/deploy.sh) ---
+# SELF_VERIFY runs `git status --porcelain --untracked-files=all` and aborts on
+# ANY untracked file, because RSYNC_FILTER ships by glob and rsync walks the
+# filesystem, not the index. That strictness is the point. But it means routine
+# local debris would block a legitimate deploy, and a gate that cries wolf gets
+# --force'd past — trading a silent ship for a worn-out alarm. So ignore the
+# debris, and ONLY the debris: nothing here can match a shippable page, asset,
+# or script, so the gate still fires on every file that could reach the CDN.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+node_modules/
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+._*
+.AppleDouble
+Thumbs.db

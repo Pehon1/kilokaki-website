@@ -30,6 +30,15 @@ assert_not_contains() {
   fi
 }
 
+# Capture file — MUST live outside the fixture repo.
+# Until 2026-07-22 this was "$tmpdir/out.txt", i.e. inside the tree under test.
+# --untracked-files=no could not see it, so it was harmless; the moment the gate
+# started counting untracked files, Test 1's "clean tree" fixture was dirty by
+# construction and the test went red against a correct guard. The harness was
+# the first false positive the -uall change produced. Keep it out of the tree.
+OUT="$(mktemp)"
+trap 'rm -f "$OUT"' EXIT
+
 # Source files
 SRC_SCRIPTS="/Users/pehonong/.openclaw-mochi/workspace/kilokaki-site/scripts"
 SRC_ROOT="/Users/pehonong/.openclaw-mochi/workspace/kilokaki-site"
@@ -58,9 +67,9 @@ tmpdir=$(mktemp -d)
 make_repo "$tmpdir"
 (
   cd "$tmpdir"
-  bash scripts/deploy.sh --check > "$tmpdir/out.txt" 2>&1 || true
+  bash scripts/deploy.sh --check > "$OUT" 2>&1 || true
 )
-out=$(cat "$tmpdir/out.txt")
+out=$(cat "$OUT")
 assert_contains "self-verify passes" "✓ Self-verify: deploy.sh is committed, tree is clean" "$out"
 assert_contains "SHA printed" "deploy.sh committed under: [0-9a-f]\{8\}" "$out"
 assert_not_contains "no upload" "Files uploaded" "$out"
@@ -73,9 +82,9 @@ make_repo "$tmpdir"
 (
   cd "$tmpdir"
   echo "# DIRTY" >> scripts/deploy.sh
-  bash scripts/deploy.sh --check > "$tmpdir/out.txt" 2>&1 || true
+  bash scripts/deploy.sh --check > "$OUT" 2>&1 || true
 )
-out=$(cat "$tmpdir/out.txt")
+out=$(cat "$OUT")
 assert_contains "dirty tree aborts" "ABORT: uncommitted changes detected" "$out"
 assert_not_contains "no upload" "Files uploaded" "$out"
 assert_not_contains "no drift guard" "Drift guard" "$out"
@@ -88,9 +97,9 @@ make_repo "$tmpdir"
 (
   cd "$tmpdir"
   echo "<!-- DIRTY -->" >> index.html
-  bash scripts/deploy.sh --check > "$tmpdir/out.txt" 2>&1 || true
+  bash scripts/deploy.sh --check > "$OUT" 2>&1 || true
 )
-out=$(cat "$tmpdir/out.txt")
+out=$(cat "$OUT")
 assert_contains "dirty index.html aborts" "ABORT: uncommitted changes detected" "$out"
 assert_not_contains "no upload" "Files uploaded" "$out"
 rm -rf "$tmpdir"
@@ -103,10 +112,38 @@ make_repo "$tmpdir"
   cd "$tmpdir"
   git rm --cached scripts/deploy.sh > /dev/null 2>&1
   echo "# UNTRACKED" >> scripts/deploy.sh
-  bash scripts/deploy.sh --check > "$tmpdir/out.txt" 2>&1 || true
+  bash scripts/deploy.sh --check > "$OUT" 2>&1 || true
 )
-out=$(cat "$tmpdir/out.txt")
+out=$(cat "$OUT")
 assert_contains "untracked deploy.sh aborts" "ABORT" "$out"
+rm -rf "$tmpdir"
+
+# --- Test 5: Untracked blog/*.html → aborts, and the file is named ---
+# This is the case the gate was blind to until 2026-07-22. RSYNC_FILTER carries
+# --include='/blog/*.html', a GLOB — rsync walks the filesystem, not the index,
+# so an untracked blog page ships with the same authority as a committed one.
+# Real incident shape: a draft post lands live with no commit, no review, no
+# trace in the drift guard, and the next fetch silently overwrites it.
+#
+# TWO assertions on purpose, per the standing rule that a refusal test must pin
+# WHICH refusal:
+#   - rc alone proves nothing here: with --untracked-files=no the run sails past
+#     SELF_VERIFY and dies later on missing deploy env, also exit 1.
+#   - the path assertion is what pins --untracked-files=ALL. Under =normal git
+#     reports a wholly-untracked directory as 'blog/', so 'blog/rogue.html'
+#     appears in the abort listing only in =all mode.
+echo "=== Test 5: untracked blog/*.html → aborts, file named ==="
+tmpdir=$(mktemp -d)
+make_repo "$tmpdir"
+(
+  cd "$tmpdir"
+  mkdir -p blog
+  echo "<h1>never committed, ships anyway</h1>" > blog/rogue.html
+  bash scripts/deploy.sh --check > "$OUT" 2>&1 || true
+)
+out=$(cat "$OUT")
+assert_contains "untracked blog page aborts" "ABORT: uncommitted changes detected" "$out"
+assert_contains "offending path named (pins -uall)" "blog/rogue.html" "$out"
 rm -rf "$tmpdir"
 
 # --- Summary ---

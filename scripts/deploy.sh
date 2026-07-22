@@ -49,14 +49,20 @@ SELF_VERIFY() {
 
   echo "→ Self-verify: checking deploy.sh is committed and tree is clean..."
 
-  # 1. Assert tracked files are clean (no staged, no modified)
-  #    Untracked files don't ship via rsync allow-list, so they don't count.
+  # 1. Assert the tree is clean — tracked AND untracked.
+  #    RSYNC_FILTER below is GLOB-based ('/*.css', '/blog/*.html', ...), not a
+  #    list of tracked paths. rsync walks the filesystem, not the index, so an
+  #    untracked file matching any root or blog/ glob ships exactly like a
+  #    committed one. Git tracking has no bearing on what leaves this machine.
+  #    --untracked-files=all, not =normal: =normal collapses a wholly-untracked
+  #    directory to 'blog/' and the abort below would name a directory instead
+  #    of the file that would have shipped.
   local _sv_dirty
-  _sv_dirty=$(cd "$_sv_src_dir" && git status --porcelain --untracked-files=no 2>/dev/null || true)
+  _sv_dirty=$(cd "$_sv_src_dir" && git status --porcelain --untracked-files=all 2>/dev/null || true)
   if [[ -n "$_sv_dirty" ]]; then
     echo "" >&2
     echo "ABORT: uncommitted changes detected in the deploy tree." >&2
-    echo "The deploy script or its inputs have local edits. Nothing was deployed." >&2
+    echo "The deploy tree has local edits or untracked files. Nothing was deployed." >&2
     echo "" >&2
     printf '%s\n' "$_sv_dirty" | sed 's/^/    /' >&2
     echo "" >&2
