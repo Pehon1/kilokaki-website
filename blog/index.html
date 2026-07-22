@@ -15,6 +15,32 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="KiloKaki Blog — Food Logging Tips, Nutrition Science & Habit Guides">
   <meta name="twitter:description" content="Practical guides on food logging, nutrition, and building habits that stick. Built for Singaporeans eating real food.">
+  <!-- NO dateModified HERE, ON PURPOSE. Do not "fix" this by adding one.
+
+       This page's git date looks poisoned — its last three commits are 7ece2bb
+       (adopt), 96da7b0 (adopt), d31cca9 (rescue), all of them copying live posts
+       into git rather than authoring anything. That is the exact shape that got
+       index.html promoted to the declaration tier.
+
+       It is not the same case. Adopting a post REWRITES THE LISTING BELOW. The
+       content of this page genuinely moves every time a post ships, so the git tier
+       is answering the right question here even when the commit subject says
+       "adopt". Declaring a static date would trade a false-fresh for a permanent
+       false-stale — and that is the worse trade, because the git tier self-corrects
+       on the next real edit and the declaration tier never does. A wrong git date
+       heals itself; a wrong declared date sits until a human hand-edits it, and
+       nothing in gen-sitemap.py or check-schema-dates.py can see it.
+
+       The bar for the declaration tier is "this page's content is STATIC", not
+       "this page's git date is currently wrong" (Coco, 2026-07-22). This page fails
+       that bar.
+
+       KNOWN REMAINING DEFECT, filed separately, not fixed here: a head-tag-only
+       commit still poisons this page's git date, and an adoption commit that lands
+       days after the post went live still stamps the adoption date rather than the
+       publish date. The fix is in the generator — derive from the newest post the
+       listing carries, or filter adoption/rescue commits out of the git tier — not
+       in this file. Do not ride it along with a schema line. -->
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"WebPage","name":"KiloKaki Blog","description":"Practical guides on food logging, nutrition, and building habits that stick. Built for Singaporeans eating real food.","url":"https://kilokaki.com/blog/","publisher":{"@type":"Organization","name":"KiloKaki","url":"https://kilokaki.com","logo":{"@type":"ImageObject","url":"https://kilokaki.com/logo.png"}},"inLanguage":"en-SG"}
   </script>
