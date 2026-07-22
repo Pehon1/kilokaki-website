@@ -35,7 +35,45 @@ case "${1:-}" in
     ;;
 esac
 
+# --- Config: where am I, and what am I shipping ---
+# Derived from this script's own location, so the deploy always ships the tree
+# it is versioned in. Previously hardcoded, which is how copies in other
+# workspaces silently deployed a tree their owner could not see.
+#
+# Hoisted above the secrets load (2026-07-22) so the provenance gate below can
+# run before ANYTHING else. It needs only these two paths and the parsed args:
+# no env, no credentials, no network.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SRC_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# --- Provenance gate ---
+# FIRST of the four, and deliberately above the `if $DRY_RUN ... exit 0` return
+# further down. That early exit used to sit above all three other gates and skip
+# every one of them; bc3fd25 moved it below them. This gate stays above it
+# regardless: a guard that asserts "the tree running the gates is committed"
+# must not depend on where any later exit happens to sit.
+#
+# This exists because nothing in this file ever ran git. SRC_DIR is SCRIPT_DIR/..,
+# so deploy.sh ships whatever tree it is sitting in, and no gate asked whether
+# that tree was a checkout of anything. A /tmp copy with .git stripped is, to
+# every other gate, just a directory of HTML.
+#
+# Fail closed: exit 1 dirty-or-unpublished, exit 2 unknown, both abort.
+prov_rc=0
+bash "${SCRIPT_DIR}/provenance-gate.sh" "$SRC_DIR" || prov_rc=$?
+if [[ $prov_rc -ne 0 ]]; then
+  echo "" >&2
+  echo "ABORT: provenance gate exit $prov_rc. Nothing was deployed." >&2
+  exit 1
+fi
+
 # --- Self-verify: this script must be committed, tree must be clean ---
+# NOTE (rebase onto 5b606ea): this is now largely SUBSUMED by the provenance
+# gate above -- "published" implies "tracked", and both assert a clean tree.
+# Kept rather than deleted because removing a guard someone else merged is a
+# decision, not a conflict resolution. Its live cost is not zero: it answers
+# the same question as the gate above, so any test asserting only an exit code
+# here cannot tell which guard produced it. See test row I.
 # This deploy is the only copy (see :1). A worktree edit to deploy.sh ships
 # without trace — the next fetch overwrites it, and the drift guard never sees
 # it. Guard against that by asserting the script itself is committed and the
@@ -103,11 +141,8 @@ for var in SSHPASS CF_ZONE_ID CF_API_TOKEN CW_SERVER_ID CW_APP_ID CW_API_TOKEN \
 done
 
 # --- Config ---
-# Derived from this script's own location, so the deploy always ships the tree
-# it is versioned in. Previously hardcoded, which is how copies in other
-# workspaces silently deployed a tree their owner could not see.
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SRC_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+# SCRIPT_DIR and SRC_DIR are set above, before the secrets load, because the
+# provenance gate runs there. Only the env-dependent path is derived here.
 REMOTE_PUBLIC_HTML="${REMOTE_BASE_DIR}/public_html"
 
 SSH_CMD="sshpass -e ssh -o StrictHostKeyChecking=no"
