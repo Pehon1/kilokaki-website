@@ -197,18 +197,12 @@ if ! command -v rsync &>/dev/null; then
   exit 1
 fi
 
-# --dry-run shares the same -e "$SSH_CMD" transport as the real upload. The
-# May 3 copy omitted it here, fell back to plain ssh, found no TTY, and printed
-# "Permission denied" — which read as rotated credentials and burned an hour.
-if $DRY_RUN; then
-  echo "[DRY RUN] Would sync:"
-  rsync -avzn --delete \
-    "${RSYNC_FILTER[@]}" \
-    -e "$SSH_CMD" \
-    "$SRC_DIR/" \
-    "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PUBLIC_HTML}/"
-  exit 0
-fi
+# --dry-run USED TO EXIT HERE, ahead of all four guards. Moved below them
+# 2026-07-22 (Coco, measured): on one identical mutated tree, `--check` exited 1
+# with "BLOCK: sitemap.xml is stale" and `--dry-run` exited 0 having printed not
+# one gate line. Opposite verdicts, same bytes. The cheapest "what would this
+# ship?" preview was the single path structurally incapable of going red, and it
+# is the one anyone reaches for in a hurry. See the block after drift_guard.
 
 # --- Sitemap gate ---
 # Runs FIRST of the three: it needs no network, so it is the cheapest, and it
@@ -263,9 +257,24 @@ drift_guard
 # drift_guard with nothing to make a reviewer look. If you want the check, the
 # answer is sitemap-gate.sh, once it merges.
 
+# --dry-run stops here too, and it stops here ON PURPOSE — every guard above has
+# already run and every one of them can still abort before this line is reached.
+# It shares the same -e "$SSH_CMD" transport as the real upload: the May 3 copy
+# omitted it, fell back to plain ssh, found no TTY, printed "Permission denied",
+# and that read as rotated credentials for an hour.
+if $DRY_RUN; then
+  echo "[DRY RUN] Guards passed. Would sync:"
+  rsync -avzn --delete \
+    "${RSYNC_FILTER[@]}" \
+    -e "$SSH_CMD" \
+    "$SRC_DIR/" \
+    "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PUBLIC_HTML}/"
+  exit 0
+fi
+
 # --check stops here: the guards are the thing under test, and they must be
-# exercisable without deploying. --dry-run exits before them, so it never
-# tested either one.
+# exercisable without deploying. Both preview flags now sit downstream of all
+# four guards, so neither can report a clean preview of a tree that cannot ship.
 if $CHECK_ONLY; then
   echo "[--check] Guards passed. Nothing was deployed."
   exit 0
