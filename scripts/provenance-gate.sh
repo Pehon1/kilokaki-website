@@ -82,7 +82,15 @@ if [[ ! -d "$SRC_DIR" ]]; then
   exit 2
 fi
 
-SRC_ABS="$(cd "$SRC_DIR" 2>/dev/null && pwd)" || {
+# `pwd -P`, not `pwd`. git reports PHYSICAL paths from --show-toplevel; bash's
+# `cd` keeps the LOGICAL one it was handed. On macOS, $TMPDIR is /var/folders/...
+# and /var is a symlink to /private/var, so the same directory arrives at the
+# comparison below under two spellings and the toplevel check fires on a tree
+# that is its own root. Caught 2026-07-22 by this suite's CONTROL row, which is
+# the only row that could have caught it: every mutation row still returned its
+# expected 2, for the wrong reason. A gate that says UNKNOWN to everything is
+# indistinguishable from a working one until something is supposed to pass.
+SRC_ABS="$(cd -P "$SRC_DIR" 2>/dev/null && pwd -P)" || {
   echo "UNKNOWN: cannot enter ${SRC_DIR}." >&2
   exit 2
 }
@@ -101,7 +109,7 @@ if [[ $rc -ne 0 || -z "$toplevel" ]]; then
   exit 2
 fi
 
-toplevel_abs="$(cd "$toplevel" 2>/dev/null && pwd)" || toplevel_abs="$toplevel"
+toplevel_abs="$(cd -P "$toplevel" 2>/dev/null && pwd -P)" || toplevel_abs="$toplevel"
 if [[ "$toplevel_abs" != "$SRC_ABS" ]]; then
   echo "UNKNOWN: ${SRC_ABS} is not the root of a checkout." >&2
   echo "The enclosing repo is ${toplevel_abs}, which is a DIFFERENT tree than the" >&2

@@ -29,14 +29,29 @@ trap 'rm -rf "$WORK"' EXIT
 RAN=0; PASS=0; FAIL=0
 declare -a RESULTS=()
 
-# check <row-id> <description> <expected-rc> <thunk>
+# check <row-id> <description> <expected-rc> <thunk> [expected-marker]
 # The thunk is a FUNCTION NAME, not a value: nothing is evaluated before check
 # decides to run it, so a row that explodes cannot take the suite with it.
+#
+# The MARKER is not decoration. The first run of this suite (2026-07-22) had
+# every mutation row return its expected code while the gate was answering
+# UNKNOWN to literally everything — a symlinked $TMPDIR broke the toplevel
+# comparison, so rows D–H were right for a reason that had nothing to do with
+# what they mutate. Only the control could tell. rc alone cannot distinguish
+# "the branch I am testing fired" from "some earlier branch fired first", and
+# deploy.sh collapses gate exit 1 and 2 into its own exit 1, so rows that run
+# through it can't see the difference at all without this.
 check() {
-  local id="$1" desc="$2" want="$3" thunk="$4"
+  local id="$1" desc="$2" want="$3" thunk="$4" marker="${5:-}"
   RAN=$((RAN + 1))
   local got=0 out=""
   out=$("$thunk" 2>&1) || got=$?
+  if [[ -n "$marker" && "$out" != *"$marker"* ]]; then
+    FAIL=$((FAIL + 1))
+    RESULTS+=("  $id  ran, rc=$got (want $want)  FAIL  $desc  [WRONG BRANCH: no '$marker']")
+    printf '%s\n' "--- $id output ---" "$out" "--- end $id ---" >&2
+    return
+  fi
   if [[ "$got" == "$want" ]]; then
     PASS=$((PASS + 1))
     RESULTS+=("  $id  ran, rc=$got (want $want)  OK    $desc")
@@ -192,15 +207,15 @@ echo "provenance-gate.sh mutation suite"
 echo "repo: $REPO"
 echo ""
 
-check A "clean published checkout (control)"            0 row_A
-check B "working tree dirty"                            1 row_B
-check C "HEAD not an ancestor of origin/main"           1 row_C
-check D ".git stripped, no enclosing repo"              2 row_D
-check E ".git stripped, copy inside ANOTHER repo"       2 row_E
-check F "origin/main does not resolve"                  2 row_F
-check G "unborn HEAD (no commit)"                       2 row_G
-check H "git off PATH (bash kept reachable)"            2 row_H
-check I "dirty tree + --dry-run via deploy.sh"          1 row_I
+check A "clean published checkout (control)"            0 row_A "clean checkout, HEAD published"
+check B "working tree dirty"                            1 row_B "working tree is dirty"
+check C "HEAD not an ancestor of origin/main"           1 row_C "is not an ancestor of"
+check D ".git stripped, no enclosing repo"              2 row_D "is not inside a git worktree"
+check E ".git stripped, copy inside ANOTHER repo"       2 row_E "is not the root of a checkout"
+check F "origin/main does not resolve"                  2 row_F "does not resolve in"
+check G "unborn HEAD (no commit)"                       2 row_G "HEAD does not resolve"
+check H "git off PATH (bash kept reachable)"            2 row_H "git is not on PATH"
+check I "dirty tree + --dry-run via deploy.sh"          1 row_I "working tree is dirty"
 check J "clean tree + --dry-run reaches secrets check"  0 row_J
 
 echo ""
