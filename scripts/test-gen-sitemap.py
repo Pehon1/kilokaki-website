@@ -22,6 +22,31 @@ Fixtures are written under ROOT (not /tmp) because git_lastmod() calls
 path.relative_to(ROOT), which raises outside the tree. Untracked fixture files
 make git log return empty, which is exactly the "no history" input tier 3 needs
 in order to fall through.
+
+THE CALL-SITE RULE (Coco, 2026-07-22 -- binding on every guard in this file)
+---------------------------------------------------------------------------
+Mutating the function under test never tests whether anything READS its result.
+A guard can be correct, exhaustively mutation-proven, and still be dead code
+because its caller drops the return value on the floor.
+
+That hole has been live in this file twice, and both times it scored a clean
+green. ac06eb6's first table: 15 assertions, 0 failures, against a call site
+that never acted on the result. The collision guard's first table: 32
+assertions, 0 failures, for the same reason -- six separate mutations of
+mechanism_collisions() all went red, and not one of them asked whether main()
+refused. Neutering main() to `if False and collisions:` was invisible to every
+one of them.
+
+So a guard is not landed here until BOTH of these are asserted, and neither is
+optional:
+
+  1. the call site REFUSES on an injected violation (non-zero exit, no write);
+  2. the call site does NOT refuse when the same guard reports clean.
+
+Arm 2 exists because a verdict emitted identically under both branches carries
+zero bits. A guard proven only by arm 1 is proven to fire, not proven to
+discriminate -- and "always red" ships as badly as "always green", it just gets
+deleted by the next person in a hurry instead of surviving as decoration.
 """
 
 from __future__ import annotations
