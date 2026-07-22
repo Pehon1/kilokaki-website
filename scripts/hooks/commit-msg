@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# commit-msg — ensure every commit carries a `Session:` trailer.
+#
+# WHY A HOOK AT ALL. `docs/commit-conventions.md` established the trailer on
+# 2026-07-23 and the very next commit on main omitted it — 1 of 4 compliant, and
+# the non-compliant one landed AFTER the rule. A rule with no enforcement
+# describes intentions. Same defect as this repo's ten test suites with zero
+# runners; the convention doc was on track to become the eleventh.
+#
+# WHY IT APPENDS RATHER THAN REJECTS, and this is the load-bearing decision.
+# The obvious hook rejects a commit with no trailer. But the trailer's value is
+# self-reported and a session cannot always name itself — measured on the day
+# the convention shipped: the runtime reported one id while the turn's output
+# persisted under another. A rejecting hook would then block every commit from
+# a session that cannot identify itself, which is the `useConfigOnly` mistake
+# repeated: fails closed on the common case, blind to the one that matters.
+#
+# So: append. And when the id is unavailable, write `Session: unknown` rather
+# than nothing. An explicit `unknown` is strictly more useful than an absent
+# trailer, because a missing line is indistinguishable from a session that
+# forgot, while `unknown` records that the question was asked and could not be
+# answered. Same reason the release gate exits 2 instead of pretending.
+#
+# SOURCE OF THE ID, in order. First match wins; each is an environment value set
+# by the harness, never inferred:
+#   CLAUDE_SESSION_ID, SESSION_ID, OPENCLAW_SESSION_ID
+#
+# NOT VERIFICATION. The trailer cannot be checked from inside the repo. It is a
+# breadcrumb for correlating against transcript stores. A session that reports a
+# wrong id produces a confident wrong answer nothing here can contradict — see
+# docs/commit-conventions.md.
+#
+# INSTALL: scripts/install-hooks.sh  (git does not version .git/hooks, so this
+# file is tracked here and copied into place. Uninstalled, it does nothing —
+# stated plainly rather than assumed away.)
+
+set -uo pipefail
+
+MSG_FILE="${1:?commit-msg hook requires the message file path}"
+[[ -f "$MSG_FILE" ]] || exit 0
+
+# Already has one (any value, including unknown): leave it alone.
+if grep -qE '^Session:[[:space:]]*\S' "$MSG_FILE"; then
+  exit 0
+fi
+
+SESSION_ID="${CLAUDE_SESSION_ID:-${SESSION_ID:-${OPENCLAW_SESSION_ID:-}}}"
+[[ -n "$SESSION_ID" ]] || SESSION_ID="unknown"
+
+# Append as a trailer. A blank line before it if the body does not already end
+# with one, so `git interpret-trailers` and `%(trailers)` parse it as a trailer
+# block rather than as prose.
+if [[ -n "$(tail -c 1 "$MSG_FILE")" ]]; then printf '\n' >> "$MSG_FILE"; fi
+if [[ -n "$(tail -n 1 "$MSG_FILE" | tr -d '[:space:]')" ]]; then printf '\n' >> "$MSG_FILE"; fi
+printf 'Session: %s\n' "$SESSION_ID" >> "$MSG_FILE"
+
+exit 0

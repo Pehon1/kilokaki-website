@@ -35,3 +35,36 @@ not answer the question being asked.
   The realistic failure is the *same* agent in a different session, which would
   supply the right identity and pass — so it fails closed on sessions that
   forget while remaining blind to the case that actually occurs.
+
+## Enforcement
+
+`scripts/hooks/commit-msg`, installed by `scripts/install-hooks.sh`.
+
+The convention shipped on 2026-07-23 in `f0fe4ff` and **the very next commit on
+main omitted the trailer** — 1 of 4 compliant, and the violation landed *after*
+the rule. That is why there is a hook: a rule with no enforcement describes
+intentions, and this repo already has ten test suites with zero runners.
+
+### The hook appends; it does not reject
+
+Deliberate. The trailer is self-reported and a session cannot always name
+itself — on the day the convention shipped, the runtime reported one id while
+the turn's output persisted under another. A rejecting hook would block every
+commit from a session that cannot identify itself: fails closed on the common
+case, blind to the case that matters. That is the `useConfigOnly` error again.
+
+When no id is available the hook writes `Session: unknown`. An explicit
+`unknown` beats an absent trailer, because a missing line cannot be
+distinguished from a session that forgot, while `unknown` records that the
+question was asked and could not be answered.
+
+### Limits, stated rather than discovered
+
+- **Git does not version `.git/hooks`.** The tracked hook is inert until
+  `install-hooks.sh` copies it, and nothing runs that installer automatically.
+  An uninstalled hook enforces nothing and the repo cannot tell you so.
+- **The id is still self-reported.** The hook makes the trailer *present*, not
+  *true*.
+- **Where the ids disagree, carry both.** `Session:` for the runtime-reported
+  id, `Session-Transcript:` for the one a transcript store can be grepped by.
+  A visible mismatch is worth more than a confident single value.
