@@ -66,6 +66,28 @@
 # injector now exits non-zero unless the substitution count is exactly 1, and F
 # asserts python3 is unreachable while bash is.
 #
+# THE ROW A-F DID NOT HAVE, AND WHY IT WAS THE ONE THAT MATTERED (added later
+# the same day, after Coco named it):
+#
+#   G  generator exits 0 and prints no receipt          -> 2  UNKNOWN
+#
+# A-F all end in exit 1 or 2, and deploy.sh:225 aborts on any non-zero — so a
+# bug in any of those branches degrades toward BLOCKING a deploy that was
+# probably fine. Loud, visible, self-correcting. The rc=0 branch at :99-105 is
+# the only path here that can reach `exit 0`, which makes it the only place a
+# bug fails OPEN: a silently-succeeding generator is waved through and a stale
+# sitemap ships beside fresh HTML in one rsync. Six proven rows, and the
+# unproven one was the only one whose failure is silent.
+#
+# G could not be a row in the table above, because no TREE state makes a correct
+# gen-sitemap.py exit 0 while printing nothing — the generator itself has to be
+# the thing under control. It therefore lives in scripts/test-sitemap-gate.sh,
+# which stubs the generator beside a copy of this file: 9 cases, hermetic, and
+# proven red by disabling the marker check (cases 2-5 flip to exit 0, the
+# blocking rows stay green — so the suite discriminates rather than blanket-
+# failing). Its case 1 is a positive control that aborts the run if the harness
+# cannot produce a green at all.
+#
 # Usage: bash scripts/sitemap-gate.sh
 set -uo pipefail
 
