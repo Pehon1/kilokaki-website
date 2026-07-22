@@ -1,9 +1,22 @@
 #!/usr/bin/env bash
 # release-gate.sh — may this tree be shipped AT ALL?
 #
-# Runs FIRST of the gates in deploy.sh, before sitemap-gate. It is the cheapest
-# question and the prior one: every other gate asks whether the tree is coherent
-# and current, and all of that work is wasted if shipping is not permitted.
+# Wired THIRD in deploy.sh (:324) -- after provenance-gate.sh and SELF_VERIFY,
+# before sitemap-gate. This is a deliberate deviation from the spec's "wire it
+# first", flagged to Coco rather than taken silently, and the reason the two
+# above it stay above it is that neither needs credentials, network or env, so
+# neither can be the thing that spends.
+#
+# The header of this file used to say "Runs FIRST of the gates in deploy.sh",
+# which was false when written. The property that actually matters is measured,
+# not positional: NOTHING IS SPENT before the verdict lands. Nothing executed
+# above deploy.sh:324 reaches the network -- the sshpass line there is an
+# assignment and the rsync is inside a function called 60 lines later. Rows O
+# and P of test-release-gate.sh pin that; "logically prior" would not have.
+#
+# It is still the cheapest question and the prior one: every other gate asks
+# whether the tree is coherent and current, and all of that work is wasted if
+# shipping is not permitted.
 #
 # THIS IS NOT AN AUTHORIZATION SYSTEM. Say it plainly because a green here will
 # be quoted later: any agent can create and push a `release/*` tag, exactly as

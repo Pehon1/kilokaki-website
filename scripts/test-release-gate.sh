@@ -120,6 +120,199 @@ git -C "$W" tag -a v1.0.0 -m "not a release authorization" HEAD
 git -C "$W" push -q origin v1.0.0
 run "I  annotated non-release/* tag does not authorize" 1 "$W" "NOT AUTHORIZED"
 
+# =============================================================================
+# CALL-SITE ROWS — does deploy.sh actually READ this gate's verdict?
+# =============================================================================
+# Rows A-I above exercise the gate in ISOLATION. Every one of them stays green
+# if you neuter the call site: change `-ne 0` to `-gt 2` in deploy.sh and the
+# suite still reports 9/9 while every deploy ships unauthorized. That is the
+# defect this whole gate was built for -- `gen-sitemap.py --check` was written
+# "for CI/cron" and had no caller of any kind for its whole life -- reappearing
+# one layer up, in the tests for the fix.
+#
+# These rows are STATIC. deploy.sh is never executed, in any form: it is read as
+# text, and the mutants are temp COPIES under $TMP. Nothing here can reach
+# production, the remote, or the real checkout.
+#
+# THE HARNESS NEEDS ITS OWN POSITIVE CONTROL. A mutation that silently fails to
+# apply reports green for the same reason the defect would: `sed` exiting 0
+# having changed nothing is indistinguishable, downstream, from "the check is
+# uncoverable". `mutant()` therefore `cmp`s every copy against the original and
+# fails loudly if they match. This is not paranoia -- it is what a BSD `sed`
+# no-op did to the mutation run that proved rows A-I.
+
+DEPLOY="${SCRIPT_DIR}/deploy.sh"
+[[ -r "$DEPLOY" ]] || { echo "ABORT: cannot read $DEPLOY" >&2; exit 2; }
+
+# The guarding predicate, extracted as TEXT so it can be EVALUATED rather than
+# spell-checked. A literal grep for `-ne 0` would red-flag `!= 0` and `-gt 0`,
+# which are both correct, and that kind of false alarm is how a check gets
+# deleted. Evaluating it accepts every correct spelling and rejects every
+# incorrect one. First match is necessarily the outer `if`; the `-eq 1` hint
+# branch is nested inside it.
+call_site_predicate() {
+  grep -m1 -E '^[[:space:]]*if \[\[ .*\$release_rc.* \]\]; then' "$1" \
+    | sed -E 's/^[[:space:]]*if \[\[ (.*) \]\]; then[[:space:]]*$/\1/'
+}
+
+# The body of the guarded block, brace-counted rather than "up to the first fi",
+# because the block contains a nested `if`.
+call_site_block() {
+  awk '
+    /^[[:space:]]*if \[\[ .*\$release_rc.* \]\]; then/ && !seen { seen=1; depth=1; next }
+    seen && depth > 0 {
+      if ($0 ~ /^[[:space:]]*if[[:space:]]/)   depth++
+      if ($0 ~ /^[[:space:]]*fi[[:space:]]*$/) { depth--; if (depth == 0) next }
+      if (depth > 0) print
+    }
+  ' "$1"
+}
+
+# check_call_site <deploy.sh> -> 0 intact, 1 neutered
+check_call_site() {
+  local f="$1" cond rc
+  # 1. the gate is invoked at all, and its exit code is captured
+  grep -qE 'release-gate\.sh"[[:space:]]+"\$SRC_DIR"[[:space:]]*\|\|[[:space:]]*release_rc=\$\?' "$f" || return 1
+  # 2. the predicate fires on BOTH 1 and 2 -- could-not-check is not may-ship --
+  #    and does not fire on 0, or the gate would block every authorized deploy.
+  cond=$(call_site_predicate "$f")
+  [[ -n "$cond" ]] || return 1
+  for rc in 1 2; do
+    ( release_rc=$rc; eval "[[ $cond ]]" ) || return 1
+  done
+  ( release_rc=0; eval "[[ $cond ]]" ) && return 1
+  # 3. the guarded block terminates the script. A block that warns and falls
+  #    through is a gate with a reader and no teeth.
+  grep -qE '^[[:space:]]*exit [1-9]' <<<"$(call_site_block "$f")" || return 1
+  return 0
+}
+
+# mutant <name> <sed script> -> path to a mutated COPY, proven to differ.
+#
+# Separate `local` statements deliberately: `local a="$1" b="${a}"` reads `a`
+# before it is assigned under `set -u` and aborts the function mid-way. That bug
+# was in this file for one revision and it produced FOUR green mutant rows --
+# `mutant` died, returned the empty string, `check_call_site` failed on a
+# nonexistent path, and "red" was recorded. Every mutation row passed while no
+# mutation had been applied. The cmp control below never ran, because the
+# function never reached it. See run_cs's readability guard, which is what
+# actually closes this hole.
+mutant() {
+  local name="$1"
+  local script="$2"
+  local out="${TMP}/deploy-${name}.sh"
+  sed "$script" "$DEPLOY" > "$out" 2>/dev/null
+  if cmp -s "$DEPLOY" "$out"; then
+    printf 'FAIL  %-56s MUTATION IS A NO-OP -- proves nothing\n' "mutant/${name}" >&2
+    # A MARKER FILE, not FAIL=$((FAIL+1)). Every call to this function is inside
+    # a command substitution, so it runs in a SUBSHELL: an incremented counter
+    # dies with it, and the warning above -- which reaches stderr just fine --
+    # becomes a detection that cannot vote. Measured: 4 FAIL lines printed under
+    # a "1 FAILED, 15 passed" summary and exit 0. The filesystem is the only
+    # channel out of a subshell, so the verdict travels on it.
+    : > "${TMP}/.noop-${name}"
+  fi
+  printf '%s' "$out"
+}
+
+# run_cs <label> <pass|red> <file>
+#
+# The readability guard is the load-bearing line. Without it an unreadable path
+# -- a mutant that was never written -- scores as `red`, so a broken harness is
+# indistinguishable from a working detector. "Could not check" is not "checked
+# and found neutered", exactly as exit 2 is not exit 1 in the gate itself.
+run_cs() {
+  local label="$1" want="$2" f="$3" got
+  if [[ -z "$f" || ! -s "$f" ]]; then
+    printf 'FAIL  %-56s HARNESS BROKEN: mutant missing or empty (%s)\n' "$label" "${f:-<empty>}"
+    FAIL=$((FAIL + 1)); return
+  fi
+  if check_call_site "$f"; then got=pass; else got=red; fi
+  if [[ "$got" != "$want" ]]; then
+    printf 'FAIL  %-56s got=%s want=%s\n' "$label" "$got" "$want"
+    FAIL=$((FAIL + 1)); return
+  fi
+  printf 'ok    %-56s %s\n' "$label" "$got"
+  PASS=$((PASS + 1))
+}
+
+# --- J: the real deploy.sh reads the verdict ---------------------------------
+run_cs "J  deploy.sh call site is intact" pass "$DEPLOY"
+
+# --- K: invocation deleted ---------------------------------------------------
+# The gate is on disk, tested, green in isolation, and nothing calls it.
+run_cs "K  mutant: gate never invoked" red \
+  "$(mutant no-invoke '/release-gate\.sh/d')"
+
+# --- L: predicate widened past both failure codes ----------------------------
+# Coco's exact neuter. Every deploy ships; rows A-I stay 9/9.
+run_cs "L  mutant: predicate -gt 2 (1 and 2 both pass)" red \
+  "$(mutant gt2 's/\$release_rc -ne 0/$release_rc -gt 2/')"
+
+# --- M: predicate narrowed to exit 1 only ------------------------------------
+# The subtle one. Blocks "not authorized" and lets UNKNOWN through, so a broken
+# ls-remote becomes a may-ship. This is the mutation a well-meaning reader makes
+# while "tightening" the check.
+run_cs "M  mutant: predicate -eq 1 (UNKNOWN sails through)" red \
+  "$(mutant eq1 's/\$release_rc -ne 0/$release_rc -eq 1/')"
+
+# --- N: block no longer terminates -------------------------------------------
+# Prints ABORT, deploys anyway. The loudest possible false receipt.
+run_cs "N  mutant: guarded block warns but does not exit" red \
+  "$(mutant no-exit '/if \[\[ \$release_rc -ne 0 \]\]/,/^fi$/{s/^  exit 1$/  echo "continuing"/;}')"
+
+# --- O: nothing spends before the verdict ------------------------------------
+# The gate is wired 4th, not 1st (provenance-gate and SELF_VERIFY precede it, on
+# purpose: they need no credentials or network). The property that actually
+# matters is not "first" but "nothing has spent anything yet" -- and that is the
+# claim the header now makes, so it needs a row or it is another comment
+# asserting what the code does not do.
+#
+# LIMIT, stated: this compares line numbers against three NAMED anchors. It is
+# not a dataflow analysis. A new network call under a name not listed here is
+# invisible to it. Anchors missing -> red, never pass.
+check_spend_order() {
+  local f="$1" gate ssh_use drift upload
+  gate=$(grep -n 'release-gate\.sh' "$f" | head -1 | cut -d: -f1)
+  ssh_use=$(grep -nE '^[[:space:]]*\$SSH_CMD[[:space:]]+"' "$f" | head -1 | cut -d: -f1)
+  drift=$(grep -nE '^drift_guard[[:space:]]*$' "$f" | head -1 | cut -d: -f1)
+  upload=$(grep -nE '^[[:space:]]*rsync -avz' "$f" | head -1 | cut -d: -f1)
+  [[ -n "$gate" && -n "$drift" && -n "$upload" ]] || return 1
+  (( gate < drift )) || return 1
+  (( gate < upload )) || return 1
+  [[ -z "$ssh_use" ]] || (( gate < ssh_use )) || return 1
+  return 0
+}
+if check_spend_order "$DEPLOY"; then
+  printf 'ok    %-56s %s\n' "O  gate precedes every named spend" pass; PASS=$((PASS + 1))
+else
+  printf 'FAIL  %-56s got=red want=pass\n' "O  gate precedes every named spend"; FAIL=$((FAIL + 1))
+fi
+
+# --- P: an ssh invocation hoisted above the gate -----------------------------
+# Proves row O can go red. Without it, O is a green that could not have failed.
+P_MUT="$(mutant early-ssh 's|^# --- Release gate ---$|$SSH_CMD "echo spent early"\n# --- Release gate ---|')"
+if [[ -z "$P_MUT" || ! -s "$P_MUT" ]]; then
+  printf 'FAIL  %-56s HARNESS BROKEN: mutant missing or empty\n' "P  mutant: ssh hoisted above the gate"; FAIL=$((FAIL + 1))
+elif check_spend_order "$P_MUT"; then
+  printf 'FAIL  %-56s got=pass want=red\n' "P  mutant: ssh hoisted above the gate"; FAIL=$((FAIL + 1))
+else
+  printf 'ok    %-56s %s\n' "P  mutant: ssh hoisted above the gate" red; PASS=$((PASS + 1))
+fi
+
+# --- harness self-audit: collect subshell verdicts ---------------------------
+# Runs LAST because it reads markers every mutant row may have dropped. Without
+# this loop the no-op warnings are stderr decoration.
+NOOPS=0
+for marker in "${TMP}"/.noop-*; do
+  [[ -e "$marker" ]] || continue
+  NOOPS=$((NOOPS + 1))
+done
+if (( NOOPS > 0 )); then
+  echo "HARNESS: ${NOOPS} mutation(s) were no-ops -- those rows proved nothing" >&2
+  FAIL=$((FAIL + NOOPS))
+fi
+
 echo
 if (( FAIL > 0 )); then
   echo "test-release-gate: ${FAIL} FAILED, ${PASS} passed"

@@ -308,15 +308,36 @@ fi
 # is the one anyone reaches for in a hurry. See the block after drift_guard.
 
 # --- Release gate ---
-# FIRST of all of them, and the ordering is the point: every gate below asks
-# whether this tree is coherent and current. None of them asks whether shipping
-# it is PERMITTED, and a tree that is perfectly coherent and perfectly current
-# is exactly the tree a freeze exists to stop. On 2026-07-23 the shared checkout
-# sat clean, 19 commits ahead of live, mid-freeze, with every gate green.
+# Every gate here asks whether this tree is coherent and current. None of them
+# asks whether shipping it is PERMITTED, and a tree that is perfectly coherent
+# and perfectly current is exactly the tree a freeze exists to stop. On
+# 2026-07-23 the shared checkout sat clean, 19 commits ahead of live, mid-freeze,
+# with every gate green.
 #
-# Answering "may I ship at all?" before "is what I would ship any good?" also
-# means a frozen deploy costs one ls-remote instead of a sitemap regen and two
-# round trips to production.
+# POSITION: third, not first. An earlier revision of this comment said "FIRST of
+# all of them, and the ordering is the point" and that was simply false --
+# provenance-gate.sh runs at :63 and SELF_VERIFY at :126, both above this. The
+# claim was written from the intent, never checked against the file, and it sat
+# in the header of the gate built to catch exactly that class. Corrected
+# 2026-07-23 rather than deleted, because a silently fixed false claim teaches
+# nobody.
+#
+# The property worth protecting is NOT "first" -- it is that NOTHING HAS BEEN
+# SPENT YET when the verdict lands. Measured on this file, not reasoned:
+#   before :324   sshpass at :154 is an ASSIGNMENT; rsync at :249 is inside
+#                 drift_guard(), defined :244 and CALLED :373; :298 is a
+#                 `command -v` presence check. Zero executed network or
+#                 production calls. provenance-gate.sh does not fetch (it says
+#                 so at its :44 and :214 and greps clean for ls-remote/curl).
+#   after  :324   11 real sshpass/rsync/curl/$SSH_CMD invocations.
+# So a frozen deploy costs one ls-remote, not a sitemap regen and two round
+# trips to production -- and it costs that whether or not this gate is literally
+# first. test-release-gate.sh rows O and P hold the measured property; a future
+# reordering that keeps "logically prior" while hoisting an ssh call above this
+# line goes red there.
+#
+# The two gates above it are deliberately left above: they need no credentials,
+# no network and no env, so they cannot be the thing that spends.
 #
 # Fail closed on both: exit 1 is "no authorization names this commit", exit 2 is
 # "could not reach a verdict", and could-not-check is not may-ship.
