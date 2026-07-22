@@ -12,8 +12,21 @@ deploy.env
 # filesystem, not the index. That strictness is the point. But it means routine
 # local debris would block a legitimate deploy, and a gate that cries wolf gets
 # --force'd past — trading a silent ship for a worn-out alarm. So ignore the
-# debris, and ONLY the debris: nothing here can match a shippable page, asset,
-# or script, so the gate still fires on every file that could reach the CDN.
+# debris, and ONLY the debris.
+#
+# CORRECTION, 2026-07-22 (Coco). This block used to end: "nothing here can match
+# a shippable page, asset, or script, so the gate still fires on every file that
+# could reach the CDN." That was FALSE, and it is the sentence a reviewer would
+# have trusted instead of re-deriving. `._*` is a PREFIX pattern, so `._draft.html`
+# is ignored here AND matches --include='/blog/*.html' in RSYNC_FILTER — rsync
+# globs are not shell globs and a leading dot is not special. Measured: four
+# paths shipped (blog/._ghost.html, blog/._sidecar.png, how-to/._ghost.html,
+# ._style.css). Every other pattern below is suffix- or literal-matched and
+# genuinely cannot reach the CDN; `._*` was the only one.
+#
+# The real guard is now --exclude='._*' as the FIRST rule of RSYNC_FILTER, where
+# rsync's first-match-wins makes it unshippable. This entry is back to being a
+# convenience. scripts/test-rsync-filter.sh holds it to that.
 __pycache__/
 *.py[cod]
 .pytest_cache/

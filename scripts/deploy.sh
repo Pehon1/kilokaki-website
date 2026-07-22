@@ -133,6 +133,23 @@ SSH_CMD="sshpass -e ssh -o StrictHostKeyChecking=no"
 # clean them, and every dry-run will report clean regardless. That is a false
 # PASS with a long fuse -- see PUBLIC-MANIFEST.md.
 RSYNC_FILTER=(
+  # FIRST RULE, DELIBERATELY. rsync is first-match-wins, so this beats every
+  # --include below. Do not move it down the list; below the includes it is
+  # dead text.
+  #
+  # AppleDouble sidecars are the one debris class whose prefix survives onto a
+  # SHIPPABLE extension: '._draft.html' matches --include='/blog/*.html' (rsync
+  # globs are not shell globs -- a leading dot is not special), and '._*' in
+  # .gitignore hides it from `git status --untracked-files=all`, so SELF_VERIFY
+  # never sees it either. Measured: both '._ghost.html' and '._sidecar.png'
+  # shipped before this line existed. Every other ignored pattern (*.swp, *~,
+  # .DS_Store, Thumbs.db, .AppleDouble, the dir entries) ends in a suffix no
+  # include matches, so it cannot reach the CDN regardless.
+  #
+  # This lives here rather than being removed from .gitignore on purpose: the
+  # .gitignore entry is a convenience, and a convenience must not be the only
+  # thing standing between an editor's sidecar and a crawlable URL.
+  --exclude='._*'
   # Root: the pages and assets, explicitly.
   --include='/index.html'
   --include='/about.html'
