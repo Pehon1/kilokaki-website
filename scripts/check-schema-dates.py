@@ -115,14 +115,14 @@ STUB_BYTES = 2000  # redirect stubs are ~500B and carry no schema by design
 ADOPTED = "blog/adopted.json"
 
 # Banked in-repo on purpose. The capture lives at
-# ~/.openclaw-nori/workspace/state/live-by/live_by.json — mode 0600, another
-# agent's home, outside every git tree. A repo checker load-bearing on a private
-# file in someone else's workspace is broken independent of log retention: one
-# workspace reset and this arm loses its evidence with no way to notice. See
-# evidence/README.md, which also documents why the banked copy is named for its
-# load-bearing FIELD rather than for "live by" — two artifacts one hyphen apart
-# with different schemas both exist, and the pair has already nearly cost a true
-# citation its credibility.
+# ~/.openclaw-nori/workspace/state/live-by/first-serve-by-page.json — mode 0600,
+# another agent's home, outside every git tree. A repo checker load-bearing on a
+# private file in someone else's workspace is broken independent of log
+# retention: one workspace reset and this arm loses its evidence with no way to
+# notice. See evidence/README.md for the hash, the rebuild command, and why the
+# banked copy is named for its load-bearing FIELD rather than for "live by" —
+# two artifacts with different schemas answer the same question and each has
+# been read for the other, nearly costing a true citation its credibility.
 EVIDENCE = "evidence/first-200-utc.json"
 UTC = datetime.timezone.utc
 
@@ -239,12 +239,13 @@ def load_evidence(path):
     """First observed 200/304 per site-absolute URL, plus the log retention floor.
 
     Refuses rather than returning a partial or empty structure. The failure being
-    guarded is specific and has already happened once to a reader of this data:
-    two artifacts exist one character apart, ~/.../adoption-logs/live-by.json and
-    ~/.../state/live-by/live_by.json, both live, both Nori's, DIFFERENT SCHEMAS —
-    4 slugs keyed bare under `bounds` with no first_200_utc anywhere, versus 101
-    pages under `pages` with it. Loaded loosely, the wrong one yields a valid-
-    looking dict with zero matching keys and the arm reports a clean corpus.
+    guarded is specific and has already happened twice to readers of this data:
+    two artifacts, ~/.../evidence/adoption-logs/live-by.json and
+    ~/.../state/live-by/first-serve-by-page.json, both live, both Nori's,
+    DIFFERENT SCHEMAS — 4 slugs keyed bare under `bounds` with no first_200_utc
+    anywhere, versus 101 pages under `pages` with it. Loaded loosely, the wrong
+    one yields a valid-looking dict with zero matching keys and the arm reports a
+    clean corpus.
 
     So the guard is SCHEMA IDENTITY, not a filename convention and not a size
     floor. `pages` + `_retention_floor_utc` + rows carrying `first_200_utc` are

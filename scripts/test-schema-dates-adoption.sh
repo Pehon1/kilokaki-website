@@ -412,11 +412,15 @@ rm "$WORK/j/evidence/first-200-utc.json"
 check "J: evidence ABSENT -> INSTRUMENT REFUSES, exit 2" 2 "INSTRUMENT REFUSES" \
   run_checker "$WORK/j"
 
-# K — THE HYPHEN TRAP, as a test. ~/.../adoption-logs/live-by.json and
-# ~/.../state/live-by/live_by.json are one character apart, both live, both real,
-# and only the second has first_200_utc. Fed the wrong one, a loose loader gets a
-# valid dict with zero matching keys and reports the corpus clean. The guard is
-# schema identity — `bounds` is not `pages` — so it refuses instead.
+# K — THE WRONG-ARTIFACT TRAP, as a test. ~/.../evidence/adoption-logs/live-by.json
+# and ~/.../state/live-by/first-serve-by-page.json are both live, both real, both
+# answer "when did this go live", and only the second has first_200_utc. Fed the
+# wrong one, a loose loader gets a valid dict with zero matching keys and reports
+# the corpus clean. The guard is schema identity — `bounds` is not `pages` — so it
+# refuses instead. (Called THE HYPHEN TRAP until 8d00738, after a phantom filename
+# `live_by.json` that never existed; the trap is real, the hyphen was not. The
+# assertion below never depended on either name — which is the point of testing
+# schema rather than convention.)
 build_fixture "$WORK/k" "$MIDNIGHT" LIVE || exit 2
 cat > "$WORK/k/evidence/first-200-utc.json" <<'JSON'
 { "_what": "the OTHER artifact", "bounds": { "how-to-log-a-buffet": "2026-07-16" } }
