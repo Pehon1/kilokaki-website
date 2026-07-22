@@ -15,6 +15,16 @@ lastmod is DERIVED FROM THE PAGE, in this order (see lastmod_for):
 There is no fourth tier and no carried-forward state: a page that answers none
 of the three is an error, not a guess. See lastmod_for() for why mtime is gone.
 
+SOME PAGES ARE NOT PAGES, THEY ARE LISTINGS: blog/index.html and
+how-to/index.html take their lastmod from the newest page each one lists, in a
+second pass after the walk, overriding the git tier. They declare no dates of
+their own and their git history is adoption and comment-only commits, so all
+three tiers above answer a question about the repo rather than about what a
+returning reader would see. The set is LISTING_INDICES -- a map, so there is one
+answer to "which pages are listings" and it has one caller. See
+derive_listing_lastmods() for why this cannot be a tier inside lastmod_for, and
+LISTING_INDICES for why the homepage is not in it.
+
 Run from anywhere:  python3 scripts/gen-sitemap.py [--check]
   --check   exit 1 if sitemap.xml is stale, write nothing (for CI/cron)
 """
@@ -242,6 +252,192 @@ def weight_for(path: Path) -> tuple[str, str]:
     return best
 
 
+# Listing pages, each mapped to the prefix whose pages it carries.
+#
+# A MAP, NOT A CONSTANT, and that shape change is half of this commit. It was
+# LISTING_INDEX = "blog/index.html": one string, one caller, correct. A
+# singleton is the shape that gets copy-pasted into a second block the day a
+# second page needs the same treatment, and then the two blocks disagree about
+# which pages are listings -- that is the deploy.sh / ledger_approve.sh
+# two-copies bug, already shipped once in this repo. Generalised here while
+# there is still exactly one caller, which is the only cheap moment to do it.
+#
+# WHICH PAGES BELONG HERE is a property of the page, not a preference: DERIVE
+# where the page's content IS a list of dated things, DECLARE where there is
+# nothing to derive from (Coco, ruling 2026-07-22).
+#
+#   blog/index.html  -- its bytes are the post list.
+#   how-to/index.html -- its bytes are the 13 how-to articles. Its git tier is
+#       only ACCIDENTALLY right today, because shipping an article edits the
+#       listing in the same commit. 1678682 broke that accident by touching the
+#       file with a schema-only commit and stamping it 2026-07-22; a convention
+#       holds until someone commits without knowing about it. Derivation is
+#       right by construction instead.
+#
+# index.html (the homepage) is deliberately ABSENT and must not be added. It
+# lists nothing, so there is no operand to max over; it declares its date, which
+# is the honest tier for a page with no derivable fact behind it. Adding it here
+# would silently kill that declaration -- the second pass overrides
+# unconditionally -- which is the collision this map exists to prevent.
+LISTING_INDICES = {
+    "blog/index.html": "blog/",
+    "how-to/index.html": "how-to/",
+}
+
+
+def lists_under(rel: str, prefix: str) -> bool:
+    """The operand set for one listing: the pages at `prefix` that it LISTS.
+
+    Spelled out as a named predicate instead of inlined into the max(), because
+    the operand is the entire defect. An earlier reading of this ticket had the
+    fix as "max over the pages collected so far", which is a different set in
+    two ways at once, and both of them let a poisoned date answer first:
+
+      - it contains the ROOT HOMEPAGE. included[0] is index.html, git tier,
+        2026-07-22 off 0edc2b4 "homepage: add self-referencing canonical" -- a
+        head-tag-only commit, i.e. the exact poisoning this function exists to
+        remove -- and it sits ahead of every other entry. Excluded here by the
+        prefix.
+      - it contains the listing page itself, whose git date is the thing being
+        replaced.
+
+    The self-exclusion is `not in LISTING_INDICES`, not `!= listing`, and the
+    difference is deliberate: NO listing's date may be an operand for ANY other
+    listing. Under today's two disjoint prefixes those two spellings cannot
+    disagree, so this is prevention rather than a fix -- a nested listing
+    (blog/series/index.html) would otherwise feed its derived date upward and
+    the outer listing would report a date derived from a date.
+
+    It also excludes the other section's pages, which this listing does not
+    carry. Deriving a listing's date from pages it does not list is the same
+    class of error as deriving it from git: a fact about the repo wearing a
+    claim about the page.
+
+    LIMIT, stated because the map now invites additions: membership is by path
+    PREFIX, so a page under `prefix` that the listing does not actually link is
+    still an operand. That holds today (every blog/*.html and how-to/*.html is
+    linked or skipped as a redirect stub) and it is not asserted anywhere. A
+    listing that carries a curated subset of its directory needs a real link
+    parse, not another map entry.
+    """
+    return rel.startswith(prefix) and rel not in LISTING_INDICES
+
+
+def derive_listing_lastmods(included: list[dict]) -> dict[str, tuple[str, str]]:
+    """listing rel -> (new lastmod, superseded tier), for every listing that has one.
+
+    A listing page declares neither dateModified nor datePublished, so
+    lastmod_for falls to git %as -- and git answers "when did this file last
+    move in history", which for these pages means adoption commits and
+    comment-only commits. 1678682 is the load-bearing example, and it hit both:
+    26 insertions into blog/index.html, all of them an HTML comment, and a
+    schema block into how-to/index.html, together stamping 2026-07-22 on two
+    pages whose reader-visible bytes did not move.
+
+    The honest answer is the newest page the listing carries, which is what a
+    reader coming back to it would see as new.
+
+    WHY THIS IS POST-LOOP AND NOT A TIER INSIDE lastmod_for. The max is over a
+    list collect() has not finished building. Every call site inside that loop
+    holds a partial `included`, and it is partial in a way with no signature in
+    the output: the date is resolved and then appended, so the current path is
+    absent from its own prefix by construction, and the entries missing from a
+    listing's prefix are the alphabetically-later pages, not the older ones. An
+    inline edit reads correct, ships green, and silently maxes over a fraction
+    of the corpus. There is no cheap tier here; there is a second pass.
+
+    A listing with no operands is OMITTED from the result rather than raising:
+    with nothing to list, the git date is the only date there is, and it stays
+    on the git tier where the census will show it. Same for a listing that is
+    not in the corpus at all -- how-to/ can be deleted or noindexed without
+    this function inventing an entry for it.
+
+    Every derivation is computed here and applied by the caller afterwards, not
+    interleaved. No listing is an operand for another (see lists_under), so
+    ordering cannot matter today; keeping compute and apply separate is what
+    keeps that true if a nested listing ever appears.
+    """
+    derived: dict[str, tuple[str, str]] = {}
+    for listing, prefix in LISTING_INDICES.items():
+        entry = next((e for e in included if e["rel"] == listing), None)
+        if entry is None:
+            continue
+        stamps = [e["lastmod"] for e in included if lists_under(e["rel"], prefix)]
+        if not stamps:
+            continue
+        derived[listing] = (max(stamps), entry["tier"])
+    return derived
+
+
+def mechanism_collisions(entries: list[dict], root: Path = ROOT) -> list[str]:
+    """Every page where DECLARATION and DERIVATION are both live. Empty = clean.
+
+    A listing page must be owned by exactly one mechanism. Both live is not a
+    tie, it is a dead declaration: the second pass in collect() overwrites
+    e["lastmod"] unconditionally for every key in LISTING_INDICES, so a
+    dateModified on such a page is decoration that a reader and a future editor
+    will both take at face value.
+
+    WHY THIS IS A REFUSAL AND NOT A CENSUS LINE. Today the collision is MASKED.
+    All 13 how-to articles declare 2026-06-07, so the derived max equals the
+    declared value and the census renders `derive 2026-06-07 (dateModified) ->
+    2026-06-07`. Nothing moves, no date changes, rc=0. The single token telling
+    a live declaration from an agreeing derivation is the tier word mid-line,
+    one row under an identically shaped line where that slot correctly reads
+    `git`. That is a diagnostic string, not a check, and it is green on the day
+    the defect ships. It goes red the first time a how-to article is edited --
+    i.e. after the wrong date has already been published.
+
+    WHY THE COLLISION CANNOT BE FIXED BY EDITING ONE BRANCH. Measured
+    2026-07-22: how-to/index.html carries the declaration ONLY at 9da0e78
+    (fix/schema-dates-interval). At main, ac06eb6, d776419 and 1214857 it has
+    none -- 1214857 IS the withdrawal. So a commit on fix/listing-lastmod
+    deleting that declaration deletes nothing: git resolves added-on-B versus
+    untouched-on-A as "take B's addition", and the deletion is invisible to the
+    merge while carrying a commit message that says it was done. The invariant
+    is real and its enforcement site is neither branch -- it is the merge. Hence
+    a guard in the artifact both branches share, which goes red the moment they
+    are combined and cannot be satisfied by a no-op in either one.
+
+    TWO ARMS, DIFFERENT SOURCES, DISJOINT STATES.
+
+    Arm 1 keys on the OVERWRITE EVENT: superseded[1] == "dateModified" means
+    the second pass actually clobbered a declaration. It reads the pipeline's
+    own record of what it did.
+
+    Arm 2 keys on CO-EXISTENCE and reads the HTML off disk via declared_lastmod,
+    which is a different source from anything collect() computed -- it can
+    disagree with the tier labels. It also survives the second pass being
+    disabled, a state in which arm 1 is silent by construction because nothing
+    was superseded.
+
+    Arm 2 is a parse, never a text match. Measured at 9da0e78, `grep -c
+    dateModified` over the three listing pages returns 2 / 1 / 3, and FOUR of
+    those six hits are comment prose -- including blog/index.html, whose only
+    occurrence is a comment FORBIDDING the declaration. A grep arm flags that
+    page and asserts something false about it. RE_DATE_MODIFIED requires a
+    quoted key, a colon and a quoted ISO date, so it reads the declaration and
+    ignores every comment; that discrimination is asserted in the suite rather
+    than assumed here.
+    """
+    problems: list[str] = []
+    for e in entries:
+        sup = e.get("superseded")
+        if sup and sup[1] == "dateModified":
+            problems.append(
+                f"{e['rel']}: derivation overwrote a live dateModified "
+                f"declaration ({sup[0]} -> {e['lastmod']})"
+            )
+    for rel in LISTING_INDICES:
+        declared = declared_lastmod(root / rel)
+        if declared is not None:
+            problems.append(
+                f"{rel}: declares dateModified {declared} AND is wired into "
+                f"LISTING_INDICES, whose derivation overwrites it"
+            )
+    return problems
+
+
 def collect(published: dict[str, str]) -> tuple[list[dict], list[tuple[str, str]]]:
     included, skipped = [], []
     for section in SECTIONS:
@@ -264,7 +460,16 @@ def collect(published: dict[str, str]) -> tuple[list[dict], list[tuple[str, str]
                 "priority": priority,
                 "rel": rel,
             })
-    # Homepage first, then blog index, then posts newest-first.
+    # SECOND PASS. Only now is `included` complete enough to max over.
+    derived = derive_listing_lastmods(included)
+    for e in included:
+        if e["rel"] in derived:
+            stamp, superseded = derived[e["rel"]]
+            e["superseded"] = (e["lastmod"], superseded)
+            e["lastmod"] = stamp
+            e["tier"] = "newest-post"
+
+    # Homepage first, then the listing indexes, then posts newest-first.
     def sort_key(e):
         depth = 0 if e["rel"] == "index.html" else (1 if e["rel"].endswith("index.html") else 2)
         return (depth, "" if depth < 2 else _invert(e["lastmod"]), e["loc"])
@@ -331,6 +536,16 @@ def main() -> int:
             print(f"  {e['lastmod']}  {e['rel']}", file=sys.stderr)
         return 2
 
+    collisions = mechanism_collisions(entries)
+    if collisions:
+        print(f"ERROR: {len(collisions)} page(s) owned by two lastmod mechanisms "
+              f"— refusing to write.", file=sys.stderr)
+        for c in collisions:
+            print(f"  {c}", file=sys.stderr)
+        print("       Delete the declaration, or remove the page from "
+              "LISTING_INDICES. Not both live.", file=sys.stderr)
+        return 2
+
     xml = render(entries)
     current = SITEMAP.read_text(encoding="utf-8") if SITEMAP.exists() else ""
 
@@ -339,11 +554,22 @@ def main() -> int:
     for rel, reason in skipped:
         print(f"  skip  {rel:<52} {reason}")
 
-    census = {t: sum(1 for e in entries if e["tier"] == t) for t in ("dateModified", "datePublished", "git")}
+    census = {t: sum(1 for e in entries if e["tier"] == t)
+              for t in ("dateModified", "datePublished", "git", "newest-post")}
     print("\nlastmod source: " + ", ".join(f"{n} {t}" for t, n in census.items()))
     for e in entries:
         if e["tier"] == "git":
             print(f"  git   {e['lastmod']}  {e['rel']:<48} (page declares neither date)")
+    # Print what the derivation REPLACED, not just what it produced. "derived
+    # 2026-07-21" alone is consistent with the derivation never running and git
+    # having said 07-21 anyway -- the masking case this ticket opened on, where
+    # a real adoption and a comment-only commit landed the same day and the two
+    # tiers agreed by coincidence. The superseded value is what makes the run
+    # able to report that it did something.
+    for e in entries:
+        if e.get("superseded"):
+            old, old_tier = e["superseded"]
+            print(f"  derive {old} ({old_tier}) -> {e['lastmod']}  {e['rel']:<43} (newest listed post)")
 
     moved = [e for e in entries if e["was"] and e["was"] != e["lastmod"]]
     added = [e for e in entries if not e["was"]]
