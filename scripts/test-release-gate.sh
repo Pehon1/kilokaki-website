@@ -11,6 +11,46 @@
 # pointing it somewhere that does not exist without needing the network to be
 # down.
 
+# HERMETICITY IS ONE BASH FOOTGUN DEEP, AND IT HAS ALREADY BEEN PAID FOR ONCE.
+# A parallel build of this same spec wrote its fixture helper as
+#
+#     local name="$1" d="${TMPROOT}/${name}"        # <-- DO NOT
+#
+# Bash expands every RHS BEFORE performing any assignment, so `name` is still
+# unbound when `d` is built. Under `set -u` that aborts the `local`, the helper
+# returns EMPTY, and every downstream `git -C "$W"` becomes `git -C ""` -- which
+# does not error. An empty -C means THE CURRENT DIRECTORY. The runner's CWD was a
+# worktree of kilokaki-website, so the "hermetic" suite committed into the real
+# repo, ran `git remote set-url origin` against the real config, and PUSHED FOUR
+# release/* TAGS TO THE REAL ORIGIN -- two of which peeled to main. The gate whose
+# entire purpose is to refuse an unauthorized main was, for a few minutes,
+# authorizing it, by way of its own test suite. The tags were removed; main was
+# never written.
+#
+# Two rules fall out, and both are cheap:
+#   1. Build fixture paths from "$1", never from a variable assigned in the same
+#      `local`. Line 27 does this deliberately -- read it before "tidying" it.
+#   2. A helper that returns a path must never be allowed to return "". `git -C ""`
+#      is indistinguishable from `git -C .` and silence is its success case.
+#   3. `set -u` IS NOT THE BACKSTOP HERE, and the case convention is. Under
+#      `local name="$1" d="${TMP}/${name}"`, set -u only fires when no `name`
+#      exists in an enclosing scope. Add a global of that name and bash silently
+#      substitutes THE GLOBAL. Measured 2026-07-23:
+#
+#        global `name=GLOBAL_LEAK` present -> d=/tmpdir/GLOBAL_LEAK   rc=0, no stderr
+#        no global (control)               -> "name: unbound variable"
+#
+#      That is strictly worse than the incident above: same shared-fixture
+#      contamination, every row landing in one directory, and the seven warnings
+#      that would have explained it are gone. The only reason this file is safe
+#      today is the case split -- locals are lowercase (`f label name out script`),
+#      globals are uppercase (`DEPLOY GATE NOOPS PASS P_MUT SCRIPT_DIR TMP W`),
+#      intersection empty, verified. THAT CONVENTION IS LOAD-BEARING, not style.
+#      Add one lowercase global and this suite can go quietly wrong.
+#
+# The general shape, which is the same one rows K-P exist to catch: the dangerous
+# failure is not the command that errors, it is the command that quietly retargets.
+
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -89,6 +129,15 @@ run "D  ls-remote fails -> UNKNOWN, not a verdict" 2 "$W" "UNKNOWN"
 # --- E: tag exists LOCALLY only, never pushed --------------------------------
 # The single-disk claim. This is the row that makes "published artifact"
 # mean something rather than being a slogan.
+#
+# CAVEAT, MEASURED 2026-07-23 -- this row's green is weaker than it looks, and
+# saying so is the point. E is satisfied here for an INCIDENTAL reason: the gate
+# accepts only peeled (`^{}`) lines, and `for-each-ref` emits none, so a naive
+# "fall back to local tags when origin has none" mutation leaves the WHOLE SUITE
+# GREEN. E does not catch it. Only when the fallback also peels properly does E
+# go red (rc=2). So E does not independently enforce "ask origin" -- annotated-only
+# parsing does, and E rides on it. If anyone ever relaxes the annotated-only rule,
+# this row stops covering the local-tag path and nothing here will say so.
 W=$(sandbox e)
 git -C "$W" tag -a release/local-only -m "never pushed" HEAD
 run "E  tag is local-only, not on origin" 1 "$W" "NOT AUTHORIZED"
