@@ -289,18 +289,16 @@ fi
 drift_guard
 
 # --- Sitemap staleness gate: DELIBERATELY NOT HERE ---
-# This branch used to call `gen-sitemap.py --check` directly and abort on its
-# exit 1. Removed 2026-07-22 by Coco's ruling: the gate lives in
-# scripts/sitemap-gate.sh on branch sitemap-gate (b63dabf), which does NOT trust
-# the generator's exit 1 — it distinguishes stale (1) from "could not reach a
-# verdict" (2), because a generator that raises also exits 1 and my version read
-# that as a clean stale-detection.
+# DO NOT RE-ADD A CALLER HERE. The sitemap gate is already wired, once, above —
+# `sitemap-gate.sh` at the "--- Sitemap gate ---" block. Two callers is the
+# failure mode, not two files: a second one down here runs the rejected design
+# (raw `gen-sitemap.py --check`, trusting its exit 1) after drift_guard, with
+# nothing to make a reviewer look.
 #
-# DO NOT RE-ADD A CALLER HERE. Two callers is the failure mode, not two files:
-# the merge of this branch and sitemap-gate is CLEAN (measured, exit 0, zero
-# conflict markers) and lands BOTH gates — the rejected design survives after
-# drift_guard with nothing to make a reviewer look. If you want the check, the
-# answer is sitemap-gate.sh, once it merges.
+# The rejected design is rejected because `gen-sitemap.py` exits 1 both when the
+# sitemap is stale and when the generator itself raises. sitemap-gate.sh keeps
+# those apart — stale is 1, "could not reach a verdict" is 2 — and deploy.sh
+# aborts on either. Ruled 2026-07-22 by Coco.
 
 # --dry-run stops here too, and it stops here ON PURPOSE — every guard above has
 # already run and every one of them can still abort before this line is reached.
