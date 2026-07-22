@@ -59,9 +59,35 @@
 #    commit was reviewed, approved, or that anyone wanted it deployed. Ship
 #    authorisation is a human, not a gate.
 #
-# PROVEN RED (2026-07-22). Every row below was RUN against a real fixture and
-# its exit code TRANSCRIBED from the run, not predicted. See the mutation
-# harness in test-provenance-gate.sh; the table there carries the ran-N count.
+# PROVEN RED (2026-07-22). Transcribed from `bash scripts/test-provenance-gate.sh`,
+# RAN 10/10 PASS 10 FAIL 0, suite exit 0. Every row also asserts WHICH BRANCH
+# fired, not just the code — see below for why that is not belt-and-braces.
+#
+#   A  clean published checkout (control)          -> 0  PASS + receipt
+#   B  working tree dirty                          -> 1  BLOCK
+#   C  HEAD not an ancestor of origin/main         -> 1  BLOCK
+#   D  .git stripped, no enclosing repo            -> 2  UNKNOWN
+#   E  .git stripped, copy inside ANOTHER repo     -> 2  UNKNOWN  <-- the row the
+#      toplevel==SRC_DIR assertion exists for. `rev-parse --git-dir` walks upward
+#      and answers YES here, about a repo that does not contain these files.
+#   F  origin/main does not resolve                -> 2  UNKNOWN
+#   G  unborn HEAD (no commit)                     -> 2  UNKNOWN
+#   H  git off PATH (bash kept reachable)          -> 2  UNKNOWN
+#   I  dirty tree + --dry-run VIA deploy.sh        -> 1  BLOCK   <-- the placement
+#      row. --dry-run returns at deploy.sh:230, above all three other gates.
+#   J  clean tree + --dry-run reaches secrets check-> 0  (receipt present, then
+#      "deploy env not found"). I's non-zero and a missing-env non-zero are the
+#      same code; without J, I proves nothing about which one it was.
+#
+# THE FIRST RUN WAS 6/10, AND THE FOUR FAILURES WERE ALL THE SAME BUG — MINE.
+# `cd "$X" && pwd` returns the LOGICAL path; git's --show-toplevel returns the
+# PHYSICAL one. macOS $TMPDIR lives under /var, a symlink to /private/var, so
+# the toplevel comparison saw two spellings of one directory and this gate said
+# UNKNOWN to every input, including a pristine checkout. Rows D–H still returned
+# their expected 2. Only the CONTROL could fail — a gate stuck at UNKNOWN is
+# indistinguishable from a working one until something is supposed to pass, and
+# a suite of nothing but mutation rows would have shipped it green.
+# That is why every row now asserts a marker string as well as a code.
 #
 # Usage: bash scripts/provenance-gate.sh <src_dir> [remote_ref]
 set -uo pipefail
