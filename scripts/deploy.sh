@@ -210,13 +210,32 @@ if $DRY_RUN; then
   exit 0
 fi
 
+# --- Content gate ---
+# Runs BEFORE the drift guard: it is cheaper, and it answers a prior question.
+# The drift guard asks "what would --delete remove that only production has?".
+# The content gate asks "does origin hold shippable work this tree is missing?".
+# Both fail closed. Exit 2 (UNKNOWN) is not a pass -- see content-gate.sh.
+#
+# This replaces a rule that lived as prose in an agent memory file and therefore
+# only ran when someone remembered it. It also replaces the wrong measurement:
+# `git log origin/main..HEAD` counts COMMITS, and on 2026-07-22 a diverged branch
+# made it over-report a change origin already had. It never went red, it went
+# verbose -- and a guard that over-reports reads as a conservative one.
+gate_rc=0
+bash "${SCRIPT_DIR}/content-gate.sh" "$SRC_DIR" || gate_rc=$?
+if [[ $gate_rc -ne 0 ]]; then
+  echo "" >&2
+  echo "ABORT: content gate exit $gate_rc. Nothing was deployed." >&2
+  exit 1
+fi
+
 drift_guard
 
-# --check stops here: the guard is the thing under test, and it must be
-# exercisable without deploying. --dry-run exits before the guard, so it
-# never tested it.
+# --check stops here: the guards are the thing under test, and they must be
+# exercisable without deploying. --dry-run exits before them, so it never
+# tested either one.
 if $CHECK_ONLY; then
-  echo "[--check] Guard passed. Nothing was deployed."
+  echo "[--check] Guards passed. Nothing was deployed."
   exit 0
 fi
 
