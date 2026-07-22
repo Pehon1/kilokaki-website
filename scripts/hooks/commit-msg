@@ -21,9 +21,26 @@
 # forgot, while `unknown` records that the question was asked and could not be
 # answered. Same reason the release gate exits 2 instead of pretending.
 #
-# SOURCE OF THE ID, in order. First match wins; each is an environment value set
-# by the harness, never inferred:
-#   CLAUDE_SESSION_ID, SESSION_ID, OPENCLAW_SESSION_ID
+# SOURCE OF THE ID. Environment values set by the harness, never inferred.
+#
+# THE FIRST VERSION OF THIS HOOK NAMED THREE VARIABLES THAT DO NOT EXIST:
+# CLAUDE_SESSION_ID, SESSION_ID, OPENCLAW_SESSION_ID are all unset in an agent
+# shell, so every branch fell through and the hook wrote `Session: unknown` on
+# every commit forever. It did not fail — it succeeded at writing a constant.
+# The three arms that "proved" it worked all supplied the variable themselves;
+# not one asked what the runtime actually hands it. Coco caught it.
+#
+# The real names, measured with `env` rather than guessed:
+#   CLAUDE_CODE_SESSION_ID   -> the TRANSCRIPT session. This is the one that can
+#                               be grepped in ~/.claude/projects/*/<id>.jsonl.
+#                               Prefer it: an id nothing can look up is a string.
+#   OPENCLAW_MCP_SESSION_ID  -> the MCP/gateway session. Different identifier,
+#                               also real, recorded as Session-Runtime.
+#
+# This also retires an ambiguity that ran for hours: `4b07f5bd…` (MCP) and
+# `56dc43ac…` (transcript) were never a discrepancy to resolve. They are two
+# distinct identifiers for two distinct things, and the reason `4b07f5bd`
+# matched no transcript is that it does not name one.
 #
 # NOT VERIFICATION. The trailer cannot be checked from inside the repo. It is a
 # breadcrumb for correlating against transcript stores. A session that reports a
@@ -44,7 +61,8 @@ if grep -qE '^Session:[[:space:]]*\S' "$MSG_FILE"; then
   exit 0
 fi
 
-SESSION_ID="${CLAUDE_SESSION_ID:-${SESSION_ID:-${OPENCLAW_SESSION_ID:-}}}"
+SESSION_ID="${CLAUDE_CODE_SESSION_ID:-}"
+RUNTIME_ID="${OPENCLAW_MCP_SESSION_ID:-}"
 [[ -n "$SESSION_ID" ]] || SESSION_ID="unknown"
 
 # Append as a trailer. A blank line before it if the body does not already end
@@ -53,5 +71,6 @@ SESSION_ID="${CLAUDE_SESSION_ID:-${SESSION_ID:-${OPENCLAW_SESSION_ID:-}}}"
 if [[ -n "$(tail -c 1 "$MSG_FILE")" ]]; then printf '\n' >> "$MSG_FILE"; fi
 if [[ -n "$(tail -n 1 "$MSG_FILE" | tr -d '[:space:]')" ]]; then printf '\n' >> "$MSG_FILE"; fi
 printf 'Session: %s\n' "$SESSION_ID" >> "$MSG_FILE"
+[[ -n "$RUNTIME_ID" ]] && printf 'Session-Runtime: %s\n' "$RUNTIME_ID" >> "$MSG_FILE"
 
 exit 0

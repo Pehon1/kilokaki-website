@@ -65,6 +65,24 @@ question was asked and could not be answered.
   An uninstalled hook enforces nothing and the repo cannot tell you so.
 - **The id is still self-reported.** The hook makes the trailer *present*, not
   *true*.
-- **Where the ids disagree, carry both.** `Session:` for the runtime-reported
-  id, `Session-Transcript:` for the one a transcript store can be grepped by.
-  A visible mismatch is worth more than a confident single value.
+- **There are two ids and they were never in conflict.** `CLAUDE_CODE_SESSION_ID`
+  names the **transcript** session (greppable in `~/.claude/projects/*/<id>.jsonl`);
+  `OPENCLAW_MCP_SESSION_ID` names the **MCP/gateway** session. They are different
+  identifiers for different things. Hours were spent on 2026-07-23 treating the
+  mismatch as a discrepancy to resolve — including a commit trailer carrying an
+  id that matched no transcript anywhere, because it does not name one. Record
+  both, as `Session:` and `Session-Runtime:`, and stop trying to reconcile them.
+
+### The first hook read three variables that do not exist
+
+`CLAUDE_SESSION_ID`, `SESSION_ID`, `OPENCLAW_SESSION_ID` are all unset in an
+agent shell. Every branch fell through, so the hook wrote `Session: unknown` on
+every commit — it did not fail, it succeeded at writing a constant. Its three
+tests each **set the variable themselves**, so all three asked whether the hook
+reads what the test hands it; none asked what the runtime hands it.
+
+`scripts/test-commit-msg-hook.sh` row D closes that: it supplies nothing and
+requires a real id from the ambient environment. Outside an agent shell it
+reports `UNKN` and exits 2 — *could not check*, which is not a pass. Row D is
+the only row that can fail when the harness renames a variable, and therefore
+the only one that is about production rather than about the test file.
