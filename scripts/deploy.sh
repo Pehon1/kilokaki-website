@@ -307,10 +307,36 @@ fi
 # ship?" preview was the single path structurally incapable of going red, and it
 # is the one anyone reaches for in a hurry. See the block after drift_guard.
 
+# --- Release gate ---
+# FIRST of all of them, and the ordering is the point: every gate below asks
+# whether this tree is coherent and current. None of them asks whether shipping
+# it is PERMITTED, and a tree that is perfectly coherent and perfectly current
+# is exactly the tree a freeze exists to stop. On 2026-07-23 the shared checkout
+# sat clean, 19 commits ahead of live, mid-freeze, with every gate green.
+#
+# Answering "may I ship at all?" before "is what I would ship any good?" also
+# means a frozen deploy costs one ls-remote instead of a sitemap regen and two
+# round trips to production.
+#
+# Fail closed on both: exit 1 is "no authorization names this commit", exit 2 is
+# "could not reach a verdict", and could-not-check is not may-ship.
+release_rc=0
+bash "${SCRIPT_DIR}/release-gate.sh" "$SRC_DIR" || release_rc=$?
+if [[ $release_rc -ne 0 ]]; then
+  echo "" >&2
+  echo "ABORT: release gate exit $release_rc. Nothing was deployed." >&2
+  if [[ $release_rc -eq 1 ]]; then
+    echo "  To authorize this exact commit:" >&2
+    echo "    git tag -a release/\$(date +%Y-%m-%d) -m '<why this ships>'" >&2
+    echo "    git push origin release/\$(date +%Y-%m-%d)" >&2
+  fi
+  exit 1
+fi
+
 # --- Sitemap gate ---
-# Runs FIRST of the three: it needs no network, so it is the cheapest, and it
-# answers the most local question — "is sitemap.xml consistent with the HTML
-# about to ship beside it?" The other two ask about origin and about production.
+# Runs first of the remaining three: it needs no network, so it is the cheapest,
+# and it answers the most local question — "is sitemap.xml consistent with the
+# HTML about to ship beside it?" The other two ask about origin and production.
 #
 # This exists because `gen-sitemap.py --check` was written "for CI/cron" and then
 # had no caller of any kind for its whole life. Six days of lastmod drift across
