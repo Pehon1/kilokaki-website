@@ -582,8 +582,11 @@ def _collision_rows(work) -> None:
     # assert the branch's ACTUAL state so the vacuity is on the record instead
     # of disguised as a pass.
     for rel in gs.LISTING_INDICES:
-        check(f"real {rel}: no dateModified token on this branch (vacuous here, by measurement)",
-              lambda rel=rel: (gs.ROOT / rel).read_text(encoding="utf-8").count("dateModified"), 0)
+        check(f"real {rel}: the word IS present, so the None below is not a miss",
+              lambda rel=rel: (gs.ROOT / rel).read_text(encoding="utf-8").count("dateModified") > 0, True)
+        check(f"real {rel}: no ACTUAL declaration -- RE_DATE_MODIFIED finds none",
+              lambda rel=rel: len(gs.RE_DATE_MODIFIED.findall(
+                  (gs.ROOT / rel).read_text(encoding="utf-8"))), 0)
         check(f"real {rel}: parser agrees there is nothing to declare",
               lambda rel=rel: gs.declared_lastmod(gs.ROOT / rel), None)
 
