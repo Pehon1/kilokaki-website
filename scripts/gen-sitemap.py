@@ -369,6 +369,75 @@ def derive_listing_lastmods(included: list[dict]) -> dict[str, tuple[str, str]]:
     return derived
 
 
+def mechanism_collisions(entries: list[dict], root: Path = ROOT) -> list[str]:
+    """Every page where DECLARATION and DERIVATION are both live. Empty = clean.
+
+    A listing page must be owned by exactly one mechanism. Both live is not a
+    tie, it is a dead declaration: the second pass in collect() overwrites
+    e["lastmod"] unconditionally for every key in LISTING_INDICES, so a
+    dateModified on such a page is decoration that a reader and a future editor
+    will both take at face value.
+
+    WHY THIS IS A REFUSAL AND NOT A CENSUS LINE. Today the collision is MASKED.
+    All 13 how-to articles declare 2026-06-07, so the derived max equals the
+    declared value and the census renders `derive 2026-06-07 (dateModified) ->
+    2026-06-07`. Nothing moves, no date changes, rc=0. The single token telling
+    a live declaration from an agreeing derivation is the tier word mid-line,
+    one row under an identically shaped line where that slot correctly reads
+    `git`. That is a diagnostic string, not a check, and it is green on the day
+    the defect ships. It goes red the first time a how-to article is edited --
+    i.e. after the wrong date has already been published.
+
+    WHY THE COLLISION CANNOT BE FIXED BY EDITING ONE BRANCH. Measured
+    2026-07-22: how-to/index.html carries the declaration ONLY at 9da0e78
+    (fix/schema-dates-interval). At main, ac06eb6, d776419 and 1214857 it has
+    none -- 1214857 IS the withdrawal. So a commit on fix/listing-lastmod
+    deleting that declaration deletes nothing: git resolves added-on-B versus
+    untouched-on-A as "take B's addition", and the deletion is invisible to the
+    merge while carrying a commit message that says it was done. The invariant
+    is real and its enforcement site is neither branch -- it is the merge. Hence
+    a guard in the artifact both branches share, which goes red the moment they
+    are combined and cannot be satisfied by a no-op in either one.
+
+    TWO ARMS, DIFFERENT SOURCES, DISJOINT STATES.
+
+    Arm 1 keys on the OVERWRITE EVENT: superseded[1] == "dateModified" means
+    the second pass actually clobbered a declaration. It reads the pipeline's
+    own record of what it did.
+
+    Arm 2 keys on CO-EXISTENCE and reads the HTML off disk via declared_lastmod,
+    which is a different source from anything collect() computed -- it can
+    disagree with the tier labels. It also survives the second pass being
+    disabled, a state in which arm 1 is silent by construction because nothing
+    was superseded.
+
+    Arm 2 is a parse, never a text match. Measured at 9da0e78, `grep -c
+    dateModified` over the three listing pages returns 2 / 1 / 3, and FOUR of
+    those six hits are comment prose -- including blog/index.html, whose only
+    occurrence is a comment FORBIDDING the declaration. A grep arm flags that
+    page and asserts something false about it. RE_DATE_MODIFIED requires a
+    quoted key, a colon and a quoted ISO date, so it reads the declaration and
+    ignores every comment; that discrimination is asserted in the suite rather
+    than assumed here.
+    """
+    problems: list[str] = []
+    for e in entries:
+        sup = e.get("superseded")
+        if sup and sup[1] == "dateModified":
+            problems.append(
+                f"{e['rel']}: derivation overwrote a live dateModified "
+                f"declaration ({sup[0]} -> {e['lastmod']})"
+            )
+    for rel in LISTING_INDICES:
+        declared = declared_lastmod(root / rel)
+        if declared is not None:
+            problems.append(
+                f"{rel}: declares dateModified {declared} AND is wired into "
+                f"LISTING_INDICES, whose derivation overwrites it"
+            )
+    return problems
+
+
 def collect(published: dict[str, str]) -> tuple[list[dict], list[tuple[str, str]]]:
     included, skipped = [], []
     for section in SECTIONS:
@@ -465,6 +534,16 @@ def main() -> int:
         print(f"ERROR: {len(future)} future lastmod — refusing to write.", file=sys.stderr)
         for e in future:
             print(f"  {e['lastmod']}  {e['rel']}", file=sys.stderr)
+        return 2
+
+    collisions = mechanism_collisions(entries)
+    if collisions:
+        print(f"ERROR: {len(collisions)} page(s) owned by two lastmod mechanisms "
+              f"— refusing to write.", file=sys.stderr)
+        for c in collisions:
+            print(f"  {c}", file=sys.stderr)
+        print("       Delete the declaration, or remove the page from "
+              "LISTING_INDICES. Not both live.", file=sys.stderr)
         return 2
 
     xml = render(entries)

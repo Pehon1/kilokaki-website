@@ -348,6 +348,8 @@ def main() -> int:
             check("empty-but-present sitemap -> {} , not an error", gs.published_lastmods, {})
         finally:
             gs.SITEMAP = real_sitemap
+        _collision_rows(work)
+
     finally:
         shutil.rmtree(work, ignore_errors=True)
 
@@ -450,5 +452,155 @@ def main() -> int:
 # there is no mutation to run and no row to claim. It is prevention against a
 # nested listing, not a fix for a reachable bug, and it is labelled that way in
 # the docstring.
+
+def _collision_rows(work) -> None:
+    """Arms of mechanism_collisions. Fixture owns BOTH operands where it can.
+
+    THE REAL-CORPUS RED ARM COCO ASKED FOR IS NOT RUNNABLE ON THIS BRANCH, and
+    saying so is the point rather than a gap. Her red proof was "green on
+    blog/index.html as-is, red on how-to/index.html as-is". Measured: at main,
+    ac06eb6, d776419 and 1214857, how-to/index.html carries NO dateModified --
+    the declaration exists only at 9da0e78 on the other branch. Asserting red
+    against the working tree here would assert against a file that does not
+    have the property, and would go green for the wrong reason. So the positive
+    arm is synthetic and the real-corpus assertion is the one that IS true
+    here: blog/index.html's only textual occurrence is a comment, and the
+    parser must return None for it. That is the comment-vs-declaration
+    discrimination her ruling turns on, and it is checkable today.
+    """
+    print("\nmechanism collision (mechanism_collisions)")
+
+    listing = next(iter(gs.LISTING_INDICES))
+
+    # Arm 1: the overwrite EVENT. superseded tier is what carries the signal --
+    # the two DATES are equal on the real corpus, so a value comparison sees a
+    # no-op and only the tier word distinguishes clobber from agreement.
+    clobbered = [{"rel": listing, "lastmod": "2026-06-07", "tier": "newest-post",
+                  "superseded": ("2026-06-07", "dateModified")}]
+    check("arm1 fires when dates are EQUAL (the masked case)",
+          lambda: len(gs.mechanism_collisions(clobbered, root=work)), 1)
+
+    # Arm 1 must not fire on the tier it is supposed to leave alone. Without
+    # this, "flags everything superseded" passes the row above.
+    over_git = [{"rel": listing, "lastmod": "2026-07-21", "tier": "newest-post",
+                 "superseded": ("2026-07-22", "git")}]
+    check("arm1 silent when it superseded git, not a declaration",
+          lambda: gs.mechanism_collisions(over_git, root=work), [])
+
+    # Arm 2: CO-EXISTENCE, read off disk. Survives arm 1 being unreachable.
+    for rel in gs.LISTING_INDICES:
+        (work / rel).parent.mkdir(parents=True, exist_ok=True)
+        (work / rel).write_text(PAGE.format(dates=""), encoding="utf-8")
+    check("arm2 silent when no listing declares", lambda: gs.mechanism_collisions([], root=work), [])
+
+    (work / listing).write_text(PAGE.format(dates=',"dateModified":"2026-06-07"'), encoding="utf-8")
+    check("arm2 fires on a declaring listing, second pass never run",
+          lambda: len(gs.mechanism_collisions([], root=work)), 1)
+
+    # THE DISCRIMINATION. A grep arm flags this and says something false about
+    # it: blog/index.html's sole occurrence FORBIDS the declaration.
+    (work / listing).write_text(
+        '<!doctype html><html><head>'
+        '<!-- NO dateModified HERE, ON PURPOSE. Do not "fix" this by adding one. -->'
+        "</head><body>fixture</body></html>",
+        encoding="utf-8",
+    )
+    check("arm2 ignores a comment that merely says dateModified",
+          lambda: gs.mechanism_collisions([], root=work), [])
+
+    # THE WIRING, AND IT IS HERE BECAUSE THE CALL-SITE MUTATION WENT GREEN.
+    # First mutation table, transcribed: neutering main()'s refusal to
+    # `if False and collisions:` scored 30-ran / 0-FAIL / rc=0. Six mutations of
+    # the FUNCTION all went red and not one of them touched the question of
+    # whether anything READS it. Second time in this file that the call site is
+    # the hole the assertions naming the behaviour cannot see (ac06eb6 was the
+    # first). A guard that is computed and discarded is a guard.
+    #
+    # Both operands are owned here: the collision is injected, so this asserts
+    # main()'s REACTION and nothing about the corpus.
+    def _refusal_rc():
+        real = gs.mechanism_collisions
+        argv = sys.argv
+        gs.mechanism_collisions = lambda entries, root=gs.ROOT: ["injected: two mechanisms"]
+        sys.argv = ["gen-sitemap.py", "--check"]
+        try:
+            return gs.main()
+        finally:
+            gs.mechanism_collisions = real
+            sys.argv = argv
+    check("main() REFUSES (rc 2) when a collision is reported", _refusal_rc, 2)
+
+    def _clean_rc():
+        real = gs.mechanism_collisions
+        argv = sys.argv
+        gs.mechanism_collisions = lambda entries, root=gs.ROOT: []
+        sys.argv = ["gen-sitemap.py", "--check"]
+        try:
+            return gs.main()
+        finally:
+            gs.mechanism_collisions = real
+            sys.argv = argv
+    check("main() does NOT refuse when the same guard reports clean", _clean_rc, 0)
+
+    # THE REAL-CORPUS ROW, AND ITS CONTROL CAUGHT ME. I first asserted
+    # declared_lastmod(blog/index.html) is None and paired it with "...and the
+    # file DOES contain the word, so the None is not a miss". The control went
+    # RED: at d776419 blog/index.html contains no occurrence AT ALL. Both
+    # comments -- blog/index.html's "NO dateModified HERE, ON PURPOSE" and
+    # how-to/index.html's -- live only on 9da0e78. So on THIS branch the None
+    # is vacuous, and without the paired control it would have read as "the
+    # parser correctly ignored a comment" while testing nothing.
+    #
+    # Same finding as the deletion that cannot be committed here: the state
+    # this arm exists to discriminate is not present on this branch, for either
+    # page. The discrimination is covered synthetically above; these two rows
+    # assert the branch's ACTUAL state so the vacuity is on the record instead
+    # of disguised as a pass.
+    for rel in gs.LISTING_INDICES:
+        check(f"real {rel}: no dateModified token on this branch (vacuous here, by measurement)",
+              lambda rel=rel: (gs.ROOT / rel).read_text(encoding="utf-8").count("dateModified"), 0)
+        check(f"real {rel}: parser agrees there is nothing to declare",
+              lambda rel=rel: gs.declared_lastmod(gs.ROOT / rel), None)
+
+
+# MECHANISM COLLISION GUARD, PROVEN RED (2026-07-22). Run by
+# /tmp/nori-mut-collide.py, TRANSCRIBED from its stdout, not predicted:
+#
+#   mutation                                          ran  FAIL
+#   arm1 deleted                                       32     1
+#   arm1 keys on the wrong tier (git)                  32     2
+#   arm1 fires on ANY supersede (tier ignored)         32     1
+#   arm2 deleted                                       32     1
+#   arm2 is a TEXT MATCH, not a parse (Coco's grep)    32     3
+#   arm2 scans every entry, not LISTING_INDICES        32     1
+#   CALL SITE: guard computed but never acted on       32     1
+#   RESTORED (control)                                 32     0   rc=0
+#
+# ROW 5 IS THE ONE COCO'S RULING TURNS ON. Swapping the parser for
+# `"dateModified" in text` -- the obvious implementation -- fails 3. Measured at
+# 9da0e78, grep over the three listing pages returns 2 / 1 / 3 hits and four of
+# those six are comment prose, including blog/index.html whose ONLY occurrence
+# is a comment forbidding the declaration. The grep arm flags that page and
+# asserts something false about it: fires on the correct page, for a reason
+# that is not true.
+#
+# ROW 7 WAS 32-RAN / 0-FAIL ON THE FIRST TABLE. Neutering main()'s refusal to
+# `if False and collisions:` left every one of the then-30 assertions green,
+# rc=0. Six mutations of the function all went red and not one of them asked
+# whether anything READS the result. Second time in this file the call site is
+# the hole (ac06eb6 was the first, and that one was also 15-ran / 0-FAIL on the
+# first pass). The two rows added for it -- main() refuses on an injected
+# collision, and does not refuse when the same guard reports clean -- are what
+# took it to 1. A verdict emitted identically under both branches carries zero
+# bits, so both branches are asserted.
+#
+# NOT PROVEN, STATED INSTEAD: the real-corpus arm Coco specified ("green on
+# blog/index.html as-is, red on how-to/index.html as-is") is NOT RUNNABLE on
+# this branch. Measured: at d776419 and main, BOTH listing pages contain zero
+# occurrences of the token; the declaration and both explanatory comments exist
+# only at 9da0e78. The first version of that row asserted None from the parser
+# and would have read as "correctly ignored a comment" while testing nothing --
+# its paired occurrence-count control is what caught it. The rows now assert
+# the branch's actual state and name the vacuity.
 if __name__ == "__main__":
     sys.exit(main())
