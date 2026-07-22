@@ -35,6 +35,52 @@ case "${1:-}" in
     ;;
 esac
 
+# --- Self-verify: this script must be committed, tree must be clean ---
+# This deploy is the only copy (see :1). A worktree edit to deploy.sh ships
+# without trace — the next fetch overwrites it, and the drift guard never sees
+# it. Guard against that by asserting the script itself is committed and the
+# tree is clean, before any network call or secret load.
+SELF_VERIFY() {
+  # Determine SCRIPT_DIR without relying on the later config block
+  local _sv_script_dir
+  _sv_script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local _sv_src_dir
+  _sv_src_dir="$(cd "${_sv_script_dir}/.." && pwd)"
+
+  echo "→ Self-verify: checking deploy.sh is committed and tree is clean..."
+
+  # 1. Assert tracked files are clean (no staged, no modified)
+  #    Untracked files don't ship via rsync allow-list, so they don't count.
+  local _sv_dirty
+  _sv_dirty=$(cd "$_sv_src_dir" && git status --porcelain --untracked-files=no 2>/dev/null || true)
+  if [[ -n "$_sv_dirty" ]]; then
+    echo "" >&2
+    echo "ABORT: uncommitted changes detected in the deploy tree." >&2
+    echo "The deploy script or its inputs have local edits. Nothing was deployed." >&2
+    echo "" >&2
+    printf '%s\n' "$_sv_dirty" | sed 's/^/    /' >&2
+    echo "" >&2
+    echo "  Commit or stash before deploying. Do not edit deploy.sh in a worktree." >&2
+    exit 1
+  fi
+
+  # 2. Assert deploy.sh itself is committed (not orphaned or on no-branch)
+  local _sv_script_sha
+  _sv_script_sha=$(cd "$_sv_src_dir" && git log -1 --format='%H' -- "${_sv_script_dir}/deploy.sh" 2>/dev/null || true)
+  if [[ -z "$_sv_script_sha" ]]; then
+    echo "" >&2
+    echo "ABORT: deploy.sh is not tracked by git." >&2
+    echo "Nothing was deployed." >&2
+    exit 1
+  fi
+
+  # 3. Print the SHA for the deploy log
+  echo "  deploy.sh committed under: ${_sv_script_sha:0:8}"
+
+  echo "✓ Self-verify: deploy.sh is committed, tree is clean."
+}
+SELF_VERIFY
+
 # --- Secrets ---
 # This repo is PUBLIC. Credentials load from a file outside the tree; nothing
 # secret is ever written here. Template: scripts/deploy.env.example
@@ -63,7 +109,6 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 REMOTE_PUBLIC_HTML="${REMOTE_BASE_DIR}/public_html"
-
 
 SSH_CMD="sshpass -e ssh -o StrictHostKeyChecking=no"
 
