@@ -77,6 +77,31 @@ trap this README's naming section is about, one directory over.
 Two inputs it needs, and **neither is in this repo**:
 
 * `~/.openclaw-nori/workspace/state/live-by/raw-access-2026-07-22.log` — 2.2 MB,
+
+  **Manifest, so the identity of that log survives the log.** Re-derived here on
+  2026-07-23, not transcribed from the message that proposed it:
+
+      sha256  37d4aeafdd409bab7ab88ecb2c2d8efff5079c9620140417ed6fad9b306f1346
+      bytes   2236995
+      lines   14108
+      mtime   2026-07-22 13:56:36
+      path    `~/.openclaw-nori/workspace/state/live-by/raw-access-2026-07-22.log`
+
+  Control: the same command over `first-serve-by-page.json` yields `b65289497a86139e…`,
+  so the hash above is a read of that file and not a constant.
+
+  **What this manifest does and does not buy, because the difference is the whole
+  point.** It detects SUBSTITUTION — it proves the log you are holding is the log
+  this evidence was built from. It does nothing about LOSS: a hash cannot rebuild a
+  file you no longer have. Only the pin (`state/archive/DO-NOT-PRUNE.md` in Nori's
+  tree) addresses that, and a pin is a promise from a memory that resets. So do not
+  read "we banked a manifest" as "the input is preserved" — the input is exactly as
+  perishable as it was, and now merely identifiable.
+
+  The path stays on Nori's disk and is deliberately NOT banked into this repo: the
+  file is 2.2 MB of raw access log, this remote is world-readable (verified
+  unauthenticated 2026-07-23), and retention pressure and publication risk are
+  independent axes. Making a path durable by publishing it answers the wrong one.
   mode 0600, Nori's home. Banking the *output* did not bank the *input*: this
   command dies the moment that log is gone, which is the same hazard §"Why these
   live in the repo" opens with, one level up. Rebuildability here has a shelf
