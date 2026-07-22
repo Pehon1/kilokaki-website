@@ -76,7 +76,7 @@ PREFIX_REF="cbaa8a8"     # last commit before the TZ bucket was deleted
 WORK=$(mktemp -d) || exit 2
 trap 'rm -rf "$WORK"' EXIT
 
-DECLARED=15
+DECLARED=21
 RAN=0; PASSED=0; FAILED=0
 
 # check <name> <want_rc> <want_marker> <thunk...>
@@ -197,6 +197,30 @@ PY
 }
 JSON
 
+  # Evidence for the interval arm. Committed dates above are 2026-07-10 02:00Z
+  # (normal-post) and 16:03Z/03:08Z (adopted-post, per $MIDNIGHT/$MIDDAY), so:
+  #
+  #   normal-post   first serve AFTER its commit  -> invariant holds, silent
+  #   adopted-post  first serve BEFORE its commit -> an adoption, and adopted.json
+  #                 declares it, so the arm CORROBORATES rather than flags
+  #
+  # 15:48:26Z is before BOTH candidate adoption instants on purpose. If it were
+  # only before one, the ship gate (B2) would go red for a fixture reason rather
+  # than a script reason, and a fixture that moves with the hour cannot prove a
+  # verdict does not.
+  mkdir -p "$dir/evidence"
+  cat > "$dir/evidence/first-200-utc.json" <<'JSON'
+{
+  "_what": "fixture: first 200 per URL",
+  "_not": "not a publish date",
+  "_retention_floor_utc": "2026-07-01T00:00:00Z",
+  "pages": {
+    "/blog/normal-post.html":  {"live_by": "2026-07-10", "first_200_utc": "2026-07-10T05:00:00Z"},
+    "/blog/adopted-post.html": {"live_by": "2026-07-16", "first_200_utc": "2026-07-16T15:48:26Z"}
+  }
+}
+JSON
+
   if [[ "$src" == "LIVE" ]]; then
     cp "$REPO/scripts/check-schema-dates.py" "$REPO/scripts/fix-schema-dates.py" "$dir/scripts/"
   else
@@ -225,7 +249,22 @@ MIDNIGHT="2026-07-17 00:03:24 +0800"   # UTC date 2026-07-16 — the hour that w
 MIDDAY="2026-07-17 11:08:36 +0800"     # UTC date 2026-07-17 — the hour that got flagged
 
 echo "=== baseline: the real corpus ==="
-check "0: real repo, unmutated -> 0 bugs, exit 0" 0 "0 real bugs over 78 judged posts" \
+# 🔴 THIS ROW USED TO ASSERT "0 real bugs, exit 0" AND THAT IS NO LONGER TRUE.
+# The interval arm (added 2026-07-22) surfaces blog/how-to-log-durian.html: an
+# undeclared adoption, served 1414s before its own commit, invisible to the date
+# arm because both instants fall on 2026-07-16.
+#
+# It is pinned as a KNOWN OPEN FINDING rather than left red or quietly relaxed.
+# A suite someone expects to fail is a suite nobody reads, and "0 bugs" here
+# would have been a green assertion over a corpus with a live breach in it.
+#
+# WHEN DURIAN IS DECLARED in blog/adopted.json — Coco is briefing Nori, it is not
+# this branch's change — 0a goes red and the fix is to restore exactly:
+#     check "0a: real repo, unmutated -> 0 bugs, exit 0" 0 "0 real bugs over 78 judged posts"
+# Do not instead widen the marker to make both states pass.
+check "0a: real repo -> durian, the row the date arm cannot emit" 1 "how-to-log-durian.html" \
+  python3 "$REPO/scripts/check-schema-dates.py"
+check "0b: ...and the date arm still accounts for all 78" 1 "78  accounted for / 78 real posts" \
   python3 "$REPO/scripts/check-schema-dates.py"
 
 echo
@@ -330,6 +369,77 @@ build_fixture "$WORK/h" "$MIDNIGHT" LIVE || exit 2
 rm "$WORK/h/blog/adopted.json"
 check "H: --apply with adopted.json ABSENT -> refuses, exit 2" 2 "REFUSING TO RUN" \
   run_fixer "$WORK/h" --apply
+
+echo
+echo "=== I/J/K/L: the interval arm ==="
+
+# I — THE ROW THE DATE ARM CANNOT EMIT. Adoption commit at 22:55:39 +0800, so its
+# LOCAL date is 2026-07-16 and the post's schema says 2026-07-16: equal, so the
+# date arm hits `continue` and the post vanishes from every one of its buckets.
+# adopted.json is present and declares NOTHING ({} — a real state, distinct from
+# absent). Evidence puts the first 200 at 14:32:05Z, 1414s before the commit.
+# This is blog/how-to-log-durian.html reproduced in a controlled tree.
+#
+# I1 and I2 are one run asserted twice on purpose. I1 alone would pass against a
+# checker that flagged the post for the WRONG reason (drift, orphan, anything);
+# I2 pins that the date arm stayed silent, which is what makes the arm load-
+# bearing rather than redundant.
+DURIAN_HOUR="2026-07-16 22:55:39 +0800"
+build_fixture "$WORK/i" "$DURIAN_HOUR" LIVE || exit 2
+cat > "$WORK/i/blog/adopted.json" <<'JSON'
+{ "_README": ["fixture: present, declares nothing"], "adopted": {} }
+JSON
+python3 - "$WORK/i/evidence/first-200-utc.json" <<'PY'
+import json, sys
+p = sys.argv[1]
+d = json.load(open(p))
+d["pages"]["/blog/adopted-post.html"]["first_200_utc"] = "2026-07-16T14:32:05Z"
+json.dump(d, open(p, "w"), indent=2)
+PY
+check "I1: undeclared adoption, same local date -> flagged, exit 1" 1 \
+  "UNDECLARED ADOPTION - served before its own commit, absent from blog/adopted.json  (1)" \
+  run_checker "$WORK/i"
+check "I2: ...and the date arm saw NOTHING (0 drift) in that run" 1 \
+  "MINOR DRIFT <=3d - authored-vs-committed slippage  (0)" \
+  run_checker "$WORK/i"
+
+# J — evidence absent. Must REFUSE (exit 2), never report "0 undeclared
+# adoptions". Same shape as row E one layer down: an arm that cannot run and
+# prints a zero is indistinguishable from a clean corpus.
+build_fixture "$WORK/j" "$MIDNIGHT" LIVE || exit 2
+rm "$WORK/j/evidence/first-200-utc.json"
+check "J: evidence ABSENT -> INSTRUMENT REFUSES, exit 2" 2 "INSTRUMENT REFUSES" \
+  run_checker "$WORK/j"
+
+# K — THE HYPHEN TRAP, as a test. ~/.../adoption-logs/live-by.json and
+# ~/.../state/live-by/live_by.json are one character apart, both live, both real,
+# and only the second has first_200_utc. Fed the wrong one, a loose loader gets a
+# valid dict with zero matching keys and reports the corpus clean. The guard is
+# schema identity — `bounds` is not `pages` — so it refuses instead.
+build_fixture "$WORK/k" "$MIDNIGHT" LIVE || exit 2
+cat > "$WORK/k/evidence/first-200-utc.json" <<'JSON'
+{ "_what": "the OTHER artifact", "bounds": { "how-to-log-a-buffet": "2026-07-16" } }
+JSON
+check "K: wrong artifact (bounds, not pages) -> REFUSES, exit 2" 2 "has no \`pages\` map" \
+  run_checker "$WORK/k"
+
+# L — DARKNESS IS LOUD BUT DOES NOT GATE. Floor raised above normal-post's commit
+# and its row removed: the arm has zero pre-commit coverage for that post and says
+# so by name. Exit stays 0 — logs rotate on a 30-day cycle and an arm that turns
+# permanently red on expiry is an arm that gets deleted. The failure this guards
+# is the opposite one: skipping quietly and reporting green.
+build_fixture "$WORK/l" "$MIDNIGHT" LIVE || exit 2
+python3 - "$WORK/l/evidence/first-200-utc.json" <<'PY'
+import json, sys
+p = sys.argv[1]
+d = json.load(open(p))
+d["_retention_floor_utc"] = "2026-07-16T00:00:00Z"
+del d["pages"]["/blog/normal-post.html"]
+json.dump(d, open(p, "w"), indent=2)
+PY
+check "L: floor above commit -> DARK by name, exit 0 (never a permanent red)" 0 \
+  "interval arm dark for 1 post(s)" \
+  run_checker "$WORK/l"
 
 echo
 echo "--- RAN $RAN / declared $DECLARED · PASS $PASSED · FAIL $FAILED ---"

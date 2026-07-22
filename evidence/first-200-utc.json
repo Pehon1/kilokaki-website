@@ -1,0 +1,520 @@
+{
+  "_what": "live_by = UPPER BOUND on datePublished, from first 200/304 in origin access logs.",
+  "_not": "NOT a publish date. Origin sits behind Cloudflare; no hit proves nothing.",
+  "_invariant": "datePublished <= live_by",
+  "_captured_at": "2026-07-22",
+  "_reason_captured_now": "log retention is 30 days; the 16 Jul evidence expires ~15 Aug",
+  "_retention_floor_utc": "2026-06-22T00:18:43Z",
+  "_lines_parsed": 13935,
+  "_controls": {
+    "fabricated_slug_returns_nothing": true,
+    "known_served_page_present": true
+  },
+  "pages": {
+    "/blog/blog-habit-stacking-framework-20260421.html": {
+      "live_by": "2026-07-11",
+      "first_200_utc": "2026-07-11T02:14:14Z",
+      "first_200_sgt": "2026-07-11T10:14:14+08:00"
+    },
+    "/blog/blog-meal-planning-method-20260421.html": {
+      "live_by": "2026-06-27",
+      "first_200_utc": "2026-06-27T04:43:21Z",
+      "first_200_sgt": "2026-06-27T12:43:21+08:00"
+    },
+    "/blog/blog-the-real-reason-people-quit-food-logging.html": {
+      "live_by": "2026-06-22",
+      "first_200_utc": "2026-06-22T10:00:33Z",
+      "first_200_sgt": "2026-06-22T18:00:33+08:00"
+    },
+    "/blog/blog-why-people-stick-after-6-months.html": {
+      "live_by": "2026-06-27",
+      "first_200_utc": "2026-06-27T15:57:52Z",
+      "first_200_sgt": "2026-06-27T23:57:52+08:00"
+    },
+    "/blog/calorie-counts-wrong.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T00:28:21Z",
+      "first_200_sgt": "2026-06-24T08:28:21+08:00"
+    },
+    "/blog/eating-healthy-gain-weight.html": {
+      "live_by": "2026-06-29",
+      "first_200_utc": "2026-06-28T18:05:16Z",
+      "first_200_sgt": "2026-06-29T02:05:16+08:00"
+    },
+    "/blog/eyeballing-portions-problem.html": {
+      "live_by": "2026-06-27",
+      "first_200_utc": "2026-06-26T20:20:10Z",
+      "first_200_sgt": "2026-06-27T04:20:10+08:00"
+    },
+    "/blog/food-app-overwhelm-problem.html": {
+      "live_by": "2026-06-27",
+      "first_200_utc": "2026-06-27T06:12:48Z",
+      "first_200_sgt": "2026-06-27T14:12:48+08:00"
+    },
+    "/blog/food-logging-for-beginners.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-22T18:41:04Z",
+      "first_200_sgt": "2026-06-23T02:41:04+08:00"
+    },
+    "/blog/food-logging-on-glp1-meds.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-22T21:02:30Z",
+      "first_200_sgt": "2026-06-23T05:02:30+08:00"
+    },
+    "/blog/food-logging-psychology.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T07:30:03Z",
+      "first_200_sgt": "2026-06-24T15:30:03+08:00"
+    },
+    "/blog/food-noise-what-it-is-why-logging-helps.html": {
+      "live_by": "2026-06-22",
+      "first_200_utc": "2026-06-22T09:40:55Z",
+      "first_200_sgt": "2026-06-22T17:40:55+08:00"
+    },
+    "/blog/friction-problem-food-logging.html": {
+      "live_by": "2026-06-26",
+      "first_200_utc": "2026-06-26T08:29:40Z",
+      "first_200_sgt": "2026-06-26T16:29:40+08:00"
+    },
+    "/blog/glp-1-food-noise-what-it-is.html": {
+      "live_by": "2026-06-30",
+      "first_200_utc": "2026-06-30T02:08:04Z",
+      "first_200_sgt": "2026-06-30T10:08:04+08:00"
+    },
+    "/blog/gym-intimidation-problem-food-logging.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-22T17:21:30Z",
+      "first_200_sgt": "2026-06-23T01:21:30+08:00"
+    },
+    "/blog/habit-stacking-food-logging.html": {
+      "live_by": "2026-06-26",
+      "first_200_utc": "2026-06-26T09:24:29Z",
+      "first_200_sgt": "2026-06-26T17:24:29+08:00"
+    },
+    "/blog/how-many-calories-to-lose-weight.html": {
+      "live_by": "2026-07-08",
+      "first_200_utc": "2026-07-08T02:53:30Z",
+      "first_200_sgt": "2026-07-08T10:53:30+08:00"
+    },
+    "/blog/how-to-log-a-buffet.html": {
+      "live_by": "2026-07-16",
+      "first_200_utc": "2026-07-16T15:48:26Z",
+      "first_200_sgt": "2026-07-16T23:48:26+08:00"
+    },
+    "/blog/how-to-log-alcohol.html": {
+      "live_by": "2026-06-22",
+      "first_200_utc": "2026-06-22T03:31:22Z",
+      "first_200_sgt": "2026-06-22T11:31:22+08:00"
+    },
+    "/blog/how-to-log-bubble-tea.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-23T23:59:59Z",
+      "first_200_sgt": "2026-06-24T07:59:59+08:00"
+    },
+    "/blog/how-to-log-cai-fan.html": {
+      "live_by": "2026-07-16",
+      "first_200_utc": "2026-07-16T15:48:26Z",
+      "first_200_sgt": "2026-07-16T23:48:26+08:00"
+    },
+    "/blog/how-to-log-durian.html": {
+      "live_by": "2026-07-16",
+      "first_200_utc": "2026-07-16T14:32:05Z",
+      "first_200_sgt": "2026-07-16T22:32:05+08:00"
+    },
+    "/blog/how-to-log-food-without-an-app.html": {
+      "live_by": "2026-07-06",
+      "first_200_utc": "2026-07-06T03:56:51Z",
+      "first_200_sgt": "2026-07-06T11:56:51+08:00"
+    },
+    "/blog/how-to-log-grandmothers-recipes.html": {
+      "live_by": "2026-07-03",
+      "first_200_utc": "2026-07-03T14:01:08Z",
+      "first_200_sgt": "2026-07-03T22:01:08+08:00"
+    },
+    "/blog/how-to-log-hawker-food.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T01:14:59Z",
+      "first_200_sgt": "2026-06-24T09:14:59+08:00"
+    },
+    "/blog/how-to-log-kopi-and-teh.html": {
+      "live_by": "2026-07-22",
+      "first_200_utc": "2026-07-22T02:18:55Z",
+      "first_200_sgt": "2026-07-22T10:18:55+08:00"
+    },
+    "/blog/how-to-log-shared-dishes.html": {
+      "live_by": "2026-06-22",
+      "first_200_utc": "2026-06-22T05:58:58Z",
+      "first_200_sgt": "2026-06-22T13:58:58+08:00"
+    },
+    "/blog/i-dont-know-how-much-i-ate.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T01:24:32Z",
+      "first_200_sgt": "2026-06-24T09:24:32+08:00"
+    },
+    "/blog/index.html": {
+      "live_by": "2026-06-25",
+      "first_200_utc": "2026-06-25T06:55:47Z",
+      "first_200_sgt": "2026-06-25T14:55:47+08:00"
+    },
+    "/blog/intermittent-fasting-food-logging.html": {
+      "live_by": "2026-07-16",
+      "first_200_utc": "2026-07-16T15:48:26Z",
+      "first_200_sgt": "2026-07-16T23:48:26+08:00"
+    },
+    "/blog/is-photo-food-logging-accurate.html": {
+      "live_by": "2026-07-08",
+      "first_200_utc": "2026-07-08T02:53:29Z",
+      "first_200_sgt": "2026-07-08T10:53:29+08:00"
+    },
+    "/blog/kilokaki-vs-myfitnesspal.html": {
+      "live_by": "2026-06-25",
+      "first_200_utc": "2026-06-24T19:06:54Z",
+      "first_200_sgt": "2026-06-25T03:06:54+08:00"
+    },
+    "/blog/log-home-cooked-meals-no-recipe.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-23T00:46:22Z",
+      "first_200_sgt": "2026-06-23T08:46:22+08:00"
+    },
+    "/blog/meal-planning-food-logging.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-23T10:34:40Z",
+      "first_200_sgt": "2026-06-23T18:34:40+08:00"
+    },
+    "/blog/meal-prep-food-logging-weight-loss.html": {
+      "live_by": "2026-06-26",
+      "first_200_utc": "2026-06-26T13:51:00Z",
+      "first_200_sgt": "2026-06-26T21:51:00+08:00"
+    },
+    "/blog/meal-prep-hack.html": {
+      "live_by": "2026-06-25",
+      "first_200_utc": "2026-06-25T00:18:39Z",
+      "first_200_sgt": "2026-06-25T08:18:39+08:00"
+    },
+    "/blog/one-tiny-change-method-food-logging.html": {
+      "live_by": "2026-06-28",
+      "first_200_utc": "2026-06-27T20:47:26Z",
+      "first_200_sgt": "2026-06-28T04:47:26+08:00"
+    },
+    "/blog/protein-first.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T10:11:26Z",
+      "first_200_sgt": "2026-06-24T18:11:26+08:00"
+    },
+    "/blog/snack-gap-problem.html": {
+      "live_by": "2026-06-27",
+      "first_200_utc": "2026-06-26T22:09:51Z",
+      "first_200_sgt": "2026-06-27T06:09:51+08:00"
+    },
+    "/blog/start-fresh-monday-trap.html": {
+      "live_by": "2026-06-27",
+      "first_200_utc": "2026-06-27T06:21:17Z",
+      "first_200_sgt": "2026-06-27T14:21:17+08:00"
+    },
+    "/blog/stop-checking-weight-daily.html": {
+      "live_by": "2026-06-22",
+      "first_200_utc": "2026-06-22T08:45:10Z",
+      "first_200_sgt": "2026-06-22T16:45:10+08:00"
+    },
+    "/blog/strict-logging-problem.html": {
+      "live_by": "2026-07-03",
+      "first_200_utc": "2026-07-02T16:01:28Z",
+      "first_200_sgt": "2026-07-03T00:01:28+08:00"
+    },
+    "/blog/the-all-or-nothing-mindset.html": {
+      "live_by": "2026-06-25",
+      "first_200_utc": "2026-06-25T10:06:25Z",
+      "first_200_sgt": "2026-06-25T18:06:25+08:00"
+    },
+    "/blog/the-calorie-budget-method-weight-loss.html": {
+      "live_by": "2026-07-02",
+      "first_200_utc": "2026-07-02T04:24:35Z",
+      "first_200_sgt": "2026-07-02T12:24:35+08:00"
+    },
+    "/blog/the-calorie-budget-method.html": {
+      "live_by": "2026-06-26",
+      "first_200_utc": "2026-06-26T06:34:47Z",
+      "first_200_sgt": "2026-06-26T14:34:47+08:00"
+    },
+    "/blog/the-cheat-day-myth.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-23T05:50:09Z",
+      "first_200_sgt": "2026-06-23T13:50:09+08:00"
+    },
+    "/blog/the-comeback-after-falling-off.html": {
+      "live_by": "2026-06-25",
+      "first_200_utc": "2026-06-25T02:05:07Z",
+      "first_200_sgt": "2026-06-25T10:05:07+08:00"
+    },
+    "/blog/the-comparison-trap.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-23T00:50:03Z",
+      "first_200_sgt": "2026-06-23T08:50:03+08:00"
+    },
+    "/blog/the-emotional-eating-problem.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-22T22:04:08Z",
+      "first_200_sgt": "2026-06-23T06:04:08+08:00"
+    },
+    "/blog/the-family-food-pressure-problem.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T04:59:59Z",
+      "first_200_sgt": "2026-06-24T12:59:59+08:00"
+    },
+    "/blog/the-food-delivery-trap.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T02:29:59Z",
+      "first_200_sgt": "2026-06-24T10:29:59+08:00"
+    },
+    "/blog/the-forgot-to-log-problem.html": {
+      "live_by": "2026-07-04",
+      "first_200_utc": "2026-07-04T11:15:59Z",
+      "first_200_sgt": "2026-07-04T19:15:59+08:00"
+    },
+    "/blog/the-guilt-spiral.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-22T23:09:02Z",
+      "first_200_sgt": "2026-06-23T07:09:02+08:00"
+    },
+    "/blog/the-healthy-snack-problem.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T03:25:25Z",
+      "first_200_sgt": "2026-06-24T11:25:25+08:00"
+    },
+    "/blog/the-home-cooked-meal-problem.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-23T05:08:21Z",
+      "first_200_sgt": "2026-06-23T13:08:21+08:00"
+    },
+    "/blog/the-ive-already-blown-it-problem.html": {
+      "live_by": "2026-07-09",
+      "first_200_utc": "2026-07-09T10:58:24Z",
+      "first_200_sgt": "2026-07-09T18:58:24+08:00"
+    },
+    "/blog/the-late-night-snack-problem.html": {
+      "live_by": "2026-06-25",
+      "first_200_utc": "2026-06-25T00:22:57Z",
+      "first_200_sgt": "2026-06-25T08:22:57+08:00"
+    },
+    "/blog/the-maintenance-trap-food-logging.html": {
+      "live_by": "2026-06-28",
+      "first_200_utc": "2026-06-27T18:39:55Z",
+      "first_200_sgt": "2026-06-28T02:39:55+08:00"
+    },
+    "/blog/the-mirror-effect-losing-weight-confidence.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-22T21:19:35Z",
+      "first_200_sgt": "2026-06-23T05:19:35+08:00"
+    },
+    "/blog/the-perfectionism-trap.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-23T01:53:05Z",
+      "first_200_sgt": "2026-06-23T09:53:05+08:00"
+    },
+    "/blog/the-plateau-problem.html": {
+      "live_by": "2026-06-25",
+      "first_200_utc": "2026-06-25T08:03:03Z",
+      "first_200_sgt": "2026-06-25T16:03:03+08:00"
+    },
+    "/blog/the-real-reason-people-quit-food-logging.html": {
+      "live_by": "2026-06-28",
+      "first_200_utc": "2026-06-27T23:46:40Z",
+      "first_200_sgt": "2026-06-28T07:46:40+08:00"
+    },
+    "/blog/the-restaurant-problem-food-logging.html": {
+      "live_by": "2026-06-25",
+      "first_200_utc": "2026-06-25T07:24:17Z",
+      "first_200_sgt": "2026-06-25T15:24:17+08:00"
+    },
+    "/blog/the-scale-is-lying-to-you.html": {
+      "live_by": "2026-06-26",
+      "first_200_utc": "2026-06-26T14:47:00Z",
+      "first_200_sgt": "2026-06-26T22:47:00+08:00"
+    },
+    "/blog/the-short-trip-trap.html": {
+      "live_by": "2026-07-11",
+      "first_200_utc": "2026-07-11T02:24:04Z",
+      "first_200_sgt": "2026-07-11T10:24:04+08:00"
+    },
+    "/blog/the-sneaky-calories-in-singapore-food.html": {
+      "live_by": "2026-07-08",
+      "first_200_utc": "2026-07-08T02:53:28Z",
+      "first_200_sgt": "2026-07-08T10:53:28+08:00"
+    },
+    "/blog/the-social-anxiety-of-food-logging.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T07:29:59Z",
+      "first_200_sgt": "2026-06-24T15:29:59+08:00"
+    },
+    "/blog/the-social-dinner-survival-guide.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-23T13:33:27Z",
+      "first_200_sgt": "2026-06-23T21:33:27+08:00"
+    },
+    "/blog/the-solo-eater-problem.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T13:59:15Z",
+      "first_200_sgt": "2026-06-24T21:59:15+08:00"
+    },
+    "/blog/the-tdee-calculator.html": {
+      "live_by": "2026-06-25",
+      "first_200_utc": "2026-06-25T02:03:50Z",
+      "first_200_sgt": "2026-06-25T10:03:50+08:00"
+    },
+    "/blog/the-tracking-paradox.html": {
+      "live_by": "2026-06-26",
+      "first_200_utc": "2026-06-26T11:39:43Z",
+      "first_200_sgt": "2026-06-26T19:39:43+08:00"
+    },
+    "/blog/the-travel-eating-problem.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-22T22:52:47Z",
+      "first_200_sgt": "2026-06-23T06:52:47+08:00"
+    },
+    "/blog/the-vacation-eating-problem.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-23T09:49:43Z",
+      "first_200_sgt": "2026-06-23T17:49:43+08:00"
+    },
+    "/blog/the-weekend-trap.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T07:52:06Z",
+      "first_200_sgt": "2026-06-24T15:52:06+08:00"
+    },
+    "/blog/voice-logging.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-23T00:33:11Z",
+      "first_200_sgt": "2026-06-23T08:33:11+08:00"
+    },
+    "/blog/weekend-derailment-problem.html": {
+      "live_by": "2026-06-27",
+      "first_200_utc": "2026-06-27T00:15:48Z",
+      "first_200_sgt": "2026-06-27T08:15:48+08:00"
+    },
+    "/blog/what-six-months-looks-like.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T08:10:42Z",
+      "first_200_sgt": "2026-06-24T16:10:42+08:00"
+    },
+    "/blog/what-the-hell-effect-one-bad-meal.html": {
+      "live_by": "2026-06-22",
+      "first_200_utc": "2026-06-22T13:10:49Z",
+      "first_200_sgt": "2026-06-22T21:10:49+08:00"
+    },
+    "/blog/why-always-hungry.html": {
+      "live_by": "2026-06-25",
+      "first_200_utc": "2026-06-25T07:08:34Z",
+      "first_200_sgt": "2026-06-25T15:08:34+08:00"
+    },
+    "/blog/why-not-losing-weight-despite-logging.html": {
+      "live_by": "2026-07-08",
+      "first_200_utc": "2026-07-08T02:53:28Z",
+      "first_200_sgt": "2026-07-08T10:53:28+08:00"
+    },
+    "/blog/why-photo-logging-beats-manual-entry.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T00:20:35Z",
+      "first_200_sgt": "2026-06-24T08:20:35+08:00"
+    },
+    "/blog/why-the-scale-went-up-after-a-good-week.html": {
+      "live_by": "2026-06-22",
+      "first_200_utc": "2026-06-22T15:46:40Z",
+      "first_200_sgt": "2026-06-22T23:46:40+08:00"
+    },
+    "/blog/why-you-cant-trust-your-tdee-calculator.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-23T23:59:59Z",
+      "first_200_sgt": "2026-06-24T07:59:59+08:00"
+    },
+    "/blog/why-you-plateau-at-week-3.html": {
+      "live_by": "2026-06-22",
+      "first_200_utc": "2026-06-22T11:12:56Z",
+      "first_200_sgt": "2026-06-22T19:12:56+08:00"
+    },
+    "/blog/why-you-stop-logging-after-3-weeks.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-23T02:19:32Z",
+      "first_200_sgt": "2026-06-23T10:19:32+08:00"
+    },
+    "/blog/why-your-first-week-of-logging-feels-impossible.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-23T11:40:36Z",
+      "first_200_sgt": "2026-06-23T19:40:36+08:00"
+    },
+    "/blog/why-youre-always-hungry-on-a-diet.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-23T03:37:49Z",
+      "first_200_sgt": "2026-06-23T11:37:49+08:00"
+    },
+    "/how-to/custom-food.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T05:50:36Z",
+      "first_200_sgt": "2026-06-24T13:50:36+08:00"
+    },
+    "/how-to/daily-targets.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T03:11:29Z",
+      "first_200_sgt": "2026-06-24T11:11:29+08:00"
+    },
+    "/how-to/edit-delete.html": {
+      "live_by": "2026-06-23",
+      "first_200_utc": "2026-06-23T11:13:40Z",
+      "first_200_sgt": "2026-06-23T19:13:40+08:00"
+    },
+    "/how-to/index.html": {
+      "live_by": "2026-07-16",
+      "first_200_utc": "2026-07-16T13:51:00Z",
+      "first_200_sgt": "2026-07-16T21:51:00+08:00"
+    },
+    "/how-to/macros.html": {
+      "live_by": "2026-06-25",
+      "first_200_utc": "2026-06-25T01:00:57Z",
+      "first_200_sgt": "2026-06-25T09:00:57+08:00"
+    },
+    "/how-to/nutrition-label.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T08:42:01Z",
+      "first_200_sgt": "2026-06-24T16:42:01+08:00"
+    },
+    "/how-to/past-meal.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T07:52:53Z",
+      "first_200_sgt": "2026-06-24T15:52:53+08:00"
+    },
+    "/how-to/photo-context.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-23T20:33:45Z",
+      "first_200_sgt": "2026-06-24T04:33:45+08:00"
+    },
+    "/how-to/photo.html": {
+      "live_by": "2026-06-25",
+      "first_200_utc": "2026-06-24T16:13:18Z",
+      "first_200_sgt": "2026-06-25T00:13:18+08:00"
+    },
+    "/how-to/portions.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T00:56:19Z",
+      "first_200_sgt": "2026-06-24T08:56:19+08:00"
+    },
+    "/how-to/templates.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-23T16:01:46Z",
+      "first_200_sgt": "2026-06-24T00:01:46+08:00"
+    },
+    "/how-to/text.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T14:17:08Z",
+      "first_200_sgt": "2026-06-24T22:17:08+08:00"
+    },
+    "/how-to/voice.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T08:36:23Z",
+      "first_200_sgt": "2026-06-24T16:36:23+08:00"
+    },
+    "/how-to/weekly-summary.html": {
+      "live_by": "2026-06-24",
+      "first_200_utc": "2026-06-24T10:26:15Z",
+      "first_200_sgt": "2026-06-24T18:26:15+08:00"
+    }
+  }
+}
