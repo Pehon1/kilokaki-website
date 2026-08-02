@@ -11,46 +11,6 @@
 # pointing it somewhere that does not exist without needing the network to be
 # down.
 
-# HERMETICITY IS ONE BASH FOOTGUN DEEP, AND IT HAS ALREADY BEEN PAID FOR ONCE.
-# A parallel build of this same spec wrote its fixture helper as
-#
-#     local name="$1" d="${TMPROOT}/${name}"        # <-- DO NOT
-#
-# Bash expands every RHS BEFORE performing any assignment, so `name` is still
-# unbound when `d` is built. Under `set -u` that aborts the `local`, the helper
-# returns EMPTY, and every downstream `git -C "$W"` becomes `git -C ""` -- which
-# does not error. An empty -C means THE CURRENT DIRECTORY. The runner's CWD was a
-# worktree of kilokaki-website, so the "hermetic" suite committed into the real
-# repo, ran `git remote set-url origin` against the real config, and PUSHED FOUR
-# release/* TAGS TO THE REAL ORIGIN -- two of which peeled to main. The gate whose
-# entire purpose is to refuse an unauthorized main was, for a few minutes,
-# authorizing it, by way of its own test suite. The tags were removed; main was
-# never written.
-#
-# Two rules fall out, and both are cheap:
-#   1. Build fixture paths from "$1", never from a variable assigned in the same
-#      `local`. Line 27 does this deliberately -- read it before "tidying" it.
-#   2. A helper that returns a path must never be allowed to return "". `git -C ""`
-#      is indistinguishable from `git -C .` and silence is its success case.
-#   3. `set -u` IS NOT THE BACKSTOP HERE, and the case convention is. Under
-#      `local name="$1" d="${TMP}/${name}"`, set -u only fires when no `name`
-#      exists in an enclosing scope. Add a global of that name and bash silently
-#      substitutes THE GLOBAL. Measured 2026-07-23:
-#
-#        global `name=GLOBAL_LEAK` present -> d=/tmpdir/GLOBAL_LEAK   rc=0, no stderr
-#        no global (control)               -> "name: unbound variable"
-#
-#      That is strictly worse than the incident above: same shared-fixture
-#      contamination, every row landing in one directory, and the seven warnings
-#      that would have explained it are gone. The only reason this file is safe
-#      today is the case split -- locals are lowercase (`f label name out script`),
-#      globals are uppercase (`DEPLOY GATE NOOPS PASS P_MUT SCRIPT_DIR TMP W`),
-#      intersection empty, verified. THAT CONVENTION IS LOAD-BEARING, not style.
-#      Add one lowercase global and this suite can go quietly wrong.
-#
-# The general shape, which is the same one rows K-P exist to catch: the dangerous
-# failure is not the command that errors, it is the command that quietly retargets.
-
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -59,7 +19,7 @@ GATE="${SCRIPT_DIR}/release-gate.sh"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
-PASS=0; FAIL=0
+PASS=0; FAIL=0; ROWS_SKIPPED=0
 
 # A sandbox: work repo + bare "origin", one commit, identity set locally so the
 # suite does not depend on the runner having a global git identity.
@@ -77,6 +37,37 @@ sandbox() {
   git -C "$work" remote add origin "$bare"
   git -C "$work" push -q origin HEAD:refs/heads/main
   printf '%s' "$work"
+}
+
+# --- ITEM 1: CONSUME THE SUBSHELL'S STATUS -----------------------------------
+# `W=$(mk x) || exit 3` is a COMMAND SUBSTITUTION, i.e. a subshell. When `sandbox`
+# aborts -- set -u on an unbound var, git failing, disk full -- the abort is
+# CONTAINED: the parent gets W="" plus a non-zero $?, and if nobody reads $?
+# the row proceeds against an empty path. `git -C ""` does not error; it means
+# THE CURRENT DIRECTORY. That is exactly how a sibling build of this suite
+# committed into a real checkout and pushed four release/* tags to a real origin
+# while printing "6 of 9 ok".
+#
+# Measured: `W="$(f rowA)"; rc=$?` -> `W=[]  rc=1`. The status was ALWAYS there.
+# It was never read. Detection without consumption -- so this wrapper reads it.
+#
+# Fail CLOSED with exit 3, not FAIL+1: a harness that cannot build a fixture has
+# not found a defect, it has stopped being an instrument. Counting it as a failed
+# row would let a broken harness report "15 of 16" -- and a partial pass reads as
+# honest coverage in a way a total pass never does. 3 is distinct from 1 (a real
+# red) on purpose.
+mk() {
+  local __w __rc
+  __w=$(sandbox "$1"); __rc=$?
+  if (( __rc != 0 )); then
+    printf 'ABORT %-56s sandbox exited %s -- fixture never built\n' "sandbox/$1" "$__rc" >&2
+    return 1
+  fi
+  if [[ -z "$__w" || ! -d "$__w" ]]; then
+    printf 'ABORT %-56s sandbox returned no usable path [%s]\n' "sandbox/$1" "$__w" >&2
+    return 1
+  fi
+  printf '%s' "$__w"
 }
 
 # run <label> <expected_rc> <dir> [needle]
@@ -99,7 +90,7 @@ run() {
 }
 
 # --- A: annotated release tag on origin, peeling to HEAD ---------------------
-W=$(sandbox a)
+W=$(mk a) || exit 3
 git -C "$W" tag -a release/2026-07-23 -m "authorized: row A" HEAD
 git -C "$W" push -q origin release/2026-07-23
 run "A  annotated release tag on origin peels to HEAD" 0 "$W" "authorized by refs/tags/release/2026-07-23"
@@ -107,7 +98,7 @@ run "A  annotated release tag on origin peels to HEAD" 0 "$W" "authorized by ref
 # --- B: tag exists on origin but peels to a DIFFERENT commit -----------------
 # The freeze case that matters most: an old release is tagged, the tree has
 # moved on. Authorized yesterday is not authorized now.
-W=$(sandbox b)
+W=$(mk b) || exit 3
 git -C "$W" tag -a release/old -m "authorized: an earlier commit" HEAD
 git -C "$W" push -q origin release/old
 echo "moved on" >> "$W/file.txt"
@@ -116,38 +107,61 @@ git -C "$W" push -q origin HEAD:refs/heads/main
 run "B  tag peels to a different commit" 1 "$W" "NOT AUTHORIZED"
 
 # --- C: no release/* tag on origin at all ------------------------------------
-W=$(sandbox c)
+W=$(mk c) || exit 3
 run "C  no release/* tag on origin" 1 "$W" "No release/\* tags exist"
 
 # --- D: ls-remote cannot reach the remote ------------------------------------
 # UNKNOWN, not "not authorized". Collapsing these two would let a network
 # failure read as a policy verdict.
-W=$(sandbox d)
+W=$(mk d) || exit 3
 git -C "$W" remote set-url origin "${TMP}/definitely-not-a-repo-$$"
 run "D  ls-remote fails -> UNKNOWN, not a verdict" 2 "$W" "UNKNOWN"
 
 # --- E: tag exists LOCALLY only, never pushed --------------------------------
 # The single-disk claim. This is the row that makes "published artifact"
 # mean something rather than being a slogan.
-#
-# CAVEAT, MEASURED 2026-07-23 -- this row's green is weaker than it looks, and
-# saying so is the point. E is satisfied here for an INCIDENTAL reason: the gate
-# accepts only peeled (`^{}`) lines, and `for-each-ref` emits none, so a naive
-# "fall back to local tags when origin has none" mutation leaves the WHOLE SUITE
-# GREEN. E does not catch it. Only when the fallback also peels properly does E
-# go red (rc=2). So E does not independently enforce "ask origin" -- annotated-only
-# parsing does, and E rides on it. If anyone ever relaxes the annotated-only rule,
-# this row stops covering the local-tag path and nothing here will say so.
-W=$(sandbox e)
+W=$(mk e) || exit 3
 git -C "$W" tag -a release/local-only -m "never pushed" HEAD
 run "E  tag is local-only, not on origin" 1 "$W" "NOT AUTHORIZED"
+
+# --- E2: local-only LIGHTWEIGHT tag at HEAD ----------------------------------
+# ITEM 3. E alone does NOT independently enforce "ask origin" -- it rides on
+# annotated-only parsing, and that coupling is invisible until someone relaxes it.
+# Measured: inject "fall back to local tags when origin has none" and the WHOLE
+# SUITE stays green, E included, because `for-each-ref` emits no `^{}` lines and
+# the peel filter drops them for a reason unrelated to E's claim. Only a fallback
+# that ALSO peels turns E red (rc=2).
+#
+# E2 WAS MEANT TO CLOSE IT FROM THE OTHER SIDE AND DOES NOT. Recorded as a
+# failed hypothesis rather than deleted, because the reason is the finding.
+#
+# The idea: a LIGHTWEIGHT tag's objectname IS the commit, so a naive local
+# fallback should authorize on it and E2 should go red. Measured with the
+# fallback injected: E2 stayed GREEN (rc=1). `for-each-ref` emits no `^{}`
+# lines at all, so the peel filter drops a lightweight local tag exactly as it
+# drops an annotated one. Both E and E2 are neutralised by the same clause.
+#
+# CONCLUSION, and it is a fact about the gate rather than about these rows:
+# with annotated-only parsing in place, NO local-tag fallback can authorize
+# anything. E's dependency on that clause makes E redundant, not fragile --
+# and the clause is itself red-armed, by row F (loosen it to accept unpeeled
+# lines and F fails, measured). So the coupling is guarded against regression.
+#
+# What remains unguarded is a DELIBERATE redesign that accepts lightweight tags
+# and updates F to match; after that, nothing here covers the local-tag path.
+# No row can catch an edit that rewrites the row. That needs the gate to assert
+# its own query -- e.g. refuse unless ls-remote was actually reached -- which is
+# a change to release-gate.sh, not to this file. Filed rather than faked.
+W=$(mk e2) || exit 3
+git -C "$W" tag release/local-lightweight HEAD
+run "E2 lightweight tag local-only, not on origin" 1 "$W" "NOT AUTHORIZED"
 
 # --- F: LIGHTWEIGHT tag on origin pointing at HEAD ---------------------------
 # Control for requirement 4 (peel the tag). A lightweight tag publishes ONE
 # ls-remote line whose sha IS the commit and which carries no `^{}` suffix, no
 # tagger, no date and no message. A gate that matched unpeeled lines would go
 # green here. It must not: there is nothing to record about the act.
-W=$(sandbox f)
+W=$(mk f) || exit 3
 git -C "$W" tag release/lightweight HEAD
 git -C "$W" push -q origin release/lightweight
 run "F  lightweight tag at HEAD is rejected" 1 "$W" "none of these are annotated"
@@ -164,7 +178,7 @@ run "H  unresolvable HEAD -> UNKNOWN" 2 "${TMP}/unborn" "UNKNOWN"
 
 # --- I: annotated tag not matching the release/* namespace -------------------
 # Scope control: the gate must not be satisfied by just any annotated tag.
-W=$(sandbox i)
+W=$(mk i) || exit 3
 git -C "$W" tag -a v1.0.0 -m "not a release authorization" HEAD
 git -C "$W" push -q origin v1.0.0
 run "I  annotated non-release/* tag does not authorize" 1 "$W" "NOT AUTHORIZED"
@@ -362,10 +376,30 @@ if (( NOOPS > 0 )); then
   FAIL=$((FAIL + NOOPS))
 fi
 
+# --- ITEM 2: ASSERT HOW MANY ROWS ACTUALLY EXECUTED --------------------------
+# Without this, a row that DIED before reaching its assertion and a row that
+# PASSED are indistinguishable in the output: both contribute nothing to FAIL,
+# and the summary reports on the rows that ran rather than on the rows that
+# exist. That is how "6 of 9 ok" got read as a suite doing its job while three
+# rows had silently never run.
+#
+# EXPECTED_ROWS is maintained BY HAND on purpose. Deriving it by counting `run`
+# calls at runtime would make it agree with reality by construction -- the
+# check would be incapable of failing, which is the exact defect this suite
+# exists to hunt. Bump it deliberately when you add a row; a mismatch is the
+# alarm doing its job, not an inconvenience to silence.
+EXPECTED_ROWS=17
 echo
+if (( PASS + FAIL != EXPECTED_ROWS )); then
+  echo "HARNESS: $((PASS + FAIL)) rows executed, expected ${EXPECTED_ROWS} -- rows went missing" >&2
+  echo "  A row that dies before its assertion is invisible in PASS/FAIL. Do not" >&2
+  echo "  read the verdict below until this is resolved." >&2
+  exit 3
+fi
+
 if (( FAIL > 0 )); then
-  echo "test-release-gate: ${FAIL} FAILED, ${PASS} passed"
+  echo "test-release-gate: ${FAIL} FAILED, ${PASS} passed (of ${EXPECTED_ROWS})"
   exit 1
 fi
-echo "test-release-gate: all ${PASS} rows passed"
+echo "test-release-gate: all ${PASS} rows passed (of ${EXPECTED_ROWS} expected)"
 exit 0
