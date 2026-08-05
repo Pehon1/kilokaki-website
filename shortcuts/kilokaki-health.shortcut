@@ -1,0 +1,226 @@
+{
+  "WFWorkflowClientVersion": "1101.16.2",
+  "WFWorkflowClientRelease": "15.5",
+  "WFWorkflowTypes": [
+    "Action",
+    "URL"
+  ],
+  "WFWorkflowImportQuestions": [],
+  "WFWorkflowVariables": [
+    {
+      "Name": "Calories Burned",
+      "Type": "Number",
+      "UUID": "A1B2C3D4-E5F6-7890-ABCD-EF1234567890"
+    },
+    {
+      "Name": "Steps",
+      "Type": "Number",
+      "UUID": "B2C3D4E5-F6A7-8901-BCDE-F12345678901"
+    },
+    {
+      "Name": "Sleep Hours",
+      "Type": "Number",
+      "UUID": "C3D4E5F6-A7B8-9012-CDEF-123456789012"
+    },
+    {
+      "Name": "Health Token",
+      "Type": "Text",
+      "UUID": "D4E5F6A7-B8C9-0123-DEF0-123456789013"
+    },
+    {
+      "Name": "Response",
+      "Type": "Dictionary",
+      "UUID": "E5F6A7B8-C9D0-1234-EF01-234567890124"
+    }
+  ],
+  "WFWorkflowActions": [
+    {
+      "WFWorkflowActionParameters": {
+        "UUID": "A1B2C3D4-0001-0000-0000-000000000001",
+        "Title": "Ask for Health Token"
+      },
+      "WFWorkflowActionClassName": "WFAskForInputAction",
+      "WFWorkflowActionShortName": "Ask for Health Token",
+      "WFWorkflowActionIdentifier": "is.workflow.actions.ask"
+    },
+    {
+      "WFWorkflowActionParameters": {
+        "UUID": "A1B2C3D4-0002-0000-0000-000000000002",
+        "Variable": {
+          "Value": {
+            "Type": "Variable",
+            "Name": "Health Token"
+          },
+          "WFSerializationType": "JSON"
+        }
+      },
+      "WFWorkflowActionClassName": "WFSetVariableAction",
+      "WFWorkflowActionShortName": "Set Health Token",
+      "WFWorkflowActionIdentifier": "is.workflow.actions.setvariable"
+    },
+    {
+      "WFWorkflowActionParameters": {
+        "UUID": "A1B2C3D4-0003-0000-0000-000000000003",
+        "QuantityType": "HKQuantityTypeIdentifierActiveEnergyBurned",
+        "Unit": "kcal",
+        "Default": {
+          "Value": {
+            "Type": "Constant",
+            "Value": 0
+          },
+          "WFSerializationType": "JSON"
+        }
+      },
+      "WFWorkflowActionClassName": "WFHealthAction",
+      "WFWorkflowActionShortName": "Get Active Energy Burned",
+      "WFWorkflowActionIdentifier": "is.workflow.actions.health.query"
+    },
+    {
+      "WFWorkflowActionParameters": {
+        "UUID": "A1B2C3D4-0004-0000-0000-000000000004",
+        "Variable": {
+          "Value": {
+            "Type": "Variable",
+            "Name": "Calories Burned"
+          },
+          "WFSerializationType": "JSON"
+        }
+      },
+      "WFWorkflowActionClassName": "WFSetVariableAction",
+      "WFWorkflowActionShortName": "Set Calories Burned",
+      "WFWorkflowActionIdentifier": "is.workflow.actions.setvariable"
+    },
+    {
+      "WFWorkflowActionParameters": {
+        "UUID": "A1B2C3D4-0005-0000-0000-000000000005",
+        "QuantityType": "HKQuantityTypeIdentifierStepCount",
+        "Unit": "count",
+        "Default": {
+          "Value": {
+            "Type": "Constant",
+            "Value": 0
+          },
+          "WFSerializationType": "JSON"
+        }
+      },
+      "WFWorkflowActionClassName": "WFHealthAction",
+      "WFWorkflowActionShortName": "Get Step Count",
+      "WFWorkflowActionIdentifier": "is.workflow.actions.health.query"
+    },
+    {
+      "WFWorkflowActionParameters": {
+        "UUID": "A1B2C3D4-0006-0000-0000-000000000006",
+        "Variable": {
+          "Value": {
+            "Type": "Variable",
+            "Name": "Steps"
+          },
+          "WFSerializationType": "JSON"
+        }
+      },
+      "WFWorkflowActionClassName": "WFSetVariableAction",
+      "WFWorkflowActionShortName": "Set Steps",
+      "WFWorkflowActionIdentifier": "is.workflow.actions.setvariable"
+    },
+    {
+      "WFWorkflowActionParameters": {
+        "UUID": "A1B2C3D4-0007-0000-0000-000000000007",
+        "QuantityType": "HKQuantityTypeIdentifierSleepAnalysis",
+        "Unit": "hr",
+        "Default": {
+          "Value": {
+            "Type": "Constant",
+            "Value": 0
+          },
+          "WFSerializationType": "JSON"
+        }
+      },
+      "WFWorkflowActionClassName": "WFHealthAction",
+      "WFWorkflowActionShortName": "Get Sleep Hours",
+      "WFWorkflowActionIdentifier": "is.workflow.actions.health.query"
+    },
+    {
+      "WFWorkflowActionParameters": {
+        "UUID": "A1B2C3D4-0008-0000-0000-000000000008",
+        "Variable": {
+          "Value": {
+            "Type": "Variable",
+            "Name": "Sleep Hours"
+          },
+          "WFSerializationType": "JSON"
+        }
+      },
+      "WFWorkflowActionClassName": "WFSetVariableAction",
+      "WFWorkflowActionShortName": "Set Sleep Hours",
+      "WFWorkflowActionIdentifier": "is.workflow.actions.setvariable"
+    },
+    {
+      "WFWorkflowActionParameters": {
+        "UUID": "A1B2C3D4-0009-0000-0000-000000000009",
+        "WFWorkflowActionParameters": {
+          "Text": "{\n  \"health_token\": \"[Health Token]\",\n  \"date\": \"[CurrentDate]\",\n  \"calories_burned\": [Calories Burned],\n  \"steps\": [Steps],\n  \"sleep_hours\": [Sleep Hours]\n}"
+        }
+      },
+      "WFWorkflowActionClassName": "WFDictionaryAction",
+      "WFWorkflowActionShortName": "Build Request Body",
+      "WFWorkflowActionIdentifier": "is.workflow.actions.dictionary"
+    },
+    {
+      "WFWorkflowActionParameters": {
+        "UUID": "A1B2C3D4-0010-0000-0000-000000000010",
+        "URL": "https://kilokaki.com/api/health",
+        "Method": "POST",
+        "Body": {
+          "Type": "JSON",
+          "Value": {
+            "Type": "Variable",
+            "Name": "Request Body"
+          }
+        },
+        "Headers": [
+          {
+            "Key": "Content-Type",
+            "Value": "application/json"
+          }
+        ]
+      },
+      "WFWorkflowActionClassName": "WFWebRequestAction",
+      "WFWorkflowActionShortName": "POST Health Data",
+      "WFWorkflowActionIdentifier": "is.workflow.actions.webrequest"
+    },
+    {
+      "WFWorkflowActionParameters": {
+        "UUID": "A1B2C3D4-0011-0000-0000-000000000011",
+        "Variable": {
+          "Value": {
+            "Type": "Variable",
+            "Name": "Response"
+          },
+          "WFSerializationType": "JSON"
+        }
+      },
+      "WFWorkflowActionClassName": "WFSetVariableAction",
+      "WFWorkflowActionShortName": "Set Response",
+      "WFWorkflowActionIdentifier": "is.workflow.actions.setvariable"
+    },
+    {
+      "WFWorkflowActionParameters": {
+        "UUID": "A1B2C3D4-0012-0000-0000-000000000012",
+        "Text": "✅ Health data synced!\n\n🔥 Calories: [Calories Burned] kcal\n👟 Steps: [Steps]\n😴 Sleep: [Sleep Hours]h\n\nToken: [Health Token]",
+        "ShowWhenRun": true
+      },
+      "WFWorkflowActionClassName": "WFAlertAction",
+      "WFWorkflowActionShortName": "Show Confirmation",
+      "WFWorkflowActionIdentifier": "is.workflow.actions.alert"
+    }
+  ],
+  "WFWorkflowCreationDate": "2026-08-05T04:00:00Z",
+  "WFWorkflowDataTypeIdentifiers": [],
+  "WFWorkflowIcon": {
+    "GlyphNumber": 61447,
+    "IconType": "Health"
+  },
+  "WFWorkflowName": "KiloKaki Health Sync",
+  "WFWorkflowOutputConnectionActionClasses": [],
+  "WFWorkflowRepositoryType": "User"
+}
