@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Why I Quit MyFitnessPal (And What I Use Instead)</title>
+  <meta name="description" content="I spent three years logging meals on MyFitnessPal. Then the redesign, the paywalls, and the 5-tap meal search broke me. Here's why I switched to a Telegram bot built for Singapore food.">
+  <link rel="canonical" href="https://kilokaki.com/blog/why-i-quit-myfitnesspal.html">
+  <meta property="og:title" content="Why I Quit MyFitnessPal (And What I Use Instead)">
+  <meta property="og:description" content="I spent three years logging meals on MyFitnessPal. Then the redesign, the paywalls, and the 5-tap meal search broke me. Here's why I switched to a Telegram bot built for Singapore food.">
+  <meta property="og:url" content="https://kilokaki.com/blog/why-i-quit-myfitnesspal.html">
+  <meta property="og:type" content="article">
+  <style>
+    .blog-hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; padding: 64px 24px 48px; text-align: center; }
+    .blog-hero h1 { font-size: 2.2rem; font-weight: 700; margin: 0 0 16px; line-height: 1.3; }
+    .blog-hero .subtitle { font-size: 1.1rem; opacity: 0.85; margin: 0; font-weight: 400; }
+    .blog-hero .byline { margin-top: 16px; font-size: 0.9rem; opacity: 0.7; }
+    .article-body { max-width: 680px; margin: 0 auto; padding: 40px 24px 80px; font-size: 1.05rem; line-height: 1.75; color: #1a1a2e; }
+    .article-body h2 { font-size: 1.4rem; margin: 40px 0 16px; color: #1a1a2e; }
+    .article-body h3 { font-size: 1.15rem; margin: 28px 0 12px; color: #333; }
+    .article-body p { margin: 0 0 20px; }
+    .article-body .lead { font-size: 1.15rem; color: #333; margin-bottom: 28px; }
+    .article-body blockquote { border-left: 4px solid #e94560; margin: 28px 0; padding: 16px 20px; background: #f8f8f8; border-radius: 0 8px 8px 0; font-style: italic; color: #555; }
+    .article-body blockquote p { margin: 0; }
+    .article-body ul, .article-body ol { margin: 0 0 20px 24px; }
+    .article-body li { margin-bottom: 10px; }
+    .article-body .win-box { background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; padding: 20px 24px; margin: 28px 0; }
+    .article-body .win-box h3 { margin-top: 0; color: #1a1a2e; }
+    .article-body .lose-box { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 12px; padding: 20px 24px; margin: 28px 0; }
+    .article-body .lose-box h3 { margin-top: 0; color: #1a1a2e; }
+    .article-body .verdict-box { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; border-radius: 12px; padding: 28px 32px; margin: 40px 0; }
+    .article-body .verdict-box h3 { color: #fff; margin-top: 0; }
+    .article-body .cta-box { background: linear-gradient(135deg, #84cc16 0%, #65a30d 100%); color: #fff; border-radius: 12px; padding: 28px 32px; text-align: center; margin: 40px 0; }
+    .article-body .cta-box p { font-size: 1.2rem; font-weight: 600; margin: 0 0 8px; }
+    .article-body .cta-box small { opacity: 0.85; }
+    .article-body .telegram-note { background: #e8f4fd; border-left: 4px solid #0088cc; padding: 16px 20px; margin: 28px 0; border-radius: 0 8px 8px 0; }
+    .article-body .telegram-note p { margin: 0; font-size: 0.95rem; }
+    .comparison-table { width: 100%; border-collapse: collapse; margin: 28px 0; }
+    .comparison-table th { background: #1a1a2e; color: #fff; padding: 12px 16px; text-align: left; font-size: 0.95rem; }
+    .comparison-table td { padding: 12px 16px; border-bottom: 1px solid #e5e7eb; font-size: 0.95rem; }
+    .comparison-table tr:nth-child(even) { background: #f9fafb; }
+    .comparison-table .winner { color: #16a34a; font-weight: 600; }
+    .comparison-table .loser { color: #dc2626; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Why I Quit MyFitnessPal (And What I Use Instead)",
+    "description": "I spent three years logging meals on MyFitnessPal. Then the redesign, the paywalls, and the 5-tap meal search broke me. Here's why I switched to a Telegram bot built for Singapore food.",
+    "datePublished": "2026-08-08",
+    "dateModified": "2026-08-08",
+    "url": "https://kilokaki.com/blog/why-i-quit-myfitnesspal.html",
+    "author": {"@type": "Organization", "name": "KiloKaki", "url": "https://kilokaki.com"},
+    "publisher": {"@type": "Organization", "name": "KiloKaki", "url": "https://kilokaki.com", "logo": {"@type": "ImageObject", "url": "https://kilokaki.com/logo.png"}},
+    "mainEntityOfPage": {"@type": "WebPage", "@id": "https://kilokaki.com/blog/why-i-quit-myfitnesspal.html"},
+    "articleSection": "Food Logging",
+    "inLanguage": "en-SG"
+  }
+  </script>
+</head>
+<body>
+  <div class="blog-hero">
+    <h1>Why I Quit MyFitnessPal (And What I Use Instead)</h1>
+    <p class="subtitle">Three years of logging. One redesign. Zero patience left.</p>
+    <p class="byline">KiloKaki · August 8, 2026</p>
+  </div>
+
+  <article class="article-body">
+    <p class="lead">I spent three years logging my meals on MyFitnessPal. I loved it when it worked. And then, slowly, it didn't.</p>
+
+    <p>The redesign added more taps. The calorie info got smaller. The free features started disappearing behind a paywall. One day I sat down to log my lunch — a plate of chicken rice from the hawker centre downstairs — and realised I'd spent longer searching for the food than I had eating it.</p>
+
+    <p>That was the moment I quit.</p>
+
+    <h2>The Problem With Calorie Apps (Especially in Singapore)</h2>
+
+    <p>Every major food logging app was built for the same user: someone in the US or Europe, eating from a database of branded, barcoded products. Open a package. Scan the barcode. Done.</p>
+
+    <p>But try logging a plate of nasi lemak from a neighbourhood stall. Or cai fan from the canteen. Or char kway teow from the kopitiam uncle who doesn't weigh anything and definitely doesn't have a barcode.</p>
+
+    <p>There's no barcode for hawker food. There's no standardised entry for "half chicken, half pork, extra rice, less sauce." You end up guessing, estimating, and eventually giving up — which is exactly why most people quit food logging within three weeks.</p>
+
+    <p>Not because they don't want to track. Because the apps fight them every step of the way.</p>
+
+    <h2>What I Needed Instead</h2>
+
+    <p>I didn't need more features. I needed less friction.</p>
+
+    <p>Specifically:</p>
+
+    <ul>
+      <li><strong>Fast logging.</strong> If it takes more than 10 seconds, I won't do it consistently.</li>
+      <li><strong>SG food understanding.</strong> I eat local. The app needs to know what nasi lemak is — not just "rice with chicken."</li>
+      <li><strong>No app install.</strong> I'm already on my phone all day. I don't want another app to download, another account to manage, another subscription to forget about.</li>
+      <li><strong>Photo or text.</strong> Sometimes I want to snap a picture. Sometimes I just want to type "nasi lemak" and be done.</li>
+    </ul>
+
+    <p>I couldn't find an app that did all of this. So I started looking for alternatives.</p>
+
+    <h2>What I Use Now: KiloKaki</h2>
+
+    <p>KiloKaki is a Telegram bot. That's it. You don't download an app. You don't create an account. You open Telegram, send a message (or a photo), and it logs your meal.</p>
+
+    <p>Here's how it actually works:</p>
+
+    <ol>
+      <li><strong>Open the bot.</strong> It's on Telegram — the app you already have.</li>
+      <li><strong>Send a photo or type your food.</strong> "Nasi lemak with chicken" or just snap the plate.</li>
+      <li><strong>Get your macros back.</strong> Calories, protein, carbs, fat, sodium — all identified from the photo or your text description.</li>
+      <li><strong>Done.</strong> Your daily totals update automatically.</li>
+    </ol>
+
+    <p>That's the whole flow. No searching. No barcodes. No 5-tap meal builder.</p>
+
+    <p>I logged my first meal in about 8 seconds. My tenth meal took 3 seconds — I typed "cai fan: chicken, veg, egg, rice" and got my macros back before I finished chewing.</p>
+
+    <h2>Why This Matters for Singapore Users</h2>
+
+    <p>The friction problem is worse here than anywhere else. Western apps assume you're logging branded products with standardised nutrition info. In Singapore, most of us eat hawker food, canteen meals, and home cooking — none of which have barcodes or standard entries.</p>
+
+    <p>KiloKaki was built for this. It understands local dishes, local terminology, and local portion sizes. When you say "nasi lemak," it knows what that means. When you snap a photo of your plate, it identifies the food and gives you real numbers.</p>
+
+    <h2>The Speed Comparison</h2>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>MyFitnessPal</th>
+          <th>KiloKaki</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Open app</td>
+          <td class="loser">Tap icon, wait for load</td>
+          <td class="winner">Open Telegram chat</td>
+        </tr>
+        <tr>
+          <td>Find food</td>
+          <td class="loser">Search → browse → select</td>
+          <td class="winner">Type or photo</td>
+        </tr>
+        <tr>
+          <td>Log meal</td>
+          <td class="loser">3–5 taps</td>
+          <td class="winner">1 message</td>
+        </tr>
+        <tr>
+          <td>Get macros</td>
+          <td class="loser">After logging</td>
+          <td class="winner">Instantly in response</td>
+        </tr>
+        <tr>
+          <td>Total time</td>
+          <td class="loser">30–60 seconds</td>
+          <td class="winner">3–10 seconds</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The difference isn't marginal. It's the difference between logging consistently and quitting after two weeks.</p>
+
+    <h2>Who This Is For</h2>
+
+    <ul>
+      <li><strong>MFP refugees</strong> — if you've been frustrated by the redesign, paywalls, or just the sheer effort of logging a meal</li>
+      <li><strong>People who've tried food logging and quit</strong> — because it was too much work, too much friction, too many taps</li>
+      <li><strong>Singaporeans who eat local</strong> — hawker food, canteen meals, kopitiam breakfast. If your diet doesn't look like a Western meal plan, you need an app that understands that.</li>
+      <li><strong>Telegram users</strong> — if you're already on Telegram, this is the path of least resistance</li>
+    </ul>
+
+    <h2>Who This Is NOT For</h2>
+
+    <ul>
+      <li><strong>People who need 92 nutrients tracked</strong> — Cronometer is better if you're deep into micronutrients</li>
+      <li><strong>People who want an adaptive coaching algorithm</strong> — MacroFactor is excellent (but expensive, and no photo logging)</li>
+      <li><strong>People who want a social network</strong> — this is a tool, not a community</li>
+    </ul>
+
+    <h2>The Bottom Line</h2>
+
+    <p>I quit MyFitnessPal because it stopped being the easiest part of my day and started being a chore. I switched to KiloKaki because it's the fastest food log I've ever used — and it actually understands the food I eat.</p>
+
+    <p>If you're frustrated with your current app, or you've tried food logging and quit because it was too much work, give this a try. It's free to start, and you don't even need to download anything.</p>
+
+    <div class="telegram-note">
+      <p><strong>Try it now:</strong> <a href="https://t.me/KiloKakiBot?start=src_blog_quitMFP" style="color:#0088cc; font-weight:600;">t.me/KiloKakiBot →</a></p>
+    </div>
+
+    <div class="cta-box">
+      <p>Fastest food log in SEA. Built for Telegram. Built for SG food.</p>
+      <small>Free to start. No account needed. No app to download.</small>
+      <br><br>
+      <a href="https://t.me/KiloKakiBot?start=src_blog_quitMFP" style="background:#fff; color:#65a30d; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:600; display:inline-block;">Try KiloKaki Free →</a>
+    </div>
+
+  </article>
+</body>
+</html>
