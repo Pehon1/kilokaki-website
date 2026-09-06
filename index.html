@@ -20,7 +20,16 @@
        A declared date does NOT self-correct. Git heals on the next real edit; this
        line sits until a human moves it. Edit the content, edit this. -->
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebPage","name":"KiloKaki","url":"https://kilokaki.com/","dateModified":"2026-06-07","inLanguage":"en-SG"}
+  {
+    "@context":"https://schema.org",
+    "@graph":[
+      {"@type":"WebSite","@id":"https://kilokaki.com/#website","name":"KiloKaki","url":"https://kilokaki.com/","inLanguage":"en-SG"},
+      {"@type":"Organization","@id":"https://kilokaki.com/#org","name":"KiloKaki","url":"https://kilokaki.com/","sameAs":["https://t.me/KiloKakiBot"]},
+      {"@type":"WebPage","name":"KiloKaki - Stop counting. Start knowing.","url":"https://kilokaki.com/","description":"KiloKaki is a Telegram food logging bot built for Singapore and Asian food. Snap your meal and get calories + macros instantly.","inLanguage":"en-SG","dateModified":"2026-06-07","isPartOf":{"@id":"https://kilokaki.com/#website"},
+        "about":{"@id":"https://kilokaki.com/#org"}
+      }
+    ]
+  }
   </script>
   <style>
     :root {
