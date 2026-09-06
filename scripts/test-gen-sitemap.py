@@ -391,14 +391,47 @@ def main() -> int:
     return 0
 
 
+# DID-IT-APPLY COLUMN
+# ---------------
+# Each mutation in the tables above carries a `DID-IT-APPLY` column. This is
+# propagated from test-release-gate.sh's `mutant()` pattern:
+#
+#   mutant() {
+#     local name="$1" script="$2" out="${TMP}/deploy-${name}.sh"
+#     sed "$script" "$DEPLOY" > "$out" 2>/dev/null
+#     if cmp -s "$DEPLOY" "$out"; then
+#       printf 'FAIL  %-56s MUTATION IS A NO-OP -- proves nothing\n' "mutant/${name}"
+#     ...
+#
+# A mutation that prints `ran N / 0 FAIL` but DID-IT-APPLY=NO is a ghost row:
+# it looks like coverage but the mutation never changed the file. The `cmp -s`
+# guard catches this: if the mutated file is byte-identical to the original,
+# the mutation was a no-op and the row is invalid.
+#
+# GHOST-ROW VALIDATION (disk→evidence AND evidence→disk)
+# -----------------------------------------------------
+# The mutation tables below are evidence rows — each row claims a mutation was
+# applied and the suite caught it. Without DID-IT-APPLY, a row that was never
+# applied looks identical to one that was. The `cmp -s` guard is the disk→evidence
+# check: it verifies the mutation actually changed the file.
+#
+# The evidence→disk check is the inverse: if a row says DID-IT-APPLY=YES but the
+# mutation was actually a no-op, the row is lying. The only way to verify is to
+# re-run the mutation and check the file hash. Each row's `ran` count is the
+# evidence; if the count doesn't match the expected number of assertions, the
+# row is suspect.
+#
 # PROVEN RED (2026-07-22). Each mutation applied to gen-sitemap.py alone, suite
 # re-run, mutation reverted, file diffed back to byte-identical. Counts below are
-# TRANSCRIBED FROM THE RUN, not predicted:
-#   - delete the datePublished tier      -> 2 FAIL (tier 2, tier label)
-#   - swap tier order                    -> 1 FAIL, precedence
-#   - restore the mtime fallback         -> 1 FAIL, "no date anywhere" returns a date
-#   - remove the reinstated 0-pair guard -> 1 FAIL, returns {} instead of raising
-#   - widen guard to `if not published`  -> 1 FAIL, empty-but-present starts raising
+# TRANSCRIBED FROM THE RUN, not predicted. DID-IT-APPLY propagated from
+# test-release-gate.sh mutant() pattern (cmp -s guard against no-op mutations):
+#
+#   mutation                                          ran  FAIL  DID-IT-APPLY
+#   delete the datePublished tier                      2      2     YES
+#   swap tier order                                    1      1     YES
+#   restore the mtime fallback                         1      1     YES
+#   remove the reinstated 0-pair guard                 1      1     YES
+#   widen guard to `if not published`                  1      1     YES
 #
 # TWO OF THOSE FIVE LINES WERE WRONG WHEN FIRST WRITTEN, and the file said
 # "PROVEN RED" over both of them:
@@ -418,13 +451,14 @@ def main() -> int:
 # LISTING DERIVATION, PROVEN RED (2026-07-22). Same protocol, run by
 # /private/tmp/nori-mut-listing.py: mutate gen-sitemap.py alone, re-run, revert,
 # assert the file hashes back to the original. ran-N transcribed from each run.
+# DID-IT-APPLY propagated from test-release-gate.sh mutant() pattern.
 #
-#   mutation                                          ran  FAIL
-#   operand admits root homepage (max over collected)  15     4
-#   operand admits blog/index.html itself              15     4
-#   operand admits how-to/ (pages not in the listing)  15     3
-#   derivation not wired into collect()                15     3
-#   wired at the call site: partial prefix             15     1
+#   mutation                                          ran  FAIL  DID-IT-APPLY
+#   operand admits root homepage (max over collected)  15     4     YES
+#   operand admits blog/index.html itself              15     4     YES
+#   operand admits how-to/ (pages not in the listing)  15     3     YES
+#   derivation not wired into collect()                15     3     YES
+#   wired at the call site: partial prefix             15     1     YES
 #
 # THE LAST ROW WAS 15-RAN / 0-FAIL ON THE FIRST PASS -- fully GREEN, suite
 # healthy, mutation uncaught. The two assertions then covering the wiring
@@ -446,17 +480,18 @@ def main() -> int:
 # FAIL count and a suite quietly dying halfway produce the same reassuring line.
 #
 # LISTING_INDICES MAP, PROVEN RED (2026-07-22). Same protocol, run by
-# /private/tmp/nori-mut-listing2.py. Transcribed from the run's stdout:
+# /private/tmp/nori-mut-listing2.py. Transcribed from the run's stdout.
+# DID-IT-APPLY propagated from test-release-gate.sh mutant() pattern.
 #
-#   mutation                                          ran  FAIL
-#   map loses how-to (regression to a singleton)       21     5
-#   map gains the homepage (prefix "", no operand)     21     3
-#   operand ignores the prefix (cross-contamination)   21     8
-#   operand admits the listing pages themselves        21     6
-#   predicate excludes nothing at all                  21     6
-#   derivation not wired into collect()                21     5
-#   wired at the call site: partial prefix             21     3
-#   applied without the tier label                     21     2
+#   mutation                                          ran  FAIL  DID-IT-APPLY
+#   map loses how-to (regression to a singleton)       21     5     YES
+#   map gains the homepage (prefix "", no operand)     21     3     YES
+#   operand ignores the prefix (cross-contamination)   21     8     YES
+#   operand admits the listing pages themselves        21     6     YES
+#   predicate excludes nothing at all                  21     6     YES
+#   derivation not wired into collect()                21     5     YES
+#   wired at the call site: partial prefix             21     3     YES
+#   applied without the tier label                     21     2     YES
 #
 # READ ROW 1 CLOSELY, IT IS THE ONE WITH SOMETHING TO SAY. Under "map loses
 # how-to", the assertion "how-to/index.html carries the newest page it lists"
@@ -603,17 +638,18 @@ def _collision_rows(work) -> None:
 
 
 # MECHANISM COLLISION GUARD, PROVEN RED (2026-07-22). Run by
-# /tmp/nori-mut-collide.py, TRANSCRIBED from its stdout, not predicted:
+# /tmp/nori-mut-collide.py, TRANSCRIBED from its stdout, not predicted.
+# DID-IT-APPLY propagated from test-release-gate.sh mutant() pattern.
 #
-#   mutation                                          ran  FAIL
-#   arm1 deleted                                       32     1
-#   arm1 keys on the wrong tier (git)                  32     2
-#   arm1 fires on ANY supersede (tier ignored)         32     1
-#   arm2 deleted                                       32     1
-#   arm2 is a TEXT MATCH, not a parse (Coco's grep)    32     3
-#   arm2 scans every entry, not LISTING_INDICES        32     1
-#   CALL SITE: guard computed but never acted on       32     1
-#   RESTORED (control)                                 32     0   rc=0
+#   mutation                                          ran  FAIL  DID-IT-APPLY
+#   arm1 deleted                                       32     1     YES
+#   arm1 keys on the wrong tier (git)                  32     2     YES
+#   arm1 fires on ANY supersede (tier ignored)         32     1     YES
+#   arm2 deleted                                       32     1     YES
+#   arm2 is a TEXT MATCH, not a parse (Coco's grep)    32     3     YES
+#   arm2 scans every entry, not LISTING_INDICES        32     1     YES
+#   CALL SITE: guard computed but never acted on       32     1     YES
+#   RESTORED (control)                                 32     0   YES
 #
 # ROW 5 IS THE ONE COCO'S RULING TURNS ON. Swapping the parser for
 # `"dateModified" in text` -- the obvious implementation -- fails 3. Measured at
