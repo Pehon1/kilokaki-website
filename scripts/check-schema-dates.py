@@ -713,5 +713,47 @@ def main():
     return 1 if bugs else 0
 
 
+# Verdict word, in STDOUT CONTENT rather than in the exit status.
+#
+# Why this exists: a pipe eats the status. `check | tail -15` hands you tail's
+# exit, and tail succeeds on empty input, so a red gate reads green -- the
+# failure direction that ships. Content survives a pipe; status does not.
+#
+# It also separates 0 from 2 on the LAST line. The refusal is already announced
+# loudly further up, but it sits above a variable number of findings, so a small
+# `tail -N` window can drop it while keeping `>>> N real bugs over M judged
+# posts`, which is byte-identical under a clean pass and under a refusal.
+#
+# Unmapped codes and exceptions both resolve to UNKNOWN, never to GREEN: an
+# instrument that could not reach a verdict must not be able to emit a pass.
+VERDICT = {0: "GREEN", 1: "RED", 2: "UNKNOWN"}
+
+
+def _emit_verdict(rc):
+    word = VERDICT.get(rc, "UNKNOWN")
+    print(f"\n>>> VERDICT: {word} (exit {rc})")
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        _rc = main()
+    except SystemExit:
+        raise
+    except BaseException:
+        # Verdict word only. The exception is RE-RAISED unchanged, so the exit
+        # code on a crash is exactly what it was before this block existed.
+        #
+        # The tempting version mapped a crash to exit 2 (UNKNOWN), which is
+        # arguably more correct -- row F of the adoption suite says so itself:
+        # "Shares exit 1 with 'bugs found', so the marker is the whole signal
+        # here." But remapping an exit code is a contract change, it broke row F
+        # on the first run, and the only way to make it pass would have been to
+        # edit the expectation to match my own change. That is how a suite gets
+        # taught to agree with whatever the code now does.
+        #
+        # So: report UNKNOWN in the content, change no status. The 1-vs-2
+        # question goes to Coco as its own proposal, not smuggled in here.
+        print("\n>>> VERDICT: UNKNOWN (checker raised; no verdict was reached)")
+        raise
+    _emit_verdict(_rc)
+    sys.exit(_rc)

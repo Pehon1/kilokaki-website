@@ -77,7 +77,7 @@ INTERVAL_V1_REF="a069755" # interval arm v1: scored floor-pinned posts as clean
 WORK=$(mktemp -d) || exit 2
 trap 'rm -rf "$WORK"' EXIT
 
-DECLARED=28
+DECLARED=34
 RAN=0; PASSED=0; FAILED=0
 
 # check <name> <want_rc> <want_marker> <thunk...>
@@ -563,6 +563,61 @@ check "M2: PRE-FIX ($INTERVAL_V1_REF) scores the same post as clean" 0 \
 check "M3: ...and the judged count excludes it" 0 \
   "interval arm judged 1 post(s); 1 outside its reach" \
   run_checker "$WORK/m"
+
+echo
+echo "=== V: THE VERDICT LINE — status is what a pipe eats, content is not ==="
+# Added 2026-09-16 after reading this gate's own verdict through `| tail -15`
+# and recording rc=0 while it was returning 1. tail succeeds on empty input, so
+# a piped gate fails GREEN — the direction that ships.
+#
+# The fix is not a rule to invoke it correctly. A rule you must remember to run
+# is not a guard. The fix is to put the verdict where a pipe cannot reach it:
+# the last line of stdout.
+#
+# V4 is the row that matters and it asserts rc=0 ON PURPOSE. That 0 is tail's
+# and it is a lie; the row passes only if the RED verdict is still legible in
+# the content the liar handed back. If V4 ever starts wanting rc=1, someone has
+# turned pipefail on inside it and the row has stopped reproducing the bug.
+
+run_checker_args() { local d="$1"; shift; ( cd "$d" && python3 scripts/check-schema-dates.py "$@" ); }
+# set +o pipefail is deliberate: the suite runs with pipefail ON, which would
+# mask the very defect V4 exists to reproduce.
+run_piped()  { ( set +o pipefail; cd "$1" && python3 scripts/check-schema-dates.py 2>&1 | tail -15 ); }
+run_tail1()  { ( set +o pipefail; cd "$1" && python3 scripts/check-schema-dates.py 2>&1 | tail -1  ); }
+
+check "V1: clean fixture -> VERDICT GREEN on the last line" 0 \
+  ">>> VERDICT: GREEN (exit 0)" \
+  run_checker "$WORK/a"
+
+check "V2: drifted fixture -> VERDICT RED, not just a bug count" 1 \
+  ">>> VERDICT: RED (exit 1)" \
+  run_checker "$WORK/c"
+
+# Exit 2 is the refusal. Before this line, 0 and 2 ended on a byte-identical
+# summary (">>> N real bugs over M judged posts"), so a small tail window could
+# drop the loud refusal above and leave a clean-looking pass.
+check "V3: refusal -> VERDICT UNKNOWN, distinguishable from GREEN" 2 \
+  ">>> VERDICT: UNKNOWN (exit 2)" \
+  run_checker_args "$WORK/a" --evidence /nonexistent/no-such-evidence.txt
+
+check "V4: SHIP GATE — piped, rc is tail's lie, verdict survives anyway" 0 \
+  ">>> VERDICT: RED (exit 1)" \
+  run_piped "$WORK/c"
+
+check "V5: ...and a one-line window still catches it" 0 \
+  ">>> VERDICT: RED (exit 1)" \
+  run_tail1 "$WORK/c"
+
+# V6 pins the crash path to the exit code it had BEFORE the verdict line was
+# added. Row F above already covers the marker; this row covers the promise that
+# adding a verdict word changed no status anywhere. Mapping a crash to exit 2 is
+# defensible and is filed as a separate proposal -- if that is ever accepted,
+# THIS row is the one that must be edited deliberately, in that change, alone.
+build_fixture "$WORK/v6" "$MIDNIGHT" LIVE || exit 2
+printf '{ "adopted": { ' > "$WORK/v6/blog/adopted.json"
+check "V6: crash -> UNKNOWN in content, exit code UNCHANGED (1)" 1 \
+  ">>> VERDICT: UNKNOWN (checker raised; no verdict was reached)" \
+  run_checker "$WORK/v6"
 
 echo
 echo "--- RAN $RAN / declared $DECLARED · PASS $PASSED · FAIL $FAILED ---"
