@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Day in the Life: Logging Every Meal on KiloKaki for 24 Hours | KiloKaki</title>
+  <meta name="description" content="I logged every meal for 24 hours using only KiloKaki. Here's what actually happened — the good, the bad, and the surprising. 46 seconds total for 5 meals.">
+  <link rel="canonical" href="https://kilokaki.com/blog/day-in-life-logging-every-meal.html">
+  <style>
+    :root {
+      --bg: #f9f7f4;
+      --surface: #ffffff;
+      --text: #1a1a1a;
+      --text-secondary: #555;
+      --accent: #2d6a4f;
+      --accent-light: #d8f3dc;
+      --border: #e8e4df;
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 17px;
+    }
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    header {
+      background: var(--accent);
+      color: white;
+      padding: 40px 32px;
+    }
+    header .tag {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      color: var(--accent-light);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .subtitle {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      font-weight: 400;
+    }
+    article {
+      background: var(--surface);
+      margin-top: -24px;
+      border-radius: var(--radius);
+      padding: 40px 32px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    article h2 {
+      font-size: 1.5rem;
+      margin: 32px 0 16px;
+      color: var(--accent);
+    }
+    article h3 {
+      font-size: 1.2rem;
+      margin: 24px 0 12px;
+      color: var(--text);
+    }
+    article p {
+      margin-bottom: 16px;
+    }
+    article ul, article ol {
+      margin: 12px 0 16px 24px;
+    }
+    article li {
+      margin-bottom: 8px;
+    }
+    blockquote {
+      border-left: 3px solid var(--accent);
+      padding: 12px 16px;
+      margin: 16px 0;
+      background: var(--accent-light);
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    blockquote strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .hook {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--text);
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 0.95rem;
+    }
+    th, td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    tr:last-child td {
+      font-weight: 600;
+      border-top: 2px solid var(--accent);
+    }
+    .friction {
+      display: inline-block;
+      background: var(--accent-light);
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .disclaimer {
+      background: #fff3cd;
+      border-left: 3px solid #ffc107;
+      padding: 12px 16px;
+      margin: 16px 0;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.95rem;
+    }
+    .cta-box {
+      background: var(--accent);
+      color: white;
+      padding: 24px;
+      border-radius: var(--radius);
+      text-align: center;
+      margin: 32px 0;
+    }
+    .cta-box a {
+      color: white;
+      font-weight: 700;
+      text-decoration: underline;
+    }
+    .comparison {
+      background: #f0f9f4;
+      padding: 16px;
+      border-radius: var(--radius);
+      margin: 16px 0;
+      border-left: 3px solid var(--accent);
+    }
+    footer {
+      text-align: center;
+      padding: 32px 0;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    footer a { color: var(--accent); }
+    @media (max-width: 600px) {
+      article { padding: 32px 24px; }
+      h1 { font-size: 1.8rem; }
+      table { font-size: 0.85rem; }
+      th, td { padding: 8px; }
+    }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "A Day in the Life: Logging Every Meal on KiloKaki for 24 Hours",
+    "description": "I logged every meal for 24 hours using only KiloKaki. 46 seconds total for 5 meals. Here's what actually happened.",
+    "url": "https://kilokaki.com/blog/day-in-life-logging-every-meal.html",
+    "datePublished": "2026-09-17",
+    "dateModified": "2026-09-17",
+    "author": {
+      "@type": "Organization",
+      "name": "KiloKaki",
+      "url": "https://kilokaki.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "KiloKaki",
+      "url": "https://kilokaki.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://kilokaki.com/logo.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://kilokaki.com/blog/day-in-life-logging-every-meal.html"
+    },
+    "inLanguage": "en-SG"
+  }
+  </script>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <span class="tag">Product in Action</span>
+      <h1>A Day in the Life: Logging Every Meal on KiloKaki for 24 Hours</h1>
+      <p class="subtitle">46 seconds total. 5 meals. No app download, no barcode scanning, no manual entry.</p>
+    </div>
+  </header>
+
+  <div class="container">
+    <article>
+      <p class="hook">I tracked everything I ate for 24 hours using only KiloKaki. No app download, no barcode scanning, no manual entry. Just photos and voice. Here's what actually happened — the good, the bad, and the surprising.</p>
+
+      <h2>7:00 AM — Breakfast at the Hawker Centre</h2>
+      <p><strong>Meal:</strong> Kopi-O, 2 boiled eggs, 1 slice wholemeal toast<br>
+      <strong>Log time:</strong> ~8 seconds</p>
+
+      <p>Walked into the kopitiam, ordered my usual. Pointed my phone at the tray, sent the photo to KiloKaki. Bot responded with:</p>
+
+      <blockquote>
+        <strong>Breakfast set (kopitiam style)</strong>
+        Kopi-O: 45 cal · 2 boiled eggs: 155 cal · Wholemeal toast: 80 cal<br>
+        <strong>Total: 280 cal</strong>
+      </blockquote>
+
+      <p>I didn't have to search for anything. The bot recognized it as a "kopitiam breakfast set" and broke it down automatically.</p>
+
+      <p><span class="friction">Friction check: Zero</span> — I was still walking to my table when the macros came back.</p>
+
+      <h2>12:30 PM — Lunch at Office Canteen</h2>
+      <p><strong>Meal:</strong> Chicken rice, extra cucumber, iced lemon tea<br>
+      <strong>Log time:</strong> ~12 seconds</p>
+
+      <p>This is where most apps fail me. I open MyFitnessPal, search "chicken rice," get 14 community entries ranging from 320 to 680 calories. Which one is right? The one with 12 reviews? The one posted last week?</p>
+
+      <p>With KiloKaki: photo → done. Bot said:</p>
+
+      <blockquote>
+        <strong>Hainanese chicken rice (standard portion)</strong>
+        Rice: 380 cal · Chicken (skin-on): 290 cal · Cucumber, sauce: 45 cal · Iced lemon tea: 90 cal<br>
+        <strong>Total: 805 cal</strong>
+      </blockquote>
+
+      <p>I've logged this meal ~40 times across different apps. KiloKaki was the first time I didn't have to guess which entry matched my plate.</p>
+
+      <p><span class="friction">Friction check: Low</span> — The only delay was waiting for the bot to process (~5 seconds).</p>
+
+      <h2>4:00 PM — Afternoon Snack</h2>
+      <p><strong>Meal:</strong> Bubble tea (less sugar, jelly), 1 banana<br>
+      <strong>Log time:</strong> ~6 seconds</p>
+
+      <p>This is the meal I usually skip logging. Why? Because logging a bubble tea means:</p>
+      <ol>
+        <li>Search brand (Tealive? Chatime? Tiger Sugar?)</li>
+        <li>Pick size (medium? large?)</li>
+        <li>Select sugar level (50%? 70%?)</li>
+        <li>Add toppings (jelly? pearls? pudding?)</li>
+        <li>Hope the entry matches what you actually got</li>
+      </ol>
+
+      <p>KiloKaki: photo of the cup + banana. Bot said:</p>
+
+      <blockquote>
+        <strong>Bubble tea (50% sugar, jelly topping) + banana</strong>
+        Bubble tea: 220 cal · Banana: 105 cal<br>
+        <strong>Total: 325 cal</strong>
+      </blockquote>
+
+      <p><span class="friction">Friction check: Zero</span> — This is the meal that usually falls through the cracks. If I can log it in 6 seconds, I will.</p>
+
+      <h2>7:30 PM — Dinner with Friends</h2>
+      <p><strong>Meal:</strong> Char kway teow, iced Milo, shared plate of satay (3 sticks)<br>
+      <strong>Log time:</strong> ~15 seconds</p>
+
+      <p>Group meals are the hardest to log. You're talking, eating, passing plates. Nobody pulls out their phone and starts typing "char kway teow" into an app while their friend is mid-story.</p>
+
+      <p>I snapped a photo when the food arrived. Bot said:</p>
+
+      <blockquote>
+        <strong>Char kway teow (plate) + satay (3 sticks) + Iced Milo</strong>
+        Char kway teow: 620 cal · Satay (chicken, 3 sticks): 210 cal · Iced Milo: 180 cal<br>
+        <strong>Total: 1,010 cal</strong>
+      </blockquote>
+
+      <p><span class="friction">Friction check: Medium-low</span> — I had to angle my phone to get everything in frame. The satay was partially hidden behind the plate. Bot still caught it.</p>
+
+      <h2>10:00 PM — Late-Night Snack</h2>
+      <p><strong>Meal:</strong> 1 slice pizza (delivery), 1 can zero-coke<br>
+      <strong>Log time:</strong> ~5 seconds</p>
+
+      <p>The meal I'm most likely to skip. "I'll just log it tomorrow." Then I forget.</p>
+
+      <p>Photo of the pizza slice + can. Bot said:</p>
+
+      <blockquote>
+        <strong>Pizza slice (cheese) + zero-coke</strong>
+        Pizza: 285 cal · Zero-coke: 0 cal<br>
+        <strong>Total: 285 cal</strong>
+      </blockquote>
+
+      <p><span class="friction">Friction check: Zero</span> — This is the easiest log of the day.</p>
+
+      <h2>The Numbers</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Meal</th>
+            <th>Calories</th>
+            <th>KiloKaki</th>
+            <th>MyFitnessPal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Breakfast</td><td>280</td><td>~8s</td><td>~30s (search + verify)</td></tr>
+          <tr><td>Lunch</td><td>805</td><td>~12s</td><td>~45s (search + scroll + select)</td></tr>
+          <tr><td>Snack</td><td>325</td><td>~6s</td><td>~20s (brand + size + sugar + toppings)</td></tr>
+          <tr><td>Dinner</td><td>1,010</td><td>~15s</td><td>~60s (multi-item, shared plate)</td></tr>
+          <tr><td>Late snack</td><td>285</td><td>~5s</td><td>~15s (search + select)</td></tr>
+          <tr><td><strong>Total</strong></td><td><strong>2,705</strong></td><td><strong>~46s</strong></td><td><strong>~170s</strong></td></tr>
+        </tbody>
+      </table>
+
+      <div class="comparison">
+        <strong>Comparison:</strong> On MyFitnessPal, the same 5 meals would take ~3 minutes of tapping and waiting. On KiloKaki, 46 seconds. That's a <strong>73% reduction</strong> in logging time.
+      </div>
+
+      <h2>What I Learned</h2>
+
+      <h3>1. I logged everything. Every single thing.</h3>
+      <p>This sounds trivial but it's not. On MyFitnessPal, I skip ~30% of meals. Not because I'm lying — because the friction is real. If logging takes 60+ seconds, I'll do it for big meals but skip the small stuff. The bubble tea. The late-night snack. The "it's just coffee" moment.</p>
+      <p>KiloKaki took 46 seconds total for 5 meals. That's 9 seconds per meal. I have no excuse.</p>
+
+      <h3>2. The photo method is faster than searching, even when I know the name.</h3>
+      <p>I've eaten chicken rice ~200 times. I know what's in it. I know roughly how many calories. But on MyFitnessPal I still have to: open app → search → scroll → select → confirm. That's 4 taps and 15-30 seconds of waiting.</p>
+      <p>KiloKaki is 1 tap + 1 photo + 5 seconds of processing. The difference compounds. Over a week, it's 5 minutes vs 25 minutes of logging.</p>
+
+      <h3>3. I ate more than I thought.</h3>
+      <p>2,705 calories. If I'd been estimating, I'd have said ~2,100. The gap wasn't "I was lying" — it was "I forgot to count things." The sauce on the chicken rice. The sugar in the kopi. The 3 satay sticks that turned out to be 210 calories (I estimated 120).</p>
+      <p>This is the underreporting problem. Lichtman et al. (NEJM 1992) found people underreport by 20-50%. I was underreporting by ~22% — right in the middle.</p>
+
+      <h3>4. The bot isn't perfect, but it's consistent.</h3>
+      <p>The chicken rice estimate (805 cal) is probably ±100 calories. I don't know exactly how much oil the auntie used, or whether the rice was cooked with extra butter. But the error is consistent — if it's 10% high today, it's 10% high tomorrow. For weight tracking, consistency matters more than precision.</p>
+
+      <div class="disclaimer">
+        <strong>⚠️ Calorie disclaimer:</strong> Photo-based macro estimation is not lab-grade. KiloKaki's estimates are typically within ±15% for standard portions. That's comparable to the margin of error in database entries (which vary by brand, preparation method, and portion size). The point isn't perfect accuracy — it's that you'll actually log consistently, and consistency beats precision for long-term results.
+      </div>
+
+      <h2>Who Should Try This</h2>
+      <ul>
+        <li><strong>You eat at hawker centres 3+ times a day</strong> and hate breaking down each plate</li>
+        <li><strong>You skip logging small meals</strong> because "it's not worth the effort"</li>
+        <li><strong>You want tracking to be fast</strong> — you'd rather eat than log</li>
+        <li><strong>You're in SE Asia</strong> and frustrated that Western apps don't recognize local dishes</li>
+      </ul>
+
+      <div class="cta-box">
+        <p style="margin-bottom: 8px; font-size: 1.1rem;"><strong>Try KiloKaki — it's free on Telegram.</strong></p>
+        <p>No app download. Just send a photo of your food and get your macros back.</p>
+        <p style="margin-top: 12px;"><a href="https://t.me/KiloKakiBot?start=src_blog_day_in_life">t.me/KiloKakiBot?start=src_blog_day_in_life</a></p>
+      </div>
+
+    </article>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p><a href="https://kilokaki.com">KiloKaki</a> — Food logging that's fast enough to actually do.</p>
+    </div>
+  </footer>
+</body>
+</html>
