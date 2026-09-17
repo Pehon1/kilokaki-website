@@ -1,0 +1,13 @@
+# Deploy Receipt Log
+# Format: <ISO8601> | path=<prod-path> | sha=<git-sha> | route=<sftp|scp|script> | lane=<agent-id>
+# Append-only. Committed to the repo so all lanes can read it.
+#
+# This file is NOT a replacement for git history — it records the publish event
+# (who, when, how), which git author fields cannot answer (synthesised 89% of the time).
+#
+# Route values:
+#   script  = deploy.sh (rsync + sshpass)
+#   scp     = manual scp upload
+#   sftp    = manual SFTP upload
+#
+# See spec: ~/.openclaw-kilokaki/workspace/specs/deploy-receipt.md

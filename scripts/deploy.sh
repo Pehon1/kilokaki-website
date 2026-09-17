@@ -483,6 +483,27 @@ if [[ $rsync_rc -ne 0 ]]; then
   exit 1
 fi
 
+# --- Deploy receipt ---
+# Append one line per transferred file to deploy-receipts.log.
+# Format: <ISO8601> | path=<file> | sha=<head-sha> | route=script | lane=<agent>
+# A deploy with no receipt row is detectable by inspection.
+_receipt_sha="$(cd "$SRC_DIR" && git rev-parse --short HEAD 2>/dev/null || true)"
+_receipt_ts="$(date -u +%Y-%m-%dT%H:%M:%S+00:00)"
+_receipt_lane="${KILOKAKI_LANE:-nori}"
+_receipt_count=0
+while IFS= read -r _rf; do
+  [[ -n "$_rf" ]] || continue
+  echo "${_receipt_ts} | path=${REMOTE_PUBLIC_HTML}/${_rf} | sha=${_receipt_sha} | route=script | lane=${_receipt_lane}" >> "${SRC_DIR}/deploy-receipts.log"
+  _receipt_count=$(( _receipt_count + 1 ))
+done < <(awk '$1 ~ /^[<>]f/ {sub(/^[^ ]+ /,""); print}' "$XFER_LOG")
+# Also record deletions
+while IFS= read -r _rf; do
+  [[ -n "$_rf" ]] || continue
+  echo "${_receipt_ts} | path=${REMOTE_PUBLIC_HTML}/${_rf} | sha=${_receipt_sha} | route=script | lane=${_receipt_lane} | DELETED" >> "${SRC_DIR}/deploy-receipts.log"
+  _receipt_count=$(( _receipt_count + 1 ))
+done < <(awk '$1 == "*deleting" {sub(/^[^ ]+ +/,""); print}' "$XFER_LOG")
+echo "  Receipt: ${_receipt_count} line(s) appended to deploy-receipts.log."
+
 echo "✓ Files uploaded."
 
 # --- Fix permissions: 644 for files, 755 for dirs ---
