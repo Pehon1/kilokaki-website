@@ -38,7 +38,13 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 # Banked in-repo on purpose: the workspace original is mode 0600 and its source log
 # rotates out ~15 Aug 2026. Read the banked copy so this stays runnable afterwards.
-LIVE_BY = os.path.join(HERE, "first-200-utc.json")
+# Two captures now exist and they are COMPLEMENTARY WINDOWS, not successive
+# versions: the 07-22 bank holds falsifications the 09-17 window can no longer
+# see (its floor moved from 06-22 to 08-18), and the 09-17 bank holds a
+# falsification the 07-22 one predates. Union them; never replace.
+LIVE_BY = os.environ.get(
+    "ADOPTION_CAPTURE", os.path.join(HERE, "first-200-utc.json")
+)
 OUR_EGRESS = "103.11.50.23"
 
 
@@ -132,6 +138,11 @@ def main():
     rows = []
     for url, rec in sorted(pages.items()):
         rel = url.lstrip("/")
+        # A capture may contain directory URLs ("/", "/blog/"). They map to no
+        # tracked file, so they are not pages this instrument can judge -- skip
+        # them rather than handing git an empty pathspec (rc 128, whole run dies).
+        if not rel.endswith(".html"):
+            continue
         served = iso(rec["first_200_utc"])
         fc = first_commit(rel)
         if fc is None:
@@ -155,6 +166,40 @@ def main():
     print(f"pages in corpus   : {len(pages)}")
     print(f"retention floor   : {floor.isoformat()}")
     print(f"rows evaluated    : {len(rows)}")
+
+    # --- CEILING ASSERT (added 2026-09-17) ---------------------------------
+    # The docstring above defends the retention FLOOR and says nothing about the
+    # ceiling. A banked capture is a WINDOW, and a window goes stale at the top
+    # as silently as it is blind at the bottom: pages introduced after
+    # `_captured_at` are not CLEAN and not UNDECIDABLE, they are OUTSIDE THE
+    # POPULATION. Without this, the denominator (len(pages)) reads as total and
+    # is a snapshot -- the same undercount this script exists to prevent,
+    # arriving from the other end.
+    stale_pages = []
+    captured_at = doc.get("_captured_at")
+    if captured_at:
+        after = []
+        for f in subprocess.run(
+            ["git", "-C", REPO, "ls-files", "blog/*.html"],
+            capture_output=True, text=True,
+        ).stdout.split():
+            url = "/" + f
+            if url in pages:
+                continue
+            first = subprocess.run(
+                ["git", "-C", REPO, "log", "--diff-filter=A", "--format=%aI", "--", f],
+                capture_output=True, text=True,
+            ).stdout.split()
+            if first and first[-1][:10] > captured_at:
+                after.append((f, first[-1][:10]))
+        if after:
+            print()
+            print(f"STALE: {len(after)} page(s) introduced after the capture "
+                  f"(_captured_at {captured_at}) -- OUTSIDE POPULATION, not judged:")
+            for f, d in sorted(after, key=lambda x: x[1]):
+                print(f"    {f}  first commit {d}")
+            print("    -> re-capture before trusting any count below as total.")
+            stale_pages = after
     print()
     for name in ("FALSIFIED", "UNDECIDABLE", "NO_COMMIT", "CLEAN"):
         print(f"{name:<12} {len(buckets.get(name, []))}")
@@ -166,6 +211,10 @@ def main():
     # The real second operand is below: nginx wrote the serve times, a human wrote
     # the commit messages, on different occasions. Those two CAN disagree.
     rc = cross_check(buckets, floor)
+    # STALE is an independent failure axis: the counts above can be internally
+    # consistent and still not be about the whole corpus. OR it in AFTER rc exists.
+    if stale_pages:
+        rc = max(rc, 1)
 
     print("=== FALSIFIED (served before the commit that introduced it) ===")
     for url, sha, committed, served, gap, _ in sorted(

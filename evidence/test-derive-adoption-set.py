@@ -28,15 +28,22 @@ derive = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(derive)
 
 import json
+import datetime as _dt
 
 BASE = json.load(open(derive.LIVE_BY))
 
 
-def run_with(corpus=None, pattern=None):
+def run_with(corpus=None, pattern=None, stale_at=None):
     """Run main() against a mutated corpus / regex; return (rc, stdout)."""
     import tempfile
 
-    doc = corpus if corpus is not None else BASE
+    doc = dict(corpus if corpus is not None else BASE)
+    # These cases assert BUCKETING. The ceiling/staleness assert added
+    # 2026-09-17 is a separate axis and would fire in every one of them purely
+    # because the real bank is older than HEAD -- a true fact about the bank,
+    # irrelevant to what is under test here. Neutralise it unless the case sets
+    # _captured_at itself, and exercise it directly in its own case instead.
+    doc["_captured_at"] = stale_at or _dt.date.today().isoformat()
     orig_live, orig_pat = derive.LIVE_BY, derive.DECLARES_ADOPTION
     with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
         json.dump(doc, fh)
