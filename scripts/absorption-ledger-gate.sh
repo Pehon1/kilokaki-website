@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
-# check-provenance.sh — the reader for docs/provenance.md.
+# absorption-ledger-gate.sh — the reader for docs/provenance.md.
+#
+# NAMED TO DISAMBIGUATE from scripts/provenance-gate.sh, which asks a DIFFERENT
+# question: "is the tree about to ship a clean, published checkout?". This one
+# asks "is every production-originated file in this repo registered in the
+# ledger?". Neither subsumes the other; the old name invited exactly the
+# conflation that let 2b41803 be read as escalated.
 #
 # A ledger nothing reads is the `state/pending-sends/` failure: writing it down
 # reads as handling it. This is the thing that reads it.

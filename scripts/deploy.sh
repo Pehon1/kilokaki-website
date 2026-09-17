@@ -393,6 +393,38 @@ if [[ $gate_rc -ne 0 ]]; then
   exit 1
 fi
 
+# --- Absorption ledger gate ---
+# DIFFERENT QUESTION from provenance-gate.sh at :63, despite the neighbouring
+# name. That one asks "is this tree a clean published checkout?". This one asks
+# "is every production-originated file in this repo registered in
+# docs/provenance.md?" -- i.e. has anyone absorbed prod content into git without
+# recording that the publish itself is still unexplained.
+#
+# WHY IT EXISTS: the prod drift audit answers "is there content on production we
+# cannot account for?" by diffing live bytes against origin/main. Committing
+# unexplained production content makes that question return "no" without anyone
+# having answered it. Four files reached production between 2026-07-16 and
+# 2026-09-17 by a route that emits no artifact, and all four were absorbed
+# afterwards in good faith -- each absorption spending the only detector that
+# could have seen the route.
+#
+# Exit 2 is kept DISTINCT from exit 1 on purpose: "I could not run this check"
+# is not "I found an unregistered absorption", and flattening them here would
+# undo the one property the gate was built with. An empty scan is not a pass.
+absorb_rc=0
+bash "${SCRIPT_DIR}/absorption-ledger-gate.sh" || absorb_rc=$?
+if [[ $absorb_rc -eq 1 ]]; then
+  echo "" >&2
+  echo "ABORT: unregistered absorption. Add a row to docs/provenance.md naming" >&2
+  echo "       the route and the open question, then re-run. Nothing deployed." >&2
+  exit 1
+elif [[ $absorb_rc -ne 0 ]]; then
+  echo "" >&2
+  echo "ABORT: absorption ledger gate could not reach a verdict (exit $absorb_rc)." >&2
+  echo "       This is UNKNOWN, not a pass. Nothing was deployed." >&2
+  exit 1
+fi
+
 drift_guard
 
 # --- Sitemap staleness gate: DELIBERATELY NOT HERE ---

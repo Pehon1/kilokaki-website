@@ -42,15 +42,15 @@ wrote the rows. Author identity cannot be a key in this repo:
   three actors, keyed on email it is two, and neither answer is wrong.
 
 So `absorbed by` carries the sha as the key and the identity as a *note*, explicitly
-marked when the field is synthesized and therefore names nobody. `check-provenance.sh`
+marked when the field is synthesized and therefore names nobody. `absorption-ledger-gate.sh`
 resolves every row through `git cat-file -e <sha>^{commit}` and never parses a name.
 
 ## Rows
 
 | path | route | absorbed by | date | escalation | open question |
 |---|---|---|---|---|---|
-| `blog/how-to-log-durian.html` | absorbed from prod — "rescue", origin had no copy | `d31cca9` (author field synthesized: `Pe Hon Ong`, actor unknown) | 2026-07-16 | `UNESCALATED` | How did Blog #72 reach prod without ever being in git? Found by `check-provenance.sh` on its first run, 2026-09-17. |
-| `blog/how-to-log-kopi-and-teh.html` | absorbed from prod — "adopt", single commit, came from prod | `7ece2bb` (author field synthesized: `Pe Hon Ong`, actor unknown) | 2026-07-22 | `UNESCALATED` | Same question, same route unknown. Found by `check-provenance.sh` on its first run, 2026-09-17. |
+| `blog/how-to-log-durian.html` | absorbed from prod — "rescue", origin had no copy | `d31cca9` (author field synthesized: `Pe Hon Ong`, actor unknown) | 2026-07-16 | `UNESCALATED` | How did Blog #72 reach prod without ever being in git? Found by `absorption-ledger-gate.sh` on its first run, 2026-09-17. |
+| `blog/how-to-log-kopi-and-teh.html` | absorbed from prod — "adopt", single commit, came from prod | `7ece2bb` (author field synthesized: `Pe Hon Ong`, actor unknown) | 2026-07-22 | `UNESCALATED` | Same question, same route unknown. Found by `absorption-ledger-gate.sh` on its first run, 2026-09-17. |
 | `blog/meal-prep-sunday-playbook.html` | absorbed from prod — origin had no copy | `fb153ab` (Mochi) | 2026-08-05 | `UNESCALATED` | How did it reach prod? The file's only commit came *from* production, and prod still does not match it. |
 | `blog/how-to-log-mala-xiang-guo.html` | absorbed from prod — zero git provenance fleet-wide before this commit | `2b41803` (Nori) | 2026-09-17 | `UNESCALATED` — bro owns raising it with Pehon after the credential-rotation decision lands | Who published it, and by what route? Live 200, no repo history, no deploy record. |
 
