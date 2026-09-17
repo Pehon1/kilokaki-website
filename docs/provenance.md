@@ -26,6 +26,25 @@ audit stays quiet, the question stays open, and the open question stays findable
    a rule (e.g. `datePublished` = first git commit date) takes its bytes from the repo
    and does not belong here, even when the result happens to match production.
 
+## Schema — what is the key
+
+**The key is the absorbing COMMIT SHA. It is never the author identity.**
+
+State this or the first person to `group by` gets a different answer than whoever
+wrote the rows. Author identity cannot be a key in this repo:
+
+- **89% of `origin/main` is authored by a synthesized identity** — git invents
+  `Pe Hon Ong <pehonong@*.local>` from the OS account and the *current hostname*, so
+  it is a class spanning three hostnames, not a string.
+- Agent identities have spelling variants. `Nori <nori@kilokaki>` (9),
+  `nori <nori@kilokaki>` (2) and `Nori <nori@kilokaki.local>` (1) are one actor;
+  **two collapse on email and one does not.** Keyed on the author string that is
+  three actors, keyed on email it is two, and neither answer is wrong.
+
+So `absorbed by` carries the sha as the key and the identity as a *note*, explicitly
+marked when the field is synthesized and therefore names nobody. `check-provenance.sh`
+resolves every row through `git cat-file -e <sha>^{commit}` and never parses a name.
+
 ## Rows
 
 | path | route | absorbed by | date | escalation | open question |
