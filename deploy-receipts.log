@@ -3,11 +3,26 @@
 # Append-only. Committed to the repo so all lanes can read it.
 #
 # This file is NOT a replacement for git history — it records the publish event
-# (who, when, how), which git author fields cannot answer (synthesised 89% of the time).
+# (who, when, how), which git author fields cannot answer: 252 of 289 commits on
+# origin/main carry a synthesised ^pehonong@<host>\.local$ address that names nobody
+# (derive it, don't read this number: measured 2026-09-17).
 #
 # Route values:
 #   script  = deploy.sh (rsync + sshpass)
 #   scp     = manual scp upload
 #   sftp    = manual SFTP upload
+#
+# 🔴 COVERAGE LIMIT — READ BEFORE TREATING AN ABSENT ROW AS AN ABSENT DEPLOY.
+# scripts/deploy.sh is the ONLY writer in this repo, and it hardcodes route=script.
+# `scp` and `sftp` are documented above but CANNOT be produced: nothing outside
+# deploy.sh appends here. So this ledger instruments the one route that already
+# leaves a git sha, and is structurally blind to the two routes that don't —
+# which are the routes every unattributed prod post took (d31cca9, 7ece2bb,
+# fb153ab, 2b41803). A quiet ledger is the expected reading for a manual upload,
+# not evidence one didn't happen.
+#
+# As of 2026-09-17 this file has ZERO data rows and has never been written by a
+# deploy. Created 11:34, seeded by fcdb0c3, untouched since. Absence here proves
+# nothing about production.
 #
 # See spec: ~/.openclaw-kilokaki/workspace/specs/deploy-receipt.md
