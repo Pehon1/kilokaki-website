@@ -52,7 +52,13 @@ absorb_re='from production|from prod|track unattributed|restore: .*production'
 scanned=$(git log --all --format=%H | wc -l | tr -d ' ')
 # -E is load-bearing: --grep defaults to BASIC regex, where the alternation above is
 # a literal. Without it this scan matches nothing and reports a clean zero.
-matched=$(git log --all --format=%H -E --regexp-ignore-case --grep="$absorb_re" | wc -l | tr -d ' ')
+# PATH SCOPE is load-bearing, not tidiness. An absorption necessarily ADDS a
+# published web artifact. A commit that merely *discusses* absorption -- like the
+# one that introduced this ledger -- matches the message shape and adds no page.
+# Without the scope, the detector counts its own documentation. (Caught red by
+# this script on 2026-09-17, one commit after it was written.)
+PUBLISHED=(':(glob)blog/**/*.html' ':(glob)*.html' 'sitemap.xml')
+matched=$(git log --all --format=%H -E --regexp-ignore-case --grep="$absorb_re" --diff-filter=A -- "${PUBLISHED[@]}" | wc -l | tr -d ' ')
 [ "$matched" -gt 0 ] || die_unknown "absorption pattern matched 0 of $scanned commits -- the pattern or the regex mode is broken, and an empty scan is not a pass"
 unreg=0
 while IFS='|' read -r sha subj; do
@@ -63,7 +69,7 @@ while IFS='|' read -r sha subj; do
     echo "        $subj"
     unreg=$((unreg+1)); fail=1
   fi
-done < <(git log --all --format='%H|%s' -E --regexp-ignore-case --grep="$absorb_re")
+done < <(git log --all --format='%H|%s' -E --regexp-ignore-case --grep="$absorb_re" --diff-filter=A -- "${PUBLISHED[@]}")
 
 # ---- receipt ----------------------------------------------------------------
 echo "---"
