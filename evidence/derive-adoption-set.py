@@ -25,6 +25,38 @@ never MINT a falsification. FALSIFIED is therefore a hard lower bound on the
 true adoption count; CLEAN is only meaningful inside the log window.
 
 Emits its own counts. Nothing here is hand-transcribed into a report.
+
+WHY THE ACCESS LOG AND NOT `datePublished` (measured 2026-09-17)
+----------------------------------------------------------------
+The cheap repo-only version of this check -- flag pages whose `datePublished`
+precedes their introducing commit -- looks equivalent and is not. Run over all
+93 tracked blog pages it flags 17, confirms 9 of the 10 known adoptions, and
+fails in BOTH directions:
+
+  FALSE NEG  d31cca9  how-to-log-durian
+             datePublished 2026-07-16 == commit date 2026-07-16. The rescuer set
+             it to the commit date, which is the house rule. COMPLYING WITH THE
+             SCHEMA RULE DESTROYS THE EVIDENCE THAT THE POST WAS ADOPTED.
+
+  FALSE POS  8a059b0  "SEO Sprint P1: 4 URL renames with 301 redirects"
+             4 new URLs added (A) carrying their ORIGINAL April/May
+             datePublished; the old paths kept as redirect stubs (M), not
+             deleted -- so there is no rename for --find-renames to detect.
+             Four innocent adds accused.
+
+Root cause, and it is why no threshold fixes it: `datePublished` is written by
+the ADOPTER. It measures the adopter's diligence, not the publish event, so it
+is not an independent witness to the act being detected. The only independent
+witness is prod-side serve time -- which is why this instrument reads an access
+log it does not write, and why a capture is worth banking before it rotates.
+
+ENUMERATE ON `origin/main`, NEVER `--all` OR A BARE `HEAD`
+----------------------------------------------------------
+A rescued-post roster is a claim about the PUBLISHED branch. `git log --all`
+reaches unmerged refs: two different commits add blog/why-i-quit-myfitnesspal.html
+on 2026-08-08 (a90d786, ancestor of origin/main; 24e1283, not), which inflates
+the roster by one. A bare HEAD is right only while no local commit adds a page --
+true here on 2026-09-17 by luck, not by construction.
 """
 
 import json
