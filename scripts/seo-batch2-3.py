@@ -33,7 +33,7 @@ META_DESCRIPTIONS = {
     "the-maintenance-trap-food-logging.html": "Losing weight is the easy part. Keeping it off is where the real work begins. Here's why maintenance is harder than losing — and how to win anyway.",
     "the-mirror-effect-losing-weight-confidence.html": "Losing weight changes more than your body. Here's what nobody tells you about the mirror, your confidence, and the weird feelings that come with success.",
     "the-perfectionism-trap.html": "You miss one meal log and think \"I broke the streak, might as well give up.\" Perfectionism is the hidden reason people quit food logging.",
-    "the-real-reason-people-quit-food-logging.html": "86% of manual entries get edited after submission. That cycle — log, doubt, edit, doubt again — isn't a user failure. It's a system failure.",
+    "the-real-reason-people-quit-food-logging.html": "Manual entries get logged, doubted, then edited after submission. That cycle — log, doubt, edit, doubt again — isn't a user failure. It's a system failure.",
     "the-social-anxiety-of-food-logging.html": "You don't stop logging because it's hard. You stop because it feels like everyone is watching you do it. The emotional side of food tracking nobody talks about.",
     "the-solo-eater-problem.html": "You log faithfully with friends. Eating alone? The streak vanishes. The solo eater problem isn't laziness — it's the psychology of invisible meals.",
     "the-tracking-paradox.html": "You started logging to feel in control. Now you're stressing over whether that banana was 105 or 112 calories. Here's how to find the sweet spot.",
