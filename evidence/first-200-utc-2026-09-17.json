@@ -1,7 +1,7 @@
 {
  "_what": "live_by = UPPER BOUND on datePublished, from first 200/304 in origin access logs.",
  "_not": "NOT a publish date. Origin sits behind Cloudflare; no hit proves nothing.",
- "_invariant": "datePublished <= live_by",
+ "_invariant": "datePublished <= live_by -- HOLDS, re-grounded 2026-09-29. Coco proposed on 2026-09-29 that it was broken: if an absent path 200s, a scanner requesting /blog/foo.html before publication records a live_by earlier than the page existed, making live_by a bound on first REQUEST rather than first SERVE. Measured at origin, that premise is false: absent paths return a hard 404 (314 B, <title>404 Not Found) and blocked ones 403 (146 B), never 200/304. Since this capture admits only 200/304, an unpublished path cannot enter it. The invariant survives -- but it was an untested assertion until this date, and the argument against it was structurally sound; only the origin's behaviour saved it.",
  "_captured_at": "2026-09-17",
  "_reason_captured_now": "30-day retention; the 2026-09-15 mala evidence expires ~2026-10-15. Supersedes nothing: the 2026-07-22 capture holds evidence this window can no longer see.",
  "_retention_floor_utc": "2026-08-18T00:16:49Z",
@@ -10,8 +10,18 @@
  "_supersedes": null,
  "_companion_capture": "evidence/first-200-utc.json (_captured_at 2026-07-22, floor 2026-06-22T00:18:43Z)",
  "_controls": {
-  "fabricated_slug_returns_nothing": true,
-  "known_served_page_present": true
+  "_note": "Superseded 2026-09-29. The previous form was {fabricated_slug_returns_nothing: true, known_served_page_present: true} -- two bare booleans, neither of which was produced by an experiment. fabricated_slug_returns_nothing PASSED because nobody had ever REQUESTED the invented slug: it graded 'was this path requested', never 'does this path exist', so it could not fail. Coco flagged it 2026-09-29 as the same shape as a-resolution-control-measures-key-density. Replaced with the executed form below.",
+  "method": "Fabricate a slug absent from every ref (git log --all --diff-filter=A -> 0), REQUEST it at origin over loopback with a Host header (http://127.0.0.1/<path>, Host: kilokaki.com -- bypasses Cloudflare, so no negative cache is armed and none is read), then look for it in the origin access logs WITH ITS STATUS. Positive control in the same row.",
+  "run_at_utc": "2026-09-28T23:07:40Z",
+  "slug": "/blog/__evidence-control-20260929-29fd4d4a.html",
+  "fabricated_slug_status": 404,
+  "fabricated_slug_bytes": 314,
+  "fabricated_slug_in_capture_criterion": false,
+  "fabricated_slug_logged_in": "backend_*.access.log (NOT static_*.access.log) -- absent paths are logged, in the other file",
+  "positive_control_path": "/blog/index.html",
+  "positive_control_status": 200,
+  "positive_control_bytes": 37525,
+  "verdict": "PASS, and now for a reason an experiment produced. An absent path does not yield 200/304 at origin, so it cannot enter this capture."
  },
  "_sort_key_note": "Ordering used a zero-padded YYYYMMDDhhmmss key, NOT a lexicographic sort on d/Mon/Y. Two earlier runs of this query ordered wrongly; the tell was a filtered subset reporting an EARLIER first hit than the unfiltered set.",
  "pages": {
@@ -1115,5 +1125,27 @@
    "first_200_utc": "2026-09-03T17:26:04Z",
    "first_200_sgt": "2026-09-04T01:26:04+08:00"
   }
+ },
+ "_origin_status_probe_2026_09_29": {
+  "_what": "Direct origin probe of the paths cited as evidence of a soft-404 surface. Loopback + Host header, no Cloudflare. Positive control in the same batch.",
+  "results": {
+   "/elg404-654440.html": "404 / 314 B  (the scanner's own randomly-named canary -- cited as decisive for soft-404; it is a HARD 404)",
+   "/.pulumi/stacks/": "403 / 146 B",
+   "//wp-includes/l10n/": "404 / 314 B",
+   "/cgi-bin/": "404 / 314 B",
+   "/administrator/": "404 / 314 B",
+   "/debug/pprof/": "404 / 314 B",
+   "/blog/index.html": "200 / 37525 B  (positive control)"
+  },
+  "conclusion": "No soft-404 surface at origin. Scanner probes are not indexable 200s, so the crawl-budget consequence drawn from that premise does not follow. Live status histogram, current static_*.access.log: 474x200, 147x403, 1x404."
+ },
+ "_unresolved_106": {
+  "_what": "106 of the 220 keys below resolve to no tracked file at HEAD (reproduced independently 2026-09-29; matches Coco's count exactly). They carry first_200_utc timestamps, i.e. this capture's parser classified them as 200/304 -- yet origin 404s or 403s every one of them today.",
+  "candidates": [
+   "the capture's status-field parse was wrong and admitted 403/404 lines as 200/304",
+   "origin behaviour changed between 2026-08/09 and 2026-09-29"
+  ],
+  "why_undetermined": "The generating command for this file is recorded NOWHERE in the repo -- not in evidence/README.md, not in scripts/. So the parser cannot be re-run against a log whose ground truth is known, and the raw lines are past the 30-day retention floor (2026-08-18 rotations are gone as of 2026-09-29). An evidence artifact whose generating command is unrecorded cannot be re-graded. That is the defect under both this and the control above.",
+  "status": "OPEN. Do not cite live_by for any of these 106 keys until resolved."
  }
 }
